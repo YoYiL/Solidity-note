@@ -1,54 +1,40 @@
 NOTE: This is a notebook used to record personal learning and debugging experiences.
 
-这是一个用来记录个人学习和debug经验的笔记。
-
-
+这是一个用来记录个人学习和 debug 经验的笔记。
 
 [TOC]
 
-
-
-
-
-
-
 # Raffle
-
-
 
 TEST DESIGN PATTERN
 
 3A : ARRANGE; ACT; ASSERT
 
-
-
 CONTRACT FUNCTION DESIGN PATTRERN
 
-CEI: **Checks-Effects-Interactions**   可以有效防止重入re-entrancy攻击
+CEI: **Checks-Effects-Interactions** 可以有效防止重入 re-entrancy 攻击
 
-![image-20250804200942115](SOLIDITY FUCK NOTE.assets/image-20250804200942115.png)
+![image-20250804200942115](SOLIDITY-FUCK-NOTE.assets/image-20250804200942115.png)
 
 私钥通常长度:
-- 256 bits = 32 bytes = 64 hex字符
+
+- 256 bits = 32 bytes = 64 hex 字符
 
 公钥地址长度:
-- Bitcoin: 25-62字符 (多种格式)
 
-- Ethereum: 42字符 (固定格式)  
+- Bitcoin: 25-62 字符 (多种格式)
 
-- 其他链: 32-103字符 (各有特色)
+- Ethereum: 42 字符 (固定格式)
 
-  
+- 其他链: 32-103 字符 (各有特色)
 
 ## Raffle Chlink VRF
 
-VRF和KEEPER是两个不同的服务，VRF使用subID和vrfcoordinator
+VRF 和 KEEPER 是两个不同的服务，VRF 使用 subID 和 vrfcoordinator
 
-![image-20250717173937692](SOLIDITY FUCK NOTE.assets/image-20250717173937692.png)
+![image-20250717173937692](SOLIDITY-FUCK-NOTE.assets/image-20250717173937692.png)
 
-![image-20250717173810771](SOLIDITY FUCK NOTE.assets/image-20250717173810771.png)
-
-
+![image-20250717173810771](SOLIDITY-FUCK-NOTE.assets/image-20250717173810771.png)
 
 ## Foundry 常用指令表格总结
 
@@ -67,7 +53,7 @@ VRF和KEEPER是两个不同的服务，VRF使用subID和vrfcoordinator
 |              | `forge test --match-test`     | 运行特定测试     | `forge test --match-test testTransfer`              |
 |              | `forge test --match-contract` | 运行特定合约测试 | `forge test --match-contract TokenTest`             |
 |              | `forge coverage`              | 测试覆盖率       | `forge coverage`                                    |
-|              | `forge snapshot`              | 生成gas快照      | `forge snapshot`                                    |
+|              | `forge snapshot`              | 生成 gas 快照    | `forge snapshot`                                    |
 | **部署脚本** | `forge script`                | 运行部署脚本     | `forge script Deploy.s.sol --broadcast`             |
 |              | `forge create`                | 直接部署合约     | `forge create Token --private-key $PRIVATE_KEY`     |
 | **调试工具** | `forge debug`                 | 调试交易         | `forge debug --debug $TX_HASH`                      |
@@ -78,49 +64,49 @@ VRF和KEEPER是两个不同的服务，VRF使用subID和vrfcoordinator
 
 ### Cast 指令
 
-| 分类           | 指令                  | 功能描述       | 是否需要私钥 | 示例                                                         |
-| -------------- | --------------------- | -------------- | ------------ | ------------------------------------------------------------ |
-| **合约调用**   | `cast call`           | 调用只读函数   | ❌            | `cast call $CONTRACT "balanceOf(address)" $USER`             |
-|                | `cast send`           | 发送交易       | ✅            | `cast send $CONTRACT "transfer(address,uint256)" $TO $AMOUNT --private-key $KEY` |
-| **区块链查询** | `cast balance`        | 查询余额       | ❌            | `cast balance $ADDRESS`                                      |
-|                | `cast block`          | 获取区块信息   | ❌            | `cast block latest`                                          |
-|                | `cast block-number`   | 获取区块号     | ❌            | `cast block-number`                                          |
-|                | `cast chain-id`       | 获取链ID       | ❌            | `cast chain-id`                                              |
-|                | `cast gas-price`      | 获取gas价格    | ❌            | `cast gas-price`                                             |
-| **交易相关**   | `cast tx`             | 获取交易详情   | ❌            | `cast tx $TX_HASH`                                           |
-|                | `cast receipt`        | 获取交易收据   | ❌            | `cast receipt $TX_HASH`                                      |
-|                | `cast logs`           | 查询事件日志   | ❌            | `cast logs --from-block 100 --to-block 200`                  |
-| **合约信息**   | `cast code`           | 获取合约字节码 | ❌            | `cast code $CONTRACT`                                        |
-|                | `cast storage`        | 读取存储槽     | ❌            | `cast storage $CONTRACT 0`                                   |
-| **数据转换**   | `cast --to-hex`       | 转换为十六进制 | ❌            | `cast --to-hex 255`                                          |
-|                | `cast --to-dec`       | 转换为十进制   | ❌            | `cast --to-dec 0xff`                                         |
-|                | `cast --to-wei`       | 转换为wei      | ❌            | `cast --to-wei 1 ether`                                      |
-|                | `cast --from-wei`     | 从wei转换      | ❌            | `cast --from-wei 1000000000000000000`                        |
-| **ABI工具**    | `cast abi-encode`     | ABI编码        | ❌            | `cast abi-encode "transfer(address,uint256)" $TO $AMOUNT`    |
-|                | `cast abi-decode`     | ABI解码        | ❌            | `cast abi-decode "uint256" $DATA`                            |
-|                | `cast calldata`       | 生成调用数据   | ❌            | `cast calldata "transfer(address,uint256)" $TO $AMOUNT`      |
-|                | `cast 4byte`          | 查询函数选择器 | ❌            | `cast 4byte "transfer(address,uint256)"`                     |
-| **签名哈希**   | `cast keccak`         | 计算Keccak256  | ❌            | `cast keccak "hello world"`                                  |
-|                | `cast hash-message`   | 计算消息哈希   | ❌            | `cast hash-message "hello"`                                  |
-| **钱包操作**   | `cast wallet new`     | 创建新钱包     | ❌            | `cast wallet new`                                            |
-|                | `cast wallet address` | 获取地址       | ❌            | `cast wallet address --private-key $KEY`                     |
-|                | `cast wallet sign`    | 签名消息       | ✅            | `cast wallet sign "message" --private-key $KEY`              |
-|                | `cast wallet verify`  | 验证签名       | ❌            | `cast wallet verify --address $ADDR "message" $SIG`          |
+| 分类           | 指令                  | 功能描述       | 是否需要私钥 | 示例                                                                             |
+| -------------- | --------------------- | -------------- | ------------ | -------------------------------------------------------------------------------- |
+| **合约调用**   | `cast call`           | 调用只读函数   | ❌           | `cast call $CONTRACT "balanceOf(address)" $USER`                                 |
+|                | `cast send`           | 发送交易       | ✅           | `cast send $CONTRACT "transfer(address,uint256)" $TO $AMOUNT --private-key $KEY` |
+| **区块链查询** | `cast balance`        | 查询余额       | ❌           | `cast balance $ADDRESS`                                                          |
+|                | `cast block`          | 获取区块信息   | ❌           | `cast block latest`                                                              |
+|                | `cast block-number`   | 获取区块号     | ❌           | `cast block-number`                                                              |
+|                | `cast chain-id`       | 获取链 ID      | ❌           | `cast chain-id`                                                                  |
+|                | `cast gas-price`      | 获取 gas 价格  | ❌           | `cast gas-price`                                                                 |
+| **交易相关**   | `cast tx`             | 获取交易详情   | ❌           | `cast tx $TX_HASH`                                                               |
+|                | `cast receipt`        | 获取交易收据   | ❌           | `cast receipt $TX_HASH`                                                          |
+|                | `cast logs`           | 查询事件日志   | ❌           | `cast logs --from-block 100 --to-block 200`                                      |
+| **合约信息**   | `cast code`           | 获取合约字节码 | ❌           | `cast code $CONTRACT`                                                            |
+|                | `cast storage`        | 读取存储槽     | ❌           | `cast storage $CONTRACT 0`                                                       |
+| **数据转换**   | `cast --to-hex`       | 转换为十六进制 | ❌           | `cast --to-hex 255`                                                              |
+|                | `cast --to-dec`       | 转换为十进制   | ❌           | `cast --to-dec 0xff`                                                             |
+|                | `cast --to-wei`       | 转换为 wei     | ❌           | `cast --to-wei 1 ether`                                                          |
+|                | `cast --from-wei`     | 从 wei 转换    | ❌           | `cast --from-wei 1000000000000000000`                                            |
+| **ABI 工具**   | `cast abi-encode`     | ABI 编码       | ❌           | `cast abi-encode "transfer(address,uint256)" $TO $AMOUNT`                        |
+|                | `cast abi-decode`     | ABI 解码       | ❌           | `cast abi-decode "uint256" $DATA`                                                |
+|                | `cast calldata`       | 生成调用数据   | ❌           | `cast calldata "transfer(address,uint256)" $TO $AMOUNT`                          |
+|                | `cast 4byte`          | 查询函数选择器 | ❌           | `cast 4byte "transfer(address,uint256)"`                                         |
+| **签名哈希**   | `cast keccak`         | 计算 Keccak256 | ❌           | `cast keccak "hello world"`                                                      |
+|                | `cast hash-message`   | 计算消息哈希   | ❌           | `cast hash-message "hello"`                                                      |
+| **钱包操作**   | `cast wallet new`     | 创建新钱包     | ❌           | `cast wallet new`                                                                |
+|                | `cast wallet address` | 获取地址       | ❌           | `cast wallet address --private-key $KEY`                                         |
+|                | `cast wallet sign`    | 签名消息       | ✅           | `cast wallet sign "message" --private-key $KEY`                                  |
+|                | `cast wallet verify`  | 验证签名       | ❌           | `cast wallet verify --address $ADDR "message" $SIG`                              |
 
 ### 常用参数总结
 
-| 参数               | 描述         | 适用指令                |
-| ------------------ | ------------ | ----------------------- |
-| `--rpc-url`        | RPC节点URL   | cast 所有网络操作       |
-| `--private-key`    | 私钥         | cast send, forge script |
-| `--broadcast`      | 实际广播交易 | forge script            |
-| `-vvv`             | 详细输出     | forge test              |
-| `--gas-limit`      | Gas限制      | cast send               |
-| `--gas-price`      | Gas价格      | cast send               |
-| `--value`          | 发送ETH数量  | cast send               |
-| `--from`           | 发送者地址   | cast 操作               |
-| `--match-test`     | 匹配测试名称 | forge test              |
-| `--match-contract` | 匹配合约名称 | forge test              |
+| 参数               | 描述          | 适用指令                |
+| ------------------ | ------------- | ----------------------- |
+| `--rpc-url`        | RPC 节点 URL  | cast 所有网络操作       |
+| `--private-key`    | 私钥          | cast send, forge script |
+| `--broadcast`      | 实际广播交易  | forge script            |
+| `-vvv`             | 详细输出      | forge test              |
+| `--gas-limit`      | Gas 限制      | cast send               |
+| `--gas-price`      | Gas 价格      | cast send               |
+| `--value`          | 发送 ETH 数量 | cast send               |
+| `--from`           | 发送者地址    | cast 操作               |
+| `--match-test`     | 匹配测试名称  | forge test              |
+| `--match-contract` | 匹配合约名称  | forge test              |
 
 ### 记忆口诀
 
@@ -129,112 +115,110 @@ VRF和KEEPER是两个不同的服务，VRF使用subID和vrfcoordinator
 - **Call = 查询** (免费、无私钥)
 - **Send = 交易** (花钱、需私钥)
 
-###  Anvil - 本地以太坊节点
+### Anvil - 本地以太坊节点
 
-| 指令                        | 功能描述         | 示例                                                 |
-| --------------------------- | ---------------- | ---------------------------------------------------- |
-| `anvil`                     | 启动本地测试网络 | `anvil`                                              |
-| `anvil --port`              | 指定端口         | `anvil --port 8546`                                  |
-| `anvil --accounts`          | 设置账户数量     | `anvil --accounts 20`                                |
-| `anvil --balance`           | 设置初始余额     | `anvil --balance 1000`                               |
-| `anvil --fork-url`          | 分叉主网         | `anvil --fork-url $MAINNET_RPC`                      |
-| `anvil --fork-block-number` | 分叉特定区块     | `anvil --fork-url $RPC --fork-block-number 18000000` |
-| `anvil --chain-id`          | 设置链ID         | `anvil --chain-id 31337`                             |
-| `anvil --gas-limit`         | 设置区块gas限制  | `anvil --gas-limit 30000000`                         |
-| `anvil --gas-price`         | 设置gas价格      | `anvil --gas-price 1000000000`                       |
-| `anvil --block-time`        | 设置出块时间     | `anvil --block-time 12`                              |
+| 指令                        | 功能描述          | 示例                                                 |
+| --------------------------- | ----------------- | ---------------------------------------------------- |
+| `anvil`                     | 启动本地测试网络  | `anvil`                                              |
+| `anvil --port`              | 指定端口          | `anvil --port 8546`                                  |
+| `anvil --accounts`          | 设置账户数量      | `anvil --accounts 20`                                |
+| `anvil --balance`           | 设置初始余额      | `anvil --balance 1000`                               |
+| `anvil --fork-url`          | 分叉主网          | `anvil --fork-url $MAINNET_RPC`                      |
+| `anvil --fork-block-number` | 分叉特定区块      | `anvil --fork-url $RPC --fork-block-number 18000000` |
+| `anvil --chain-id`          | 设置链 ID         | `anvil --chain-id 31337`                             |
+| `anvil --gas-limit`         | 设置区块 gas 限制 | `anvil --gas-limit 30000000`                         |
+| `anvil --gas-price`         | 设置 gas 价格     | `anvil --gas-price 1000000000`                       |
+| `anvil --block-time`        | 设置出块时间      | `anvil --block-time 12`                              |
 
-###  Chisel - 交互式Solidity REPL
+### Chisel - 交互式 Solidity REPL
 
-| 指令      | 功能描述       | 示例                            |
-| --------- | -------------- | ------------------------------- |
-| `chisel`  | 启动交互式环境 | `chisel`                        |
-| `!help`   | 显示帮助       | 在chisel中输入 `!help`          |
-| `!quit`   | 退出chisel     | 在chisel中输入 `!quit`          |
-| `!clear`  | 清空会话       | 在chisel中输入 `!clear`         |
-| `!source` | 显示当前源码   | 在chisel中输入 `!source`        |
-| `!save`   | 保存会话       | 在chisel中输入 `!save filename` |
-| `!load`   | 加载会话       | 在chisel中输入 `!load filename` |
+| 指令      | 功能描述       | 示例                              |
+| --------- | -------------- | --------------------------------- |
+| `chisel`  | 启动交互式环境 | `chisel`                          |
+| `!help`   | 显示帮助       | 在 chisel 中输入 `!help`          |
+| `!quit`   | 退出 chisel    | 在 chisel 中输入 `!quit`          |
+| `!clear`  | 清空会话       | 在 chisel 中输入 `!clear`         |
+| `!source` | 显示当前源码   | 在 chisel 中输入 `!source`        |
+| `!save`   | 保存会话       | 在 chisel 中输入 `!save filename` |
+| `!load`   | 加载会话       | 在 chisel 中输入 `!load filename` |
 
-###  完整工具生态系统
+### 完整工具生态系统
 
 #### 核心工具对比表
 
-| 工具       | 主要用途     | 典型使用场景                   |
-| ---------- | ------------ | ------------------------------ |
-| **forge**  | 智能合约开发 | 编译、测试、部署、脚本         |
-| **cast**   | 区块链交互   | 调用合约、查询数据、转换格式   |
-| **anvil**  | 本地测试网络 | 本地开发、测试、调试           |
-| **chisel** | 交互式编程   | 快速测试代码片段、学习Solidity |
+| 工具       | 主要用途     | 典型使用场景                    |
+| ---------- | ------------ | ------------------------------- |
+| **forge**  | 智能合约开发 | 编译、测试、部署、脚本          |
+| **cast**   | 区块链交互   | 调用合约、查询数据、转换格式    |
+| **anvil**  | 本地测试网络 | 本地开发、测试、调试            |
+| **chisel** | 交互式编程   | 快速测试代码片段、学习 Solidity |
 
 ## Foundry vm cheatcode
 
 https://getfoundry.sh/reference/cheatcodes/overview
 
-### 常见的vm cheatcodes分类
+### 常见的 vm cheatcodes 分类
 
 #### 1. 身份伪装类 (Identity Manipulation)
 
-- **vm.prank(address)**: 设置下一个调用的msg.sender，主要用于**test环境**模拟不同用户的调用 
-- **vm.startPrank(address) / vm.stopPrank()**: 允许模拟同一地址的多个连续交易，避免重复调用vm.prank，主要用于**test环境** 
-- **vm.deal(address, uint256)**: 为指定地址设置ETH余额，用于**test环境**准备测试数据 
+- **vm.prank(address)**: 设置下一个调用的 msg.sender，主要用于**test 环境**模拟不同用户的调用
+- **vm.startPrank(address) / vm.stopPrank()**: 允许模拟同一地址的多个连续交易，避免重复调用 vm.prank，主要用于**test 环境**
+- **vm.deal(address, uint256)**: 为指定地址设置 ETH 余额，用于**test 环境**准备测试数据
 
 #### 2. 广播和部署类 (Broadcasting & Deployment)
 
-- **vm.broadcast()**: 广播下一个交易到网络，主要用于**script环境**进行实际部署 
-- **vm.startBroadcast() / vm.stopBroadcast()**: 开始和停止广播模式，用于**script环境**批量部署合约  
-- **vm.broadcast(address)** / **vm.startBroadcast(address)**: 指定特定地址进行广播，用于**script环境**多签名部署 
+- **vm.broadcast()**: 广播下一个交易到网络，主要用于**script 环境**进行实际部署
+- **vm.startBroadcast() / vm.stopBroadcast()**: 开始和停止广播模式，用于**script 环境**批量部署合约
+- **vm.broadcast(address)** / **vm.startBroadcast(address)**: 指定特定地址进行广播，用于**script 环境**多签名部署
 
 #### 3. 时间和区块操作类 (Time & Block Manipulation)
 
-- **vm.warp(uint256)**: 修改block.timestamp到指定时间，用于**test环境**测试时间相关逻辑 
-- **vm.roll(uint256)**: 修改block.number到指定区块号，用于**test环境**测试区块相关逻辑 
+- **vm.warp(uint256)**: 修改 block.timestamp 到指定时间，用于**test 环境**测试时间相关逻辑
+- **vm.roll(uint256)**: 修改 block.number 到指定区块号，用于**test 环境**测试区块相关逻辑
 
 #### 4. 预期验证类 (Expectation Verification)
 
-- **vm.expectRevert()**: 验证下一个调用会回滚，主要用于**test环境**测试错误处理 
-- **vm.expectEmit()**: 验证下一个调用会发出特定事件，用于**test环境**验证事件发出 
+- **vm.expectRevert()**: 验证下一个调用会回滚，主要用于**test 环境**测试错误处理
+- **vm.expectEmit()**: 验证下一个调用会发出特定事件，用于**test 环境**验证事件发出
 
 #### 5. 模糊测试和条件类 (Fuzzing & Conditions)
 
-- **vm.assume(bool)**: 在模糊测试中过滤输入，当条件为false时跳过当前测试用例，主要用于**test环境**的property-based testing 
-- **vm.skip(bool)**: 跳过当前测试，用于**test环境**条件性测试执行 
+- **vm.assume(bool)**: 在模糊测试中过滤输入，当条件为 false 时跳过当前测试用例，主要用于**test 环境**的 property-based testing
+- **vm.skip(bool)**: 跳过当前测试，用于**test 环境**条件性测试执行
 
 #### 6. 模拟和快照类 (Mocking & Snapshots)
 
-- **vm.mockCall()**: 模拟外部合约调用的返回值，用于**test环境**隔离测试 
-- **vm.snapshot()**: 保存当前区块链状态，返回标识符，用于**test环境**状态管理 
-- **vm.revertTo(uint256)**: 恢复到指定快照状态，用于**test环境**状态回滚 
+- **vm.mockCall()**: 模拟外部合约调用的返回值，用于**test 环境**隔离测试
+- **vm.snapshot()**: 保存当前区块链状态，返回标识符，用于**test 环境**状态管理
+- **vm.revertTo(uint256)**: 恢复到指定快照状态，用于**test 环境**状态回滚
 
 #### 7. 分叉和网络类 (Fork & Network)
 
-- **vm.createFork(string)**: 创建网络分叉，用于**test环境**和**script环境**测试真实网络状态 
-- **vm.selectFork(uint256)**: 选择特定分叉进行操作，用于**test环境**多分叉测试 
-- **vm.activeFork()**: 获取当前活跃分叉ID，用于**test环境**分叉管理 
+- **vm.createFork(string)**: 创建网络分叉，用于**test 环境**和**script 环境**测试真实网络状态
+- **vm.selectFork(uint256)**: 选择特定分叉进行操作，用于**test 环境**多分叉测试
+- **vm.activeFork()**: 获取当前活跃分叉 ID，用于**test 环境**分叉管理
 
 ### 使用环境详细分布
 
-#### Test环境 (test/)
+#### Test 环境 (test/)
 
 - 身份伪装类：模拟不同用户行为
 - 预期验证类：验证合约行为正确性
-- 模糊测试类：property-based testing和输入过滤
+- 模糊测试类：property-based testing 和输入过滤
 - 时间操作类：测试时间敏感逻辑
-- 模拟快照类：状态管理和隔离测试 
+- 模拟快照类：状态管理和隔离测试
 
-#### Script环境 (script/)
+#### Script 环境 (script/)
 
 - 广播类：实际部署合约到网络
 - 分叉类：在分叉环境中测试部署脚本
-- 部分身份操作：多签名部署场景  
+- 部分身份操作：多签名部署场景
 
-#### Src环境 (src/)
+#### Src 环境 (src/)
 
-在**src环境**（实际合约代码）中，通常**不使用**任何vm cheatcodes，因为这些是开发和测试专用功能 
+在**src 环境**（实际合约代码）中，通常**不使用**任何 vm cheatcodes，因为这些是开发和测试专用功能
 
-广播相关的cheatcodes是Foundry独有的强大功能，使得可以直接在Solidity脚本中进行合约部署，而不需要额外的JavaScript或Python脚本  。
-
-
+广播相关的 cheatcodes 是 Foundry 独有的强大功能，使得可以直接在 Solidity 脚本中进行合约部署，而不需要额外的 JavaScript 或 Python 脚本 。
 
 ## `forge-std/Test.sol` ，常用的测试函数。
 
@@ -342,13 +326,13 @@ vm.assume(bool condition)                     // 模糊测试中的假设条件
 
 ## event&logs&emit
 
-![image-20250807153319368](SOLIDITY FUCK NOTE.assets/image-20250807153319368.png)![image-20250807153848151](SOLIDITY FUCK NOTE.assets/image-20250807153848151.png)
+![image-20250807153319368](SOLIDITY-FUCK-NOTE.assets/image-20250807153319368.png)![image-20250807153848151](SOLIDITY-FUCK-NOTE.assets/image-20250807153848151.png)
 
-![image-20250807153906444](SOLIDITY FUCK NOTE.assets/image-20250807153906444.png)
+![image-20250807153906444](SOLIDITY-FUCK-NOTE.assets/image-20250807153906444.png)
 
-![image-20250807153930110](SOLIDITY FUCK NOTE.assets/image-20250807153930110.png)
+![image-20250807153930110](SOLIDITY-FUCK-NOTE.assets/image-20250807153930110.png)
 
-![image-20250807153947466](SOLIDITY FUCK NOTE.assets/image-20250807153947466.png)
+![image-20250807153947466](SOLIDITY-FUCK-NOTE.assets/image-20250807153947466.png)
 
 ### 📊 **不同类型节点的存储策略**
 
@@ -358,7 +342,7 @@ vm.assume(bool condition)                     // 模糊测试中的假设条件
 复制# 全节点存储内容
 Full Node Storage:
 ├── 🏠 所有区块头 (Block Headers) - 永久
-├── 📝 所有交易 (Transactions) - 永久  
+├── 📝 所有交易 (Transactions) - 永久
 ├── 🧾 所有交易收据 (Receipts) - 永久 ✅
 ├── 🌳 完整状态树 (State Trie) - 当前状态
 └── 📚 历史状态 (可选，通常不保存)
@@ -369,7 +353,7 @@ Full Node Storage:
 #### **2. 轻节点 (Light Node)**
 
 ```
-复制# 轻节点存储内容  
+复制# 轻节点存储内容
 Light Node Storage:
 ├── 🏠 所有区块头 (Block Headers) - 永久
 ├── 📝 部分交易 (按需下载) - 临时
@@ -436,47 +420,41 @@ Pruned Node Storage:
 
 虽然理论上是"永久存储"，但实际的**可访问性取决于网络中节点的存储策略**！🌐✨
 
+测试中的 emit 关键字和 scr 合约中的关键字含义不一样，src 中的 emit 是真的发送。而测试中的不是发送，而是期望接下来会发送这样的 log。
 
+![image-20250710020035912](SOLIDITY-FUCK-NOTE.assets/image-20250710020035912.png)
 
-测试中的emit关键字和scr合约中的关键字含义不一样，src中的emit是真的发送。而测试中的不是发送，而是期望接下来会发送这样的log。
-
-![image-20250710020035912](SOLIDITY FUCK NOTE.assets/image-20250710020035912.png)
-
-![image-20250710020044909](SOLIDITY FUCK NOTE.assets/image-20250710020044909.png)
+![image-20250710020044909](SOLIDITY-FUCK-NOTE.assets/image-20250710020044909.png)
 
 ## vm.deal&vm.stratBroadcast
 
-![image-20250710020527536](SOLIDITY FUCK NOTE.assets/image-20250710020527536.png)
+![image-20250710020527536](SOLIDITY-FUCK-NOTE.assets/image-20250710020527536.png)
 
 ## etherscan verify
 
-![image-20250717174950755](SOLIDITY FUCK NOTE.assets/image-20250717174950755.png)
+![image-20250717174950755](SOLIDITY-FUCK-NOTE.assets/image-20250717174950755.png)
 
-![image-20250717193057044](SOLIDITY FUCK NOTE.assets/image-20250717193057044.png)
-
-
+![image-20250717193057044](SOLIDITY-FUCK-NOTE.assets/image-20250717193057044.png)
 
 ## contract/interface/abstrct contract/library/abstrct function
 
+![image-20250718230357512](SOLIDITY-FUCK-NOTE.assets/image-20250718230357512.png)
 
+![image-20250718230651402](SOLIDITY-FUCK-NOTE.assets/image-20250718230651402.png)
 
-![image-20250718230357512](SOLIDITY FUCK NOTE.assets/image-20250718230357512.png)
+![image-20250718230734752](SOLIDITY-FUCK-NOTE.assets/image-20250718230734752.png)
 
-![image-20250718230651402](SOLIDITY FUCK NOTE.assets/image-20250718230651402.png)
+![image-20250718230930908](SOLIDITY-FUCK-NOTE.assets/image-20250718230930908.png)
 
-![image-20250718230734752](SOLIDITY FUCK NOTE.assets/image-20250718230734752.png)
+![image-20250718231041984](SOLIDITY-FUCK-NOTE.assets/image-20250718231041984.png)
 
-![image-20250718230930908](SOLIDITY FUCK NOTE.assets/image-20250718230930908.png)
+## C3 线性化合约继承以及重写（Override）函数调用顺序
 
-![image-20250718231041984](SOLIDITY FUCK NOTE.assets/image-20250718231041984.png)
+![image-20250729162727277](SOLIDITY-FUCK-NOTE.assets/image-20250729162727277.png)
 
-## C3线性化合约继承以及重写（Override）函数调用顺序
+![image-20250729162808885](SOLIDITY-FUCK-NOTE.assets/image-20250729162808885.png)
 
-![image-20250729162727277](SOLIDITY FUCK NOTE.assets/image-20250729162727277.png)
-
-![image-20250729162808885](SOLIDITY FUCK NOTE.assets/image-20250729162808885.png)
-
-![image-20250729163041519](SOLIDITY FUCK NOTE.assets/image-20250729163041519.png)
+![image-20250729163041519](SOLIDITY-FUCK-NOTE.assets/image-20250729163041519.png)
 
 # NFT
 
@@ -502,22 +480,22 @@ ERC721s, by contrast, each have a unique tokenId, these tokenIds are mapped to a
 
 **Fungibility**
 
-NFTs are *non-fungible*. This means each token is unique and cannot be interchanged with another. ERC20s, on the other hand, are *fungible*. Any LINK token is identical in property and value to any other LINK token.
+NFTs are _non-fungible_. This means each token is unique and cannot be interchanged with another. ERC20s, on the other hand, are _fungible_. Any LINK token is identical in property and value to any other LINK token.
 
-***What makes an NFT unique?\***
+**\*What makes an NFT unique?\***
 
 The uniqueness of an NFT token is demonstrated by it's unique tokenId as well as it's metadata/tokenUri. This is a property of an NFT which details the attributes of that token. You can imagine a character in a game, the tokenUri would be their stats page and all the details that make them an individual.
 
-Now, when we talk about NFT representing *Art* that comes with some implications in the blockchain space that can be pretty impactful. In Ethereum, there's a little thing called **gas**. Gas costs on ethereum make the storage of large amounts of data (like images), on-chain, prohibitively expensive in most cases.
+Now, when we talk about NFT representing _Art_ that comes with some implications in the blockchain space that can be pretty impactful. In Ethereum, there's a little thing called **gas**. Gas costs on ethereum make the storage of large amounts of data (like images), on-chain, prohibitively expensive in most cases.
 
 The solution to this was the inclusion of the tokenUri within the ERC721 Standard. This serves as a property of a token which details what the asset looks like as well as any attributes associated with it. A basic tokenUri looks something like:
 
 ```json
 {
-    "name": "Name",
-    "description": "Description",
-    "image": "ImageURI",
-    "attributes": []
+  "name": "Name",
+  "description": "Description",
+  "image": "ImageURI",
+  "attributes": []
 }
 ```
 
@@ -525,7 +503,7 @@ Even this can serve to be pretty expensive, so there's a constant discuss about 
 
 Often a protocol will use a service like [**IPFS**](https://ipfs.tech/) to hedge their bets a little bit in a more decentralized method of storage, but it too comes with its own pros and cons.
 
-To take this consideration even further, oftentimes marketplaces won't have a means to recognize on-chain metadata since they're *so* used to looking for a tokenUri.
+To take this consideration even further, oftentimes marketplaces won't have a means to recognize on-chain metadata since they're _so_ used to looking for a tokenUri.
 
 In General:
 
@@ -543,52 +521,50 @@ TokenURI stands for Token Uniform Resource Identifier. At its core it serves as 
 
 ```json
 {
-    "title": "Asset Metadata",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "description": "Identifies the asset to which this NFT represents"
-        },
-        "description": {
-            "type": "string",
-            "description": "Describes the asset to which this NFT represents"
-        },
-        "image": {
-            "type": "string",
-            "description": "A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents. Consider making any images at a width between 320 and 1080 pixels and aspect ratio between 1.91:1 and 4:5 inclusive."
-        }
+  "title": "Asset Metadata",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Identifies the asset to which this NFT represents"
+    },
+    "description": {
+      "type": "string",
+      "description": "Describes the asset to which this NFT represents"
+    },
+    "image": {
+      "type": "string",
+      "description": "A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents. Consider making any images at a width between 320 and 1080 pixels and aspect ratio between 1.91:1 and 4:5 inclusive."
     }
+  }
 }
 ```
 
-![image-20250828164901305](SOLIDITY FUCK NOTE.assets/image-20250828164901305.png)
+![image-20250828164901305](SOLIDITY-FUCK-NOTE.assets/image-20250828164901305.png)
 
-![ipfs1](SOLIDITY FUCK NOTE.assets/ipfs1.png)
+![ipfs1](SOLIDITY-FUCK-NOTE.assets/ipfs1.png)
 
 ## SVG onchain NFT
 
-![image-20250724144358753](SOLIDITY FUCK NOTE.assets/image-20250724144358753.png)
+![image-20250724144358753](SOLIDITY-FUCK-NOTE.assets/image-20250724144358753.png)
 
 ![image-20250813152121350](SOLIDITY.assets/image-20250813152121350.png)
 
 ## Transaction/Contract Deployment data fields
 
-![image-20250726235001499](SOLIDITY FUCK NOTE.assets/image-20250726235001499.png)
+![image-20250726235001499](SOLIDITY-FUCK-NOTE.assets/image-20250726235001499.png)
 
-![image-20250726234940825](SOLIDITY FUCK NOTE.assets/image-20250726234940825.png)
+![image-20250726234940825](SOLIDITY-FUCK-NOTE.assets/image-20250726234940825.png)
 
-##  abi.encode & address(someContract).call{''}('')
+## abi.encode & address(someContract).call{''}('')
 
-![image-20250726235622891](SOLIDITY FUCK NOTE.assets/image-20250726235622891.png)
+![image-20250726235622891](SOLIDITY-FUCK-NOTE.assets/image-20250726235622891.png)
 
-![image-20250809013703710](SOLIDITY FUCK NOTE.assets/image-20250809013703710.png)
+![image-20250809013703710](SOLIDITY-FUCK-NOTE.assets/image-20250809013703710.png)
 
-![image-20250809013750462](SOLIDITY FUCK NOTE.assets/image-20250809013750462.png)
+![image-20250809013750462](SOLIDITY-FUCK-NOTE.assets/image-20250809013750462.png)
 
-![image-20250727151324207](SOLIDITY FUCK NOTE.assets/image-20250727151324207.png)
-
-
+![image-20250727151324207](SOLIDITY-FUCK-NOTE.assets/image-20250727151324207.png)
 
 ```solidity
 function transfer(address someAddress, uint256 amount) public {
@@ -626,45 +602,43 @@ function callTransferFunctionDirectlyTwo(address someAddress, uint256 amount) pu
 }
 ```
 
-记住通过abi encode来call函数的方式就行了。**abi.encodeWithSignature或者abi.encodeWithSelector**。含参数的error 也要通过这种方式来表达。不过这里貌似直接用了 .selector, 没有手动取哈希。
+记住通过 abi encode 来 call 函数的方式就行了。**abi.encodeWithSignature 或者 abi.encodeWithSelector**。含参数的 error 也要通过这种方式来表达。不过这里貌似直接用了 .selector, 没有手动取哈希。
 
-![image-20250809014025951](SOLIDITY FUCK NOTE.assets/image-20250809014025951.png)
+![image-20250809014025951](SOLIDITY-FUCK-NOTE.assets/image-20250809014025951.png)
 
-补充：![image-20250820231442384](SOLIDITY FUCK NOTE.assets/image-20250820231442384.png)
+补充：![image-20250820231442384](SOLIDITY-FUCK-NOTE.assets/image-20250820231442384.png)
 
-vm.expercPartialRevert貌似不需要传入自定义error的参数
+vm.expercPartialRevert 貌似不需要传入自定义 error 的参数
 
-![image-20250820231647095](SOLIDITY FUCK NOTE.assets/image-20250820231647095.png)
+![image-20250820231647095](SOLIDITY-FUCK-NOTE.assets/image-20250820231647095.png)
 
-此外，函数的selector需要this.函数名.selector的方式，error只需要error名.selector.
+此外，函数的 selector 需要 this.函数名.selector 的方式，error 只需要 error 名.selector.
 
-![image-20250809014705902](SOLIDITY FUCK NOTE.assets/image-20250809014705902.png)
+![image-20250809014705902](SOLIDITY-FUCK-NOTE.assets/image-20250809014705902.png)
 
-## 函数类型&函数名&Error类型
+## 函数类型&函数名&Error 类型
 
-![image-20250809015035619](SOLIDITY FUCK NOTE.assets/image-20250809015035619.png)
+![image-20250809015035619](SOLIDITY-FUCK-NOTE.assets/image-20250809015035619.png)
 
-![image-20250809015051675](SOLIDITY FUCK NOTE.assets/image-20250809015051675.png)
+![image-20250809015051675](SOLIDITY-FUCK-NOTE.assets/image-20250809015051675.png)
 
-![image-20250809015226740](SOLIDITY FUCK NOTE.assets/image-20250809015226740.png)
+![image-20250809015226740](SOLIDITY-FUCK-NOTE.assets/image-20250809015226740.png)
 
-![image-20250809020758357](SOLIDITY FUCK NOTE.assets/image-20250809020758357.png)
+![image-20250809020758357](SOLIDITY-FUCK-NOTE.assets/image-20250809020758357.png)
 
-![image-20250809015647027](SOLIDITY FUCK NOTE.assets/image-20250809015647027.png)
+![image-20250809015647027](SOLIDITY-FUCK-NOTE.assets/image-20250809015647027.png)
 
-![image-20250809020414253](SOLIDITY FUCK NOTE.assets/image-20250809020414253.png)
+![image-20250809020414253](SOLIDITY-FUCK-NOTE.assets/image-20250809020414253.png)
 
-![image-20250809023547662](SOLIDITY FUCK NOTE.assets/image-20250809023547662.png)
+![image-20250809023547662](SOLIDITY-FUCK-NOTE.assets/image-20250809023547662.png)
 
-自定义error本身就是一个error类型，而函数名仅仅只是一个标识符，理论上要整个函数名+函数体才能当成一个函数类型。
+自定义 error 本身就是一个 error 类型，而函数名仅仅只是一个标识符，理论上要整个函数名+函数体才能当成一个函数类型。
 
-![image-20250809023958771](SOLIDITY FUCK NOTE.assets/image-20250809023958771.png)
+![image-20250809023958771](SOLIDITY-FUCK-NOTE.assets/image-20250809023958771.png)
 
-![image-20250809020104175](SOLIDITY FUCK NOTE.assets/image-20250809020104175.png)
+![image-20250809020104175](SOLIDITY-FUCK-NOTE.assets/image-20250809020104175.png)
 
-
-
-![image-20250727161319829](SOLIDITY FUCK NOTE.assets/image-20250727161319829.png)
+![image-20250727161319829](SOLIDITY-FUCK-NOTE.assets/image-20250727161319829.png)
 
 ## 🔄 Solidity 函数重载 (Function Overloading) 详解
 
@@ -674,7 +648,7 @@ vm.expercPartialRevert貌似不需要传入自定义error的参数
 
 ### 📝 **函数签名分析**
 
-#### **函数1：**
+#### **函数 1：**
 
 ```
 复制
@@ -682,9 +656,9 @@ function _checkRole(bytes32 role) internal view virtual
 ```
 
 - **函数签名**: `_checkRole(bytes32)`
-- **参数**: 1个参数 (bytes32 role)
+- **参数**: 1 个参数 (bytes32 role)
 
-#### **函数2：**
+#### **函数 2：**
 
 ```
 复制
@@ -692,11 +666,11 @@ function _checkRole(bytes32 role, address account) internal view virtual
 ```
 
 - **函数签名**: `_checkRole(bytes32,address)`
-- **参数**: 2个参数 (bytes32 role, address account)
+- **参数**: 2 个参数 (bytes32 role, address account)
 
 ### 🔍 **函数签名构成要素**
 
-Solidity中函数签名由以下部分组成：
+Solidity 中函数签名由以下部分组成：
 
 ```
 复制
@@ -720,19 +694,19 @@ Solidity中函数签名由以下部分组成：
     // 1. 不同参数数量
     function process(uint256 value) public {}
     function process(uint256 value, string memory data) public {}
-    
+
     // 2. 不同参数类型
     function convert(uint256 number) public {}
     function convert(string memory text) public {}
-    
+
     // 3. 不同参数类型顺序
     function execute(address user, uint256 amount) public {}
     function execute(uint256 amount, address user) public {}
-    
+
     // 4. 数组 vs 非数组
     function getData(uint256 id) public {}
     function getData(uint256[] memory ids) public {}
-    
+
     // 5. 不同长度的固定数组
     function hash(bytes32[1] memory data) public {}
     function hash(bytes32[2] memory data) public {}
@@ -746,15 +720,15 @@ Solidity中函数签名由以下部分组成：
     // ❌ 错误：只有参数名不同
     function transfer(address to, uint256 amount) public {}
     function transfer(address recipient, uint256 value) public {} // 编译错误
-    
+
     // ❌ 错误：只有返回值不同
     function getValue() public view returns (uint256) {}
     function getValue() public view returns (string memory) {} // 编译错误
-    
+
     // ❌ 错误：只有可见性不同
     function calculate(uint256 x) public {}
     function calculate(uint256 x) internal {} // 编译错误
-    
+
     // ❌ 错误：只有修饰符不同
     function process(uint256 data) public view {}
     function process(uint256 data) public pure {} // 编译错误
@@ -783,11 +757,11 @@ Solidity中函数签名由以下部分组成：
     function process(uint256 value) public pure returns (string memory) {
         return "Processing number";
     }
-    
+
     function process(string memory text) public pure returns (string memory) {
         return "Processing text";
     }
-    
+
     function process(uint256 value, bool flag) public pure returns (string memory) {
         return "Processing number with flag";
     }
@@ -802,20 +776,20 @@ Solidity中函数签名由以下部分组成：
     function calculate(uint256 a) public pure returns (uint256) {
         return a * 2;
     }
-    
+
     function calculate(uint256 a, uint256 b) public pure returns (uint256) {
         return a + b;
     }
-    
+
     // ✅ 有效重载：参数类型不同
     function convert(uint256 number) public pure returns (string memory) {
         return "number";
     }
-    
+
     function convert(bytes32 hash) public pure returns (string memory) {
         return "hash";
     }
-    
+
     // ❌ 无效重载：只有返回值不同
     // function getValue() public pure returns (uint256) { return 1; }
     // function getValue() public pure returns (string memory) { return "1"; }
@@ -832,7 +806,7 @@ contract Parent {
     function greet() public virtual returns (string memory) {
         return "Hello from Parent";
     }
-    
+
     function calculate(uint256 x) public virtual returns (uint256) {
         return x * 2;
     }
@@ -844,7 +818,7 @@ contract Child is Parent {
     function greet() public override returns (string memory) {
         return "Hello from Child";
     }
-    
+
     function calculate(uint256 x) public override returns (uint256) {
         return x * 3; // 改变了计算逻辑
     }
@@ -859,7 +833,7 @@ contract Child is Parent {
     function baseFunction() public virtual returns (string memory) {
         return "base";
     }
-    
+
     // 抽象函数（没有实现）
     function abstractFunction() public virtual returns (string memory);
 }
@@ -869,7 +843,7 @@ contract Implementation is OverrideRules {
     function baseFunction() public override returns (string memory) {
         return "overridden";
     }
-    
+
     // 实现抽象函数
     function abstractFunction() public override returns (string memory) {
         return "implemented";
@@ -889,9 +863,9 @@ contract Implementation is OverrideRules {
 
 #### **函数签名 (Function Signature)**
 
-- **定义**: 函数的**唯一标识符**，用于EVM内部路由
+- **定义**: 函数的**唯一标识符**，用于 EVM 内部路由
 - **格式**: `函数名(参数类型列表)`
-- **用途**: 生成函数选择器 (4字节)
+- **用途**: 生成函数选择器 (4 字节)
 
 #### **源码可见性**
 
@@ -900,12 +874,12 @@ contract Implementation is OverrideRules {
 
 ### 📊 **三者关系对比表**
 
-| 函数类型 | ABI中存在 | 有函数签名 | 源码中可见 | 外部可调用 | Etherscan显示 |
-| -------- | --------- | ---------- | ---------- | ---------- | ------------- |
-| external | ✅ 是      | ✅ 是       | ✅ 是       | ✅ 是       | 🔵 Read/Write  |
-| public   | ✅ 是      | ✅ 是       | ✅ 是       | ✅ 是       | 🔵 Read/Write  |
-| internal | ❌ 否      | ✅ 是       | ✅ 是       | ❌ 否       | 👁️ 仅源码      |
-| private  | ❌ 否      | ✅ 是       | ✅ 是       | ❌ 否       | 👁️ 仅源码      |
+| 函数类型 | ABI 中存在 | 有函数签名 | 源码中可见 | 外部可调用 | Etherscan 显示 |
+| -------- | ---------- | ---------- | ---------- | ---------- | -------------- |
+| external | ✅ 是      | ✅ 是      | ✅ 是      | ✅ 是      | 🔵 Read/Write  |
+| public   | ✅ 是      | ✅ 是      | ✅ 是      | ✅ 是      | 🔵 Read/Write  |
+| internal | ❌ 否      | ✅ 是      | ✅ 是      | ❌ 否      | 👁️ 仅源码      |
+| private  | ❌ 否      | ✅ 是      | ✅ 是      | ❌ 否      | 👁️ 仅源码      |
 
 ### 🔬 **详细分析**
 
@@ -916,19 +890,19 @@ contract Implementation is OverrideRules {
 ```
 复制contract Example {
     uint256 private _value;
-    
+
     function setValue(uint256 newValue) external {  // ✅ 会出现在ABI
         _value = newValue;
     }
-    
+
     function getValue() public view returns (uint256) {  // ✅ 会出现在ABI
         return _value;
     }
-    
+
     function _internalHelper() internal pure returns (string memory) {  // ❌ 不会出现在ABI
         return "internal";
     }
-    
+
     function _privateHelper() private pure returns (string memory) {  // ❌ 不会出现在ABI
         return "private";
     }
@@ -948,7 +922,7 @@ contract Implementation is OverrideRules {
   },
   {
     "inputs": [],
-    "name": "getValue", 
+    "name": "getValue",
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
@@ -959,7 +933,7 @@ contract Implementation is OverrideRules {
 
 #### **2. Etherscan 上的不同展示**
 
-##### **🔵 Read/Write Contract 标签页（ABI驱动）：**
+##### **🔵 Read/Write Contract 标签页（ABI 驱动）：**
 
 ```
 复制只显示 external 和 public 函数
@@ -975,7 +949,7 @@ contract Implementation is OverrideRules {
 复制// 完整源码都能看到
 contract Example {
     uint256 private _value;           // ✅ 可见
-    
+
     function setValue(uint256 newValue) external { ... }     // ✅ 可见
     function getValue() public view returns (uint256) { ... } // ✅ 可见
     function _internalHelper() internal pure { ... }         // ✅ 可见
@@ -994,33 +968,33 @@ pragma solidity ^0.8.0;
 contract VisibilityDemo {
     uint256 private _counter;
     mapping(address => uint256) internal _balances;
-    
+
     // ✅ ABI中存在 - 外部可调用
     function increment() external {
         _counter++;
         _updateBalance(msg.sender);
     }
-    
-    // ✅ ABI中存在 - 外部可调用  
+
+    // ✅ ABI中存在 - 外部可调用
     function getCounter() public view returns (uint256) {
         return _counter;
     }
-    
+
     // ✅ ABI中存在 - 外部可调用
     function getBalance(address user) public view returns (uint256) {
         return _getBalanceInternal(user);
     }
-    
+
     // ❌ ABI中不存在 - 外部不可调用，但源码可见
     function _updateBalance(address user) internal {
         _balances[user] = _calculateNewBalance(user);
     }
-    
+
     // ❌ ABI中不存在 - 外部不可调用，但源码可见
     function _getBalanceInternal(address user) internal view returns (uint256) {
         return _balances[user];
     }
-    
+
     // ❌ ABI中不存在 - 外部不可调用，但源码可见
     function _calculateNewBalance(address user) private view returns (uint256) {
         return _balances[user] + _counter;
@@ -1035,12 +1009,12 @@ contract VisibilityDemo {
 const selectors = {
     // ✅ ABI中的选择器（外部可用）
     "increment()": "0xd09de08a",
-    "getCounter()": "0x8ada066e", 
+    "getCounter()": "0x8ada066e",
     "getBalance(address)": "0xf8b2cb4f",
-    
+
     // ❌ ABI中没有的选择器（仅内部使用）
     "_updateBalance(address)": "0x...", // 存在但不暴露
-    "_getBalanceInternal(address)": "0x...", // 存在但不暴露  
+    "_getBalanceInternal(address)": "0x...", // 存在但不暴露
     "_calculateNewBalance(address)": "0x..." // 存在但不暴露
 };
 ```
@@ -1056,13 +1030,13 @@ const selectors = {
 #### **❌ 常见误解：**
 
 ```
-复制❌ "internal函数没有函数签名" 
+复制❌ "internal函数没有函数签名"
 ✅ 所有函数都有签名，只是internal不在ABI中
 
 ❌ "上传源码后internal函数就能调用了"
 ✅ 上传源码只是让人看到代码，不改变调用权限
 
-❌ "private函数更安全因为看不到"  
+❌ "private函数更安全因为看不到"
 ✅ 源码验证后都能看到，安全性在于调用权限而非可见性
 ```
 
@@ -1070,9 +1044,9 @@ const selectors = {
 
 | 概念         | 作用                   | 影响范围         |
 | ------------ | ---------------------- | ---------------- |
-| **ABI暴露**  | 决定外部是否能**调用** | external, public |
+| **ABI 暴露** | 决定外部是否能**调用** | external, public |
 | **源码可见** | 决定人类是否能**阅读** | 所有函数         |
-| **函数签名** | EVM内部**路由标识**    | 所有函数         |
+| **函数签名** | EVM 内部**路由标识**   | 所有函数         |
 
 **记忆要点：**
 
@@ -1085,76 +1059,72 @@ const selectors = {
 - **Read/Write 标签页**：只显示 ABI 中的函数
 - **源码标签页**：显示所有函数代码，但不能调用 internal/private
 
-这就是为什么说 "ABI暴露" 是指**对外调用接口**，而不是**代码可见性**！
-
-
-
-
+这就是为什么说 "ABI 暴露" 是指**对外调用接口**，而不是**代码可见性**！
 
 ## check each on chian transaction
 
-![image-20250727161603604](SOLIDITY FUCK NOTE.assets/image-20250727161603604.png)
+![image-20250727161603604](SOLIDITY-FUCK-NOTE.assets/image-20250727161603604.png)
 
 # StableCoin
 
-![image-20250728160552407](SOLIDITY FUCK NOTE.assets/image-20250728160552407.png)
+![image-20250728160552407](SOLIDITY-FUCK-NOTE.assets/image-20250728160552407.png)
 
-![image-20250728160609503](SOLIDITY FUCK NOTE.assets/image-20250728160609503.png)
+![image-20250728160609503](SOLIDITY-FUCK-NOTE.assets/image-20250728160609503.png)
 
-![image-20250728161025423](SOLIDITY FUCK NOTE.assets/image-20250728161025423.png)
+![image-20250728161025423](SOLIDITY-FUCK-NOTE.assets/image-20250728161025423.png)
 
-![image-20250728162401491](SOLIDITY FUCK NOTE.assets/image-20250728162401491.png)
+![image-20250728162401491](SOLIDITY-FUCK-NOTE.assets/image-20250728162401491.png)
 
-![image-20250728162408526](SOLIDITY FUCK NOTE.assets/image-20250728162408526.png)
+![image-20250728162408526](SOLIDITY-FUCK-NOTE.assets/image-20250728162408526.png)
 
-![image-20250728162436125](SOLIDITY FUCK NOTE.assets/image-20250728162436125.png)
+![image-20250728162436125](SOLIDITY-FUCK-NOTE.assets/image-20250728162436125.png)
 
-![image-20250728162538609](SOLIDITY FUCK NOTE.assets/image-20250728162538609.png)
+![image-20250728162538609](SOLIDITY-FUCK-NOTE.assets/image-20250728162538609.png)
 
-![image-20250728162546574](SOLIDITY FUCK NOTE.assets/image-20250728162546574.png)
+![image-20250728162546574](SOLIDITY-FUCK-NOTE.assets/image-20250728162546574.png)
 
-![image-20250728162622368](SOLIDITY FUCK NOTE.assets/image-20250728162622368.png)
+![image-20250728162622368](SOLIDITY-FUCK-NOTE.assets/image-20250728162622368.png)
 
-![image-20250728163448238](SOLIDITY FUCK NOTE.assets/image-20250728163448238.png)
+![image-20250728163448238](SOLIDITY-FUCK-NOTE.assets/image-20250728163448238.png)
 
-![image-20250728163459593](SOLIDITY FUCK NOTE.assets/image-20250728163459593.png)
+![image-20250728163459593](SOLIDITY-FUCK-NOTE.assets/image-20250728163459593.png)
 
-![image-20250728163935154](SOLIDITY FUCK NOTE.assets/image-20250728163935154.png)
+![image-20250728163935154](SOLIDITY-FUCK-NOTE.assets/image-20250728163935154.png)
 
-## Interface接口转换调用合约函数
+## Interface 接口转换调用合约函数
 
-![image-20250729201600329](SOLIDITY FUCK NOTE.assets/image-20250729201600329.png)
+![image-20250729201600329](SOLIDITY-FUCK-NOTE.assets/image-20250729201600329.png)
 
-![image-20250729201617771](SOLIDITY FUCK NOTE.assets/image-20250729201617771.png)
+![image-20250729201617771](SOLIDITY-FUCK-NOTE.assets/image-20250729201617771.png)
 
 ## 重入攻击
 
-![image-20250729203027773](SOLIDITY FUCK NOTE.assets/image-20250729203027773.png)
+![image-20250729203027773](SOLIDITY-FUCK-NOTE.assets/image-20250729203027773.png)
 
-![image-20250729203302504](SOLIDITY FUCK NOTE.assets/image-20250729203302504.png)
+![image-20250729203302504](SOLIDITY-FUCK-NOTE.assets/image-20250729203302504.png)
 
-![image-20250729203443751](SOLIDITY FUCK NOTE.assets/image-20250729203443751.png)
+![image-20250729203443751](SOLIDITY-FUCK-NOTE.assets/image-20250729203443751.png)
 
-![image-20250729203504861](SOLIDITY FUCK NOTE.assets/image-20250729203504861.png)
+![image-20250729203504861](SOLIDITY-FUCK-NOTE.assets/image-20250729203504861.png)
 
 ## Mapping&Array
 
-![image-20250803220236773](SOLIDITY FUCK NOTE.assets/image-20250803220236773.png)
+![image-20250803220236773](SOLIDITY-FUCK-NOTE.assets/image-20250803220236773.png)
 
-![image-20250803221138388](SOLIDITY FUCK NOTE.assets/image-20250803221138388.png)
+![image-20250803221138388](SOLIDITY-FUCK-NOTE.assets/image-20250803221138388.png)
 
-## Solidity数组初始化方式对照表
+## Solidity 数组初始化方式对照表
 
-| 初始化方式            | 语法示例                  | 数组类型 | 存储位置 | 初始状态         | 使用场景           |
-| --------------------- | ------------------------- | -------- | -------- | ---------------- | ------------------ |
-| **new关键字(空)**     | `new uint256[](0)`        | 动态数组 | memory   | 空数组(length=0) | 函数参数、临时变量 |
-| **new关键字(有长度)** | `new uint256[](5)`        | 动态数组 | memory   | 默认值填充       | 预知长度的临时数组 |
-| **直接声明**          | `uint256[] memory arr;`   | 动态数组 | memory   | 空数组(length=0) | 函数内局部变量     |
-| **数组字面量**        | `[uint256(1), 2, 3]`      | 定长数组 | memory   | 指定值           | 已知固定值的数组   |
-| **逐个赋值**          | `arr[0] = 1; arr[1] = 2;` | 任意     | 任意     | 部分赋值         | 动态填充数组       |
-| **状态变量声明**      | `uint256[] public arr;`   | 动态数组 | storage  | 空数组           | 合约状态存储       |
-| **push方法**          | `arr.push(1);`            | 动态数组 | storage  | 逐步增长         | 动态添加元素       |
-| **二维数组**          | `new uint256[][](2)`      | 动态数组 | memory   | 空的子数组       | 矩阵、嵌套数据     |
+| 初始化方式             | 语法示例                  | 数组类型 | 存储位置 | 初始状态         | 使用场景           |
+| ---------------------- | ------------------------- | -------- | -------- | ---------------- | ------------------ |
+| **new 关键字(空)**     | `new uint256[](0)`        | 动态数组 | memory   | 空数组(length=0) | 函数参数、临时变量 |
+| **new 关键字(有长度)** | `new uint256[](5)`        | 动态数组 | memory   | 默认值填充       | 预知长度的临时数组 |
+| **直接声明**           | `uint256[] memory arr;`   | 动态数组 | memory   | 空数组(length=0) | 函数内局部变量     |
+| **数组字面量**         | `[uint256(1), 2, 3]`      | 定长数组 | memory   | 指定值           | 已知固定值的数组   |
+| **逐个赋值**           | `arr[0] = 1; arr[1] = 2;` | 任意     | 任意     | 部分赋值         | 动态填充数组       |
+| **状态变量声明**       | `uint256[] public arr;`   | 动态数组 | storage  | 空数组           | 合约状态存储       |
+| **push 方法**          | `arr.push(1);`            | 动态数组 | storage  | 逐步增长         | 动态添加元素       |
+| **二维数组**           | `new uint256[][](2)`      | 动态数组 | memory   | 空的子数组       | 矩阵、嵌套数据     |
 
 ### 快速选择指南
 
@@ -1164,46 +1134,46 @@ const selectors = {
 | 固定长度临时数组 | `new T[](n)` | `uint256[] memory temp = new uint256[](5);`           |
 | 已知值的小数组   | 数组字面量   | `uint256[3] memory arr = [uint256(1), 2, 3];`         |
 | 合约状态数组     | 状态变量     | `uint256[] public numbers;`                           |
-| 动态增长数组     | push方法     | `numbers.push(newValue);`                             |
+| 动态增长数组     | push 方法    | `numbers.push(newValue);`                             |
 | 条件性创建       | new + 判断   | `arr.length > 0 ? process(arr) : skip();`             |
 
 ### 注意事项速查
 
-- ✅ **memory数组**: 创建后长度固定，不能push
-- ✅ **storage数组**: 可以push/pop动态调整
+- ✅ **memory 数组**: 创建后长度固定，不能 push
+- ✅ **storage 数组**: 可以 push/pop 动态调整
 - ❌ **空数组访问**: `arr[0]`会报错，需先检查`arr.length > 0`
 - ❌ **类型推断**: 字面量需显式指定类型 `[uint256(1), 2]`
-- 💡 **Gas优化**: 预分配长度比频繁push更省Gas
+- 💡 **Gas 优化**: 预分配长度比频繁 push 更省 Gas
 
 ## vm.startBroadcast
 
-在之前的fundme合约中得出了以下结论：
+在之前的 fundme 合约中得出了以下结论：
 
-![image-20250804150812126](SOLIDITY FUCK NOTE.assets/image-20250804150812126.png)
+![image-20250804150812126](SOLIDITY-FUCK-NOTE.assets/image-20250804150812126.png)
 
-## --broadcast关键词
+## --broadcast 关键词
 
-![image-20250809004810626](SOLIDITY FUCK NOTE.assets/image-20250809004810626.png)
+![image-20250809004810626](SOLIDITY-FUCK-NOTE.assets/image-20250809004810626.png)
 
 ## msg.sender&EOA&tx.origin
 
-那么进一步思考，例如raffle合约中（有一个performUpkeep和fulfillRandomWords函数，performUpkeep里面调用了s_vrfCoordinator.requestRandomWords。平时使用chainlink的keeper定期执行performUpkeep，此外还需要为vrfCoordinator添加订阅和消费者来获取随机数。VRF和KEEPER是两个不同的服务，VRF使用subID和vrfcoordinator）
+那么进一步思考，例如 raffle 合约中（有一个 performUpkeep 和 fulfillRandomWords 函数，performUpkeep 里面调用了 s_vrfCoordinator.requestRandomWords。平时使用 chainlink 的 keeper 定期执行 performUpkeep，此外还需要为 vrfCoordinator 添加订阅和消费者来获取随机数。VRF 和 KEEPER 是两个不同的服务，VRF 使用 subID 和 vrfcoordinator）
 
-假如公链里被部署的合约A中的某个函数function testA(假设合约A地址为Address A)，需要调用另一个已经被部署的合约B的某个函数某个函数function testB(假设合约B地址为Address B)。我作为调用者，使用个人账户Address USER 调用合约A的函数function testA，在EVM执行合约A的过程中，msg.sender是不是Address USER？因为合约A调用了合约B的函数，然后EVM执行到function testB的时候，合约B里面function testB被调用的时候msg.sender是Address USER还是Address A？此外，每一次改变区块链状态的交易都会产生gas费用，支付gas费用的账户始终是最外层的交易发起方吗？msg.sender是否等同于支付gas费用的账户？
+假如公链里被部署的合约 A 中的某个函数 function testA(假设合约 A 地址为 Address A)，需要调用另一个已经被部署的合约 B 的某个函数某个函数 function testB(假设合约 B 地址为 Address B)。我作为调用者，使用个人账户 Address USER 调用合约 A 的函数 function testA，在 EVM 执行合约 A 的过程中，msg.sender 是不是 Address USER？因为合约 A 调用了合约 B 的函数，然后 EVM 执行到 function testB 的时候，合约 B 里面 function testB 被调用的时候 msg.sender 是 Address USER 还是 Address A？此外，每一次改变区块链状态的交易都会产生 gas 费用，支付 gas 费用的账户始终是最外层的交易发起方吗？msg.sender 是否等同于支付 gas 费用的账户？
 
 ### msg.sender 的变化机制
 
-### 1. 合约A中的 msg.sender
+### 1. 合约 A 中的 msg.sender
 
-当你用个人账户 `Address USER` 调用合约A的 `testA()` 函数时：
+当你用个人账户 `Address USER` 调用合约 A 的 `testA()` 函数时：
 
-- **合约A中的 `msg.sender` = `Address USER`**
+- **合约 A 中的 `msg.sender` = `Address USER`**
 
-### 2. 合约B中的 msg.sender
+### 2. 合约 B 中的 msg.sender
 
-当合约A调用合约B的 `testB()` 函数时：
+当合约 A 调用合约 B 的 `testB()` 函数时：
 
-- **合约B中的 `msg.sender` = `Address A`** （不是 Address USER）
+- **合约 B 中的 `msg.sender` = `Address A`** （不是 Address USER）
 
 这是因为 `msg.sender` 始终指向**直接调用当前合约的地址**。
 
@@ -1214,14 +1184,14 @@ const selectors = {
 Address USER → 合约A.testA() → 合约B.testB()
 ```
 
-- 在合约A中：`msg.sender = Address USER`
-- 在合约B中：`msg.sender = Address A`
+- 在合约 A 中：`msg.sender = Address USER`
+- 在合约 B 中：`msg.sender = Address A`
 
-### Gas费用支付机制
+### Gas 费用支付机制
 
-### Gas费用支付者
+### Gas 费用支付者
 
-**Gas费用始终由最外层的交易发起方支付**，即 `Address USER`。
+**Gas 费用始终由最外层的交易发起方支付**，即 `Address USER`。
 
 无论调用链多长：
 
@@ -1230,24 +1200,24 @@ Address USER → 合约A.testA() → 合约B.testB()
 USER → 合约A → 合约B → 合约C → ...
 ```
 
-所有的gas费用都由 `Address USER` 承担。
+所有的 gas 费用都由 `Address USER` 承担。
 
-msg.sender ≠ Gas支付者
+msg.sender ≠ Gas 支付者
 
-**`msg.sender` 不等同于支付gas费用的账户**：
+**`msg.sender` 不等同于支付 gas 费用的账户**：
 
-- **Gas支付者**：始终是交易的原始发起者（tx.origin）
+- **Gas 支付者**：始终是交易的原始发起者（tx.origin）
 - **msg.sender**：是当前合约的直接调用者，在调用链中会发生变化
 
 ### 相关概念对比
 
-| 概念         | 含义                 | 在调用链中是否变化            |
-| ------------ | -------------------- | ----------------------------- |
+| 概念         | 含义                 | 在调用链中是否变化             |
+| ------------ | -------------------- | ------------------------------ |
 | `tx.origin`  | 交易的原始发起者     | ❌ 不变（始终是 Address USER） |
 | `msg.sender` | 当前合约的直接调用者 | ✅ 会变化                      |
-| Gas支付者    | 支付交易费用的账户   | ❌ 不变（始终是 Address USER） |
+| Gas 支付者   | 支付交易费用的账户   | ❌ 不变（始终是 Address USER） |
 
-### Gas费用计算
+### Gas 费用计算
 
 ```
 Gas费用支付规则：
@@ -1269,7 +1239,7 @@ contract A {
     }
 }
 
-// 合约B  
+// 合约B
 contract B {
     function testB() external {
         // 这里 msg.sender == Address A (不是 Address USER)
@@ -1280,23 +1250,21 @@ contract B {
 
 这种设计保证了合约间调用的安全性和权限控制的准确性。
 
-![image-20250804154938669](SOLIDITY FUCK NOTE.assets/image-20250804154938669.png)
+![image-20250804154938669](SOLIDITY-FUCK-NOTE.assets/image-20250804154938669.png)
 
-![image-20250804155009589](D:\学习资料\LHZ的各种学习资料\CODE NOTE\SOLIDITY.assets\image-20250804155009589.png)
+![image-20250804155009589](D:\学习资料\LHZ 的各种学习资料\CODE NOTE\SOLIDITY.assets\image-20250804155009589.png)
 
-![image-20250804155053269](SOLIDITY FUCK NOTE.assets/image-20250804155053269.png)
+![image-20250804155053269](SOLIDITY-FUCK-NOTE.assets/image-20250804155053269.png)
 
-![image-20250804155112778](SOLIDITY FUCK NOTE.assets/image-20250804155112778.png)
+![image-20250804155112778](SOLIDITY-FUCK-NOTE.assets/image-20250804155112778.png)
 
-![image-20250804155131867](SOLIDITY FUCK NOTE.assets/image-20250804155131867.png)
+![image-20250804155131867](SOLIDITY-FUCK-NOTE.assets/image-20250804155131867.png)
 
-所以其实在测试合约中，EOA一直都是外部anvil第一个默认账户地址，但是msg.sender会随着合约函数调用一层层变动。而我写的大部分合约中，payable原生币和ERC20转账相关函数都是考虑的msg.sender!
+所以其实在测试合约中，EOA 一直都是外部 anvil 第一个默认账户地址，但是 msg.sender 会随着合约函数调用一层层变动。而我写的大部分合约中，payable 原生币和 ERC20 转账相关函数都是考虑的 msg.sender!
 
 - tx.origin 是原生全局变量，不是 cheatcode。
 - 它给出整笔交易的初始 EOA，绝大多数业务逻辑不要用它做权限控制。
 - 测试里若要模拟不同 origin，用 vm.prank(msgSender, txOrigin)；日常只改 msg.sender 即可。
-
-
 
 ## 交易发起者 = tx.origin（定义上的一致性）
 
@@ -1316,7 +1284,7 @@ contract B {
 复制交易层面：
 EOA(交易发起者) → 提交交易到网络
 
-执行层面：  
+执行层面：
 合约A → 合约B → 合约C
 (在整个执行过程中，tx.origin始终是最初的交易发起者)
 ```
@@ -1353,7 +1321,7 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
         address msgSender,
         address actualSigner
     );
-    
+
     function checkOrigin() external {
         // tx.origin 始终是交易的签名者
         emit TransactionInfo(
@@ -1374,8 +1342,8 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 用户EOA → 合约
 ```
 
-- 交易发起者 = 用户EOA ✅
-- tx.origin = 用户EOA ✅
+- 交易发起者 = 用户 EOA ✅
+- tx.origin = 用户 EOA ✅
 
 #### 2. 合约间调用
 
@@ -1384,8 +1352,8 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 用户EOA → 合约A → 合约B
 ```
 
-- 交易发起者 = 用户EOA ✅
-- tx.origin = 用户EOA ✅（在合约B中也是）
+- 交易发起者 = 用户 EOA ✅
+- tx.origin = 用户 EOA ✅（在合约 B 中也是）
 
 #### 3. 账户抽象
 
@@ -1419,10 +1387,10 @@ Relayer EOA → RelayContract → Target
     ) external {
         // 验证受益用户的签名
         require(verifySignature(beneficiary, target, data, signature));
-        
+
         // tx.origin = msg.sender = 中继器（交易发起者）✅
         // beneficiary = 经济受益者（不是交易发起者）
-        
+
         target.call(data);
     }
 }
@@ -1441,8 +1409,8 @@ Relayer EOA → RelayContract → Target
 **✅ 正确说法**：
 
 - 交易发起者 = tx.origin
-- tx.origin = 签名交易的EOA
-- Gas支付者 = 交易发起者 = tx.origin
+- tx.origin = 签名交易的 EOA
+- Gas 支付者 = 交易发起者 = tx.origin
 
 **❌ 容易混淆的概念**：
 
@@ -1450,19 +1418,17 @@ Relayer EOA → RelayContract → Target
 - "受益者" ≠ 一定是 tx.origin
 - "权限主体" ≠ 一定是 tx.origin
 
-## 补充：Fundme中的误会
+## 补充：Fundme 中的误会
 
-![image-20250815175452787](SOLIDITY FUCK NOTE.assets/image-20250815175452787.png)
+![image-20250815175452787](SOLIDITY-FUCK-NOTE.assets/image-20250815175452787.png)
 
-![image-20250815104846409](SOLIDITY FUCK NOTE.assets/image-20250815104846409.png)
+![image-20250815104846409](SOLIDITY-FUCK-NOTE.assets/image-20250815104846409.png)
 
-![image-20250815104001521](SOLIDITY FUCK NOTE.assets/image-20250815104001521.png)
+![image-20250815104001521](SOLIDITY-FUCK-NOTE.assets/image-20250815104001521.png)
 
-![image-20250815175430228](SOLIDITY FUCK NOTE.assets/image-20250815175430228.png)
+![image-20250815175430228](SOLIDITY-FUCK-NOTE.assets/image-20250815175430228.png)
 
-
-
-最外层调用测试合约的是foundry默认账户，msg.sender为默认EOA账户，然后testUserCanFundInteractionsAddress1测试函数内部，调用fundFundMe.fundFundMe(*address*(fundMe));这行代码的是测试合约，所以下一层（FundFundMe1合约内部）调用FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();这行代码的msg.sender是fundFundMe的地址，再进入下一层FundMe合约的内部，msg.sender变为address（fundFundMe1），fund的转账是来自address（FundFundMe）吗？为什么founder（0）的address为address（fundFundMe1）?不应该是由交易发起者tx.origin支付交易产生的费用吗？*FundFundMe1*合约中的FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();这行代码到底是将tx.origin的钱转给FundMe合约，还是将FundFundMe1余额的钱转给FundMe合约？
+最外层调用测试合约的是 foundry 默认账户，msg.sender 为默认 EOA 账户，然后 testUserCanFundInteractionsAddress1 测试函数内部，调用 fundFundMe.fundFundMe(_address_(fundMe));这行代码的是测试合约，所以下一层（FundFundMe1 合约内部）调用 FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();这行代码的 msg.sender 是 fundFundMe 的地址，再进入下一层 FundMe 合约的内部，msg.sender 变为 address（fundFundMe1），fund 的转账是来自 address（FundFundMe）吗？为什么 founder（0）的 address 为 address（fundFundMe1）?不应该是由交易发起者 tx.origin 支付交易产生的费用吗？*FundFundMe1*合约中的 FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();这行代码到底是将 tx.origin 的钱转给 FundMe 合约，还是将 FundFundMe1 余额的钱转给 FundMe 合约？
 
 ### 调用链分析
 
@@ -1485,7 +1451,7 @@ FundMe合约 (0x90193C961A926261B756D1E5bb255e67ff9498A1)
 function fund() public payable {
     // msg.sender = 0x2e234DAe75C793f67A35089C9d99245E1C58470b (FundFundMe1合约地址)
     // tx.origin = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38 (Foundry默认EOA)
-    
+
     s_funders.push(msg.sender); // 所以记录的是 FundFundMe1 合约地址
     s_addressToAmountFunded[msg.sender] += msg.value;
 }
@@ -1506,15 +1472,11 @@ FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();
 - 将这些 ETH 发送给 FundMe 合约
 - 同时调用 FundMe 合约的 `fund()` 函数
 
-###  tx.origin 的作用
+### tx.origin 的作用
 
 - `tx.origin` (0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38) 是整个交易的发起者
 - **tx.origin 只支付 gas 费用**，不支付 `{value: SEND_VALUE}` 中的 ETH
 - 合约调用其他合约并发送 ETH 时，ETH 必须来自调用合约的余额
-
-
-
-
 
 ## tx.origin 支付 Gas 费用 vs 合约内部转账的详细区别
 
@@ -1527,9 +1489,9 @@ EOA账户 (tx.origin) → 合约A → 合约B → 合约C
 
 **特点：**
 
-- **谁支付**：始终由 tx.origin（EOA外部账户）支付
+- **谁支付**：始终由 tx.origin（EOA 外部账户）支付
 - **支付给谁**：支付给矿工/验证者
-- **支付什么**：Gas费用 = Gas Used × Gas Price
+- **支付什么**：Gas 费用 = Gas Used × Gas Price
 - **从哪扣除**：从 tx.origin 的余额中扣除
 - **自动处理**：由 EVM 自动处理，代码中不可见
 
@@ -1551,19 +1513,17 @@ contract A {
 
 **⚠️ 重要修正：**
 
-
-
 **特点：**
 
-- **谁支付**：调用合约A（B中看到的msg.sender），执行 `{value: amount}` 的合约自身
+- **谁支付**：调用合约 A（B 中看到的 msg.sender），执行 `{value: amount}` 的合约自身
 - **支付给谁**：被调用的地址
 - **支付什么**：ETH（以 wei 为单位）
 - **从哪扣除**：从执行转账的合约余额中扣除
 - **显式声明**：必须在代码中明确指定 `{value: amount}`
-- **转账的支付方是==执行== `{value: amount}` 调用代码的==当前地址==**，当前地址不等同于当前代码块的msg.sender,更像是address(this)
+- **转账的支付方是==执行== `{value: amount}` 调用代码的==当前地址==**，当前地址不等同于当前代码块的 msg.sender,更像是 address(this)
 - 在被调用合约看来，这个地址就是它的 `msg.sender`
 - 但从调用方的角度看，支付方是 `address(this)`（自己）
-- ==所谓执行者，就是看传入了{value: amount}的下一层函数内部的msg.sender,在跨合约调用的情况下通常是上一层合约的address(this)==
+- ==所谓执行者，就是看传入了{value: amount}的下一层函数内部的 msg.sender,在跨合约调用的情况下通常是上一层合约的 address(this)==
 
 **关键理解：**
 
@@ -1571,22 +1531,22 @@ contract A {
 - **在被调用合约中**：`msg.sender` 是直接调用者（转账的合约）
 - **资金来源**：执行转账的合约的余额
 
-### 3. **特殊情况：vm.prank() 的影响**![image-20250820192640699](SOLIDITY FUCK NOTE.assets/image-20250820192640699.png)
+### 3. **特殊情况：vm.prank() 的影响**![image-20250820192640699](SOLIDITY-FUCK-NOTE.assets/image-20250820192640699.png)
 
-![image-20250820192656218](SOLIDITY FUCK NOTE.assets/image-20250820192656218.png)
+![image-20250820192656218](SOLIDITY-FUCK-NOTE.assets/image-20250820192656218.png)
 
-在使用vm.prank(owner);之后，转账来源就变成了owner。
+在使用 vm.prank(owner);之后，转账来源就变成了 owner。
 
-关键点，执行payable(*address*(vault)).call{value: amount}("");的msg.sender是owner。
+关键点，执行 payable(_address_(vault)).call{value: amount}("");的 msg.sender 是 owner。
 
-这种调用**确实模拟的是场景1：EOA直接调用**，而不是场景2的合约间调用
+这种调用**确实模拟的是场景 1：EOA 直接调用**，而不是场景 2 的合约间调用
 
-==好了好了，讲讲我的理解，这里使用vm.prank之后，msg.sender变成了user。然后调用addRewardsToVault(balance-depositAmount)时，并没有实例化一个测试合约，所以相当于将addRewardsToVault内部的代码块直接挪到了下面来执行，并不涉及函数间或合约间的多层调用。等价于vm.prank(user)之后紧跟payable(address(vault)).call{value: amount}("") 。这就相当于EOA直接调用，执行payable(address(vault)).call{value: amount}("") 是user。==
+==好了好了，讲讲我的理解，这里使用 vm.prank 之后，msg.sender 变成了 user。然后调用 addRewardsToVault(balance-depositAmount)时，并没有实例化一个测试合约，所以相当于将 addRewardsToVault 内部的代码块直接挪到了下面来执行，并不涉及函数间或合约间的多层调用。等价于 vm.prank(user)之后紧跟 payable(address(vault)).call{value: amount}("") 。这就相当于 EOA 直接调用，执行 payable(address(vault)).call{value: amount}("") 是 user。==
 
-==然后在Fundme的 FundFundMe1 合约（FundFundMe1还是被测试合约调用的）中
-FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();这行代码实例化了一个合约，涉及到合约的多层调用，执行FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}()的是FundFundMe1 合约。所以转账来源是FundFundMe1合约==
+==然后在 Fundme 的 FundFundMe1 合约（FundFundMe1 还是被测试合约调用的）中
+FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();这行代码实例化了一个合约，涉及到合约的多层调用，执行 FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}()的是 FundFundMe1 合约。所以转账来源是 FundFundMe1 合约==
 
-#### 第一种情况：addRewardsToVault调用
+#### 第一种情况：addRewardsToVault 调用
 
 你的理解**基本正确**：
 
@@ -1605,12 +1565,12 @@ payable(address(vault)).call{value: amount}("");
 **关键点**：
 
 - `addRewardsToVault`是测试合约内的函数，属于**内部函数调用**
-- 在Solidity中，内部函数调用不会改变执行上下文，`msg.sender`保持不变
-- 所以执行`payable(address(vault)).call{value: amount}("")`的确实是user
-- 这是一个**外部调用**（external call），会创建实际的EVM消息调用
-- ==payable(address(vault)).call{value: amount}("");的下一层是address(vault)的receive函数，receive函数内部的msg.sender在vm.prank(user)的作用下变为user。所以转账来源于user==
+- 在 Solidity 中，内部函数调用不会改变执行上下文，`msg.sender`保持不变
+- 所以执行`payable(address(vault)).call{value: amount}("")`的确实是 user
+- 这是一个**外部调用**（external call），会创建实际的 EVM 消息调用
+- ==payable(address(vault)).call{value: amount}("");的下一层是 address(vault)的 receive 函数，receive 函数内部的 msg.sender 在 vm.prank(user)的作用下变为 user。所以转账来源于 user==
 
-#### 第二种情况：FundMe合约调用
+#### 第二种情况：FundMe 合约调用
 
 你的理解也**正确**：
 
@@ -1624,36 +1584,34 @@ FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();
 - `FundMe(payable(mostRecentlyDeployed))`创建了一个合约实例的引用
 - 调用`.fund{value: SEND_VALUE}()`是**跨合约的外部调用**
 - 这会改变执行上下文，`msg.sender`变为调用合约的地址
-- 所以在FundMe合约的fund函数中，`msg.sender`是FundFundMe1合约地址
-- ETH转账来源确实是FundFundMe1合约
-- ==FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();的下一层是FundMe(payable(mostRecentlyDeployed))的fund函数，fund函数内部的msg.sender为address(FundFundMe1),所以转账来源于address(FundFundMe1)==
+- 所以在 FundMe 合约的 fund 函数中，`msg.sender`是 FundFundMe1 合约地址
+- ETH 转账来源确实是 FundFundMe1 合约
+- ==FundMe(payable(mostRecentlyDeployed)).fund{value: SEND_VALUE}();的下一层是 FundMe(payable(mostRecentlyDeployed))的 fund 函数，fund 函数内部的 msg.sender 为 address(FundFundMe1),所以转账来源于 address(FundFundMe1)==
 
 #### 内部调用 vs 外部调用的区别
 
 **内部调用**（第一种情况）：
 
 - 同一合约内的函数调用
-- 不创建新的EVM消息调用
+- 不创建新的 EVM 消息调用
 - `msg.sender`和`msg.value`保持不变
 
-**外部调用**（两种情况中的.call和.fund）：
+**外部调用**（两种情况中的.call 和.fund）：
 
 - 跨合约边界的调用
-- 创建实际的EVM消息调用
+- 创建实际的 EVM 消息调用
 - `msg.sender`变为调用合约的地址
 
 #### 总结
 
 你的理解完全正确：
 
-1. **第一种情况**：vm.prank后，addRewardsToVault内部代码直接执行，user直接调用vault
-2. **第二种情况**：涉及合约实例化和跨合约调用，FundFundMe1合约调用FundMe合约
+1. **第一种情况**：vm.prank 后，addRewardsToVault 内部代码直接执行，user 直接调用 vault
+2. **第二种情况**：涉及合约实例化和跨合约调用，FundFundMe1 合约调用 FundMe 合约
 
 这两种模式的区别在于是否跨越了合约边界，从而影响了`msg.sender`的传递机制。
 
-![image-20250820214531516](SOLIDITY FUCK NOTE.assets/image-20250820214531516.png)
-
-
+![image-20250820214531516](SOLIDITY-FUCK-NOTE.assets/image-20250820214531516.png)
 
 ### 4. **具体对比示例**
 
@@ -1665,27 +1623,27 @@ contract Example {
         // tx.origin = EOA地址
         // Gas费：EOA支付
         // ETH转账：EOA → Example合约
-        
+
         // 直接调用的代码例子：
         require(msg.value > 0, "Must send ETH");
-        
+
         // 记录捐款
         donations[msg.sender] += msg.value;
-        
+
         // 发出事件
         emit ReceivedETH(msg.sender, msg.value);
-        
+
         // 在这种情况下：
         // - msg.sender 是发起交易的EOA地址
         // - msg.value 是EOA发送的ETH数量
         // - 资金直接从EOA转移到Example合约
     }
-    
+
     // 场景2：合约调用合约
     function scenario2(address target) external {
         // 这里调用其他合约，发送 0.1 ETH
         ITarget(target).someFunction{value: 0.1 ether}();
-        
+
         // msg.sender = 调用scenario2的地址
         // ITarget中msg.sender=address(Example),为转账来源
         // tx.origin = 最初的EOA地址
@@ -1707,22 +1665,22 @@ interface ITarget {
 contract Target is ITarget {
     event FunctionCalled(address caller, uint256 value, address origin);
     mapping(address => uint256) public receivedFromContract;
-    
+
     // ITarget.someFunction 内部的代码例子
     function someFunction() external payable override {
         // 在这个函数中：
         // msg.sender = 调用这个函数的合约地址 (Example合约)
         // msg.value = 接收到的ETH数量 (0.1 ether)
         // tx.origin = 最初发起交易的EOA地址
-        
+
         require(msg.value > 0, "Must receive ETH");
-        
+
         // 记录从合约接收的ETH
         receivedFromContract[msg.sender] += msg.value;
-        
+
         // 发出事件，记录调用信息
         emit FunctionCalled(msg.sender, msg.value, tx.origin);
-        
+
         // 可以添加更多业务逻辑
         // 比如：根据调用者执行不同操作
         if (msg.sender != tx.origin) {
@@ -1730,7 +1688,7 @@ contract Target is ITarget {
             // 执行特定的合约间交互逻辑
         }
     }
-    
+
     // 接收ETH的函数
     receive() external payable {
         emit FunctionCalled(msg.sender, msg.value, tx.origin);
@@ -1738,15 +1696,15 @@ contract Target is ITarget {
 }
 ```
 
-| 场景                     | msg.sender      | tx.origin | 资金来源        | Gas费支付者 |
-| ------------------------ | --------------- | --------- | --------------- | ----------- |
-| **场景1 (EOA直接调用)**  | EOA地址         | EOA地址   | EOA余额         | EOA         |
-| **场景2 (合约调用合约)** | Example合约地址 | EOA地址   | Example合约余额 | EOA         |
+| 场景                      | msg.sender       | tx.origin | 资金来源         | Gas 费支付者 |
+| ------------------------- | ---------------- | --------- | ---------------- | ------------ |
+| **场景 1 (EOA 直接调用)** | EOA 地址         | EOA 地址  | EOA 余额         | EOA          |
+| **场景 2 (合约调用合约)** | Example 合约地址 | EOA 地址  | Example 合约余额 | EOA          |
 
 **重点理解**：
 
-- **场景1**：EOA直接与合约交互，身份和资金来源一致
-- **场景2**：合约代表EOA与其他合约交互，调用者身份是合约，但gas费仍由原始EOA支付
+- **场景 1**：EOA 直接与合约交互，身份和资金来源一致
+- **场景 2**：合约代表 EOA 与其他合约交互，调用者身份是合约，但 gas 费仍由原始 EOA 支付
 
 ### 5. **在你的代码中的体现**
 
@@ -1755,10 +1713,10 @@ contract Target is ITarget {
 function testUserCanFundInteractionsAddress1() public {
     // 1. 创建 FundFundMe1 合约
     FundFundMe1 fundFundMe = new FundFundMe1();
-    
+
     // 2. 给合约充值 1 ETH（这是合约的余额）
     vm.deal(address(fundFundMe), 1e18);
-    
+
     // 3. 调用 fundFundMe
     fundFundMe.fundFundMe(address(fundMe));
 }
@@ -1797,7 +1755,7 @@ function fundFundMe(address mostRecentlyDeployed) public {
 function testWillFail() public {
     FundFundMe1 fundFundMe = new FundFundMe1();
     // 没有 vm.deal，合约余额为 0
-    
+
     // 这会失败！因为合约没有 0.01 ETH
     fundFundMe.fundFundMe(address(fundMe)); // revert
 }
@@ -1814,11 +1772,9 @@ function testWillFail() public {
 
 **关键要点**：在普通情况下，转账的资金来源是执行转账的合约自身的余额。但在测试环境中使用 `vm.prank()` 时，会有特殊的行为，资金可能来自被 prank 的地址。
 
-![image-20250815181549181](SOLIDITY FUCK NOTE.assets/image-20250815181549181.png)
+![image-20250815181549181](SOLIDITY-FUCK-NOTE.assets/image-20250815181549181.png)
 
-
-
-此外，如果是使用msg.value而不是==执行== `{value: amount}` 调用的话，就相当于一个value中转站。
+此外，如果是使用 msg.value 而不是==执行== `{value: amount}` 调用的话，就相当于一个 value 中转站。
 
 ## 三种转账方式的支付方分析
 
@@ -1868,11 +1824,11 @@ contract Caller {
 
 ### 3. **三种方式的对比**
 
-| 转账方式   | 支付方              | Gas 限制 | 返回值处理         | 推荐程度 |
-| ---------- | ------------------- | -------- | ------------------ | -------- |
-| transfer() | 调用者（EOA或合约） | 2300 gas | 自动 revert        | ❌ 已废弃 |
-| send()     | 调用者（EOA或合约） | 2300 gas | 返回 bool          | ⚠️ 不推荐 |
-| call()     | 调用者（EOA或合约） | 可自定义 | 返回 (bool, bytes) | ✅ 推荐   |
+| 转账方式   | 支付方               | Gas 限制 | 返回值处理         | 推荐程度  |
+| ---------- | -------------------- | -------- | ------------------ | --------- |
+| transfer() | 调用者（EOA 或合约） | 2300 gas | 自动 revert        | ❌ 已废弃 |
+| send()     | 调用者（EOA 或合约） | 2300 gas | 返回 bool          | ⚠️ 不推荐 |
+| call()     | 调用者（EOA 或合约） | 可自定义 | 返回 (bool, bytes) | ✅ 推荐   |
 
 ### 4. **重要区别：使用 msg.value vs 合约余额**
 
@@ -1882,7 +1838,7 @@ contract Caller {
     function forward(address payable to) external payable {
         to.transfer(msg.value); // 支付方是调用 forward 的地址
     }
-    
+
     // 情况2：使用合约自己的余额
     function withdraw(address payable to, uint256 amount) external {
         to.transfer(amount); // 支付方是 DifferentExample 合约
@@ -1898,15 +1854,15 @@ contract Caller {
 function testTransferFlow() public {
     TransferExample example = new TransferExample();
     address target = address(0x123);
-    
+
     // 初始状态
     // EOA 余额: 10 ETH
     // TransferExample 余额: 0 ETH
     // Target 余额: 0 ETH
-    
+
     // EOA 调用 transferMethod，发送 1 ETH
     example.transferMethod{value: 1 ether}(payable(target));
-    
+
     // 结束状态
     // EOA 余额: 9 ETH (减少 1 ETH + gas费)
     // TransferExample 余额: 0 ETH (只是中转)
@@ -1924,31 +1880,29 @@ function testTransferFlow() public {
 
 ==**核心原则**：谁在调用时附带了 `{value: amount}`，谁就是支付方。==
 
-## FundMe原有收获：
+## FundMe 原有收获：
 
-==**此外,test环境中，使用cheatcode vm.startbroadcast之后只会修改最外一层的交易发起方。**==
+==**此外,test 环境中，使用 cheatcode vm.startbroadcast 之后只会修改最外一层的交易发起方。**==
 
-![image-20250815175216095](SOLIDITY FUCK NOTE.assets/image-20250815175216095.png)
+![image-20250815175216095](SOLIDITY-FUCK-NOTE.assets/image-20250815175216095.png)
 
 ## payable keyword
 
-![image-20250804155750427](SOLIDITY FUCK NOTE.assets/image-20250804155750427.png)
+![image-20250804155750427](SOLIDITY-FUCK-NOTE.assets/image-20250804155750427.png)
 
 ## 可以修饰函数的四种关键词
 
-![image-20250804202616477](SOLIDITY FUCK NOTE.assets/image-20250804202616477.png)
+![image-20250804202616477](SOLIDITY-FUCK-NOTE.assets/image-20250804202616477.png)
 
-![image-20250804202823911](SOLIDITY FUCK NOTE.assets/image-20250804202823911.png)
+![image-20250804202823911](SOLIDITY-FUCK-NOTE.assets/image-20250804202823911.png)
 
 **继承相关修饰符不互斥**
 
+![image-20250804203120012](SOLIDITY-FUCK-NOTE.assets/image-20250804203120012.png)
 
+![image-20250804203504261](SOLIDITY-FUCK-NOTE.assets/image-20250804203504261.png)
 
-![image-20250804203120012](SOLIDITY FUCK NOTE.assets/image-20250804203120012.png)
-
-![image-20250804203504261](SOLIDITY FUCK NOTE.assets/image-20250804203504261.png)
-
-![image-20250804203552416](SOLIDITY FUCK NOTE.assets/image-20250804203552416.png)
+![image-20250804203552416](SOLIDITY-FUCK-NOTE.assets/image-20250804203552416.png)
 
 ### 1. 函数可见性核心总览
 
@@ -1961,20 +1915,20 @@ function testTransferFlow() public {
 | fallback | 是（若存在） | 否（无法直接名调） | 是（未匹配选择器）   | 不适用           | 可（可 virtual）    | 可            | 兜底调度 / 代理         | calldata 原样           | 保持轻量                                |
 | receive  | 是（若存在） | 否                 | 否（仅空 data 触发） | 不适用           | 可（少见）          | 可            | 纯接收 ETH              | calldata 空             | 逻辑极简                                |
 
-------
+---
 
 ### 2. 状态可变性 (Mutability) 与覆写
 
-| 严格度（最严格→最宽） | 读状态 | 写状态 | 接收 ETH | 允许的向下覆写方向                        |
-| --------------------- | ------ | ------ | -------- | ----------------------------------------- |
-| pure                  | 否     | 否     | 否       | 只能被 pure 覆写                          |
-| view                  | 读     | 否     | 否       | 可覆写为 view 或 pure                     |
-| nonpayable (默认)     | 可读写 | 可     | 否       | 可覆写为 nonpayable/view/pure             |
-| payable               | 可读写 | 可     | 是       | 可覆写为任意更严格 (nonpayable/view/pure) |
+| 严格度（最严格 → 最宽） | 读状态 | 写状态 | 接收 ETH | 允许的向下覆写方向                        |
+| ----------------------- | ------ | ------ | -------- | ----------------------------------------- |
+| pure                    | 否     | 否     | 否       | 只能被 pure 覆写                          |
+| view                    | 读     | 否     | 否       | 可覆写为 view 或 pure                     |
+| nonpayable (默认)       | 可读写 | 可     | 否       | 可覆写为 nonpayable/view/pure             |
+| payable                 | 可读写 | 可     | 是       | 可覆写为任意更严格 (nonpayable/view/pure) |
 
 说明：覆写只能向“更严格”或相同严格度移动；不可将 pure 改成 view，或 nonpayable 改成 payable 等。
 
-------
+---
 
 ### 3. 接口 (interface) / 抽象合约 (abstract) / 普通合约差异
 
@@ -1987,7 +1941,7 @@ function testTransferFlow() public {
 | 允许的成员       | 函数/事件/error/类型                 | 同普通 + 未实现函数  | 全部         |
 | 覆写实现可见性   | external 可实现为 external 或 public | 依父声明             | 依父声明     |
 
-------
+---
 
 ### 4. 多重继承与 override 规则
 
@@ -2001,7 +1955,7 @@ function testTransferFlow() public {
 | 线性化         | C3：右到左深度优先线性化；需显式列出冲突父类 |
 | 同名 state var | 不可真正覆写，仅隐藏（避免重名）             |
 
-------
+---
 
 ### 5. 状态变量可见性与自动 Getter
 
@@ -2011,7 +1965,7 @@ function testTransferFlow() public {
 | internal | 否                 | 否           | 否（变量本身不能被 override，值可在子中继承使用）           | 合约 + 子  | 不生成 ABI                   |
 | private  | 否                 | 否           | 否                                                          | 仅当前合约 | 隐藏同名遮蔽不影响父存储布局 |
 
-------
+---
 
 ### 6. 特殊函数 (constructor / fallback / receive)
 
@@ -2021,7 +1975,7 @@ function testTransferFlow() public {
 | fallback    | external (可 payable) | 否            | 未匹配函数选择器         | 可（少用）  | 代理转发 / 事件记录，保持轻量  |
 | receive     | external payable      | 是（若存在）  | msg.data 为空的 ETH 转入 | 可（少用）  | 纯接 ETH；逻辑极简             |
 
-------
+---
 
 ### 7. this. 调用与上下文
 
@@ -2030,7 +1984,7 @@ function testTransferFlow() public {
 | 直接 f() | 低                        | 调用者原值      | 否                     | 内部高频逻辑                  | 需要 try/catch    |
 | this.f() | 高（外部 CALL 编码+开销） | 变为本合约地址  | 是                     | 测试重入、权限分支、try/catch | 循环/频繁内部调用 |
 
-------
+---
 
 ### 8. 库 (library) 函数可见性
 
@@ -2039,7 +1993,7 @@ function testTransferFlow() public {
 | internal        | 内联进使用者 | JUMP / 内联  | 与调用合约一致            | 调用便宜             | 增字节码                     |
 | public/external | 独立部署     | DELEGATECALL | 与调用合约一致            | 代码复用减少重复部署 | 每次调用有 delegatecall 开销 |
 
-------
+---
 
 ### 9. 函数类型 (Function Type)
 
@@ -2050,7 +2004,7 @@ function testTransferFlow() public {
 
 转换：需显式包装，不能直接互赋。
 
-------
+---
 
 ### 10. 升级 / 代理模式与可见性
 
@@ -2063,7 +2017,7 @@ function testTransferFlow() public {
 | 敏感核心           | internal/private + 修饰器   | 集中访问控制          |
 | 代理内部 self-call | 避免 this 重入风险          | this 调用仍经代理层   |
 
-------
+---
 
 ### 11. Modifier 设计与分层
 
@@ -2073,7 +2027,7 @@ function testTransferFlow() public {
 | 内部逻辑 (internal)        | 纯业务      | 易审计 / 复用 |
 | 底层私有 (private)         | 细粒度操作  | 最少暴露      |
 
-------
+---
 
 ### 12. 典型选择模式速查
 
@@ -2091,7 +2045,7 @@ function testTransferFlow() public {
 | 代码复用（大体积） | external library           |
 | 代码复用（小高频） | internal library           |
 
-------
+---
 
 ### 13. 常见误区澄清
 
@@ -2105,7 +2059,7 @@ function testTransferFlow() public {
 | this.f() 等价内部调用       | 实际外部 CALL，昂贵且 msg.sender 变化             |
 | nonpayable 可覆写为 payable | 不可；只能更严格                                  |
 
-------
+---
 
 ### 14. 汇总对照（紧凑复合表）
 
@@ -2120,7 +2074,7 @@ function testTransferFlow() public {
 | 大参数效率            | 读取高         | 中         | N/A      | N/A          |
 | 内部高频效率          | 差             | 好         | 优       | 优           |
 
-------
+---
 
 ### 15. 记忆助句
 
@@ -2138,46 +2092,46 @@ function testTransferFlow() public {
 
 ### 16. fallback&receive function
 
-| 维度                 | receive                                         | fallback                                                     | 摘要记忆                                    |
-| -------------------- | ----------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------- |
-| 触发核心             | 空 calldata 且函数已定义                        | 未匹配函数选择器；或空 calldata 但无 receive                 | 空→先找 receive，找不到→fallback            |
+| 维度                 | receive                                         | fallback                                                                  | 摘要记忆                                    |
+| -------------------- | ----------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------- |
+| 触发核心             | 空 calldata 且函数已定义                        | 未匹配函数选择器；或空 calldata 但无 receive                              | 空 → 先找 receive，找不到 →fallback         |
 | 签名形式             | receive() external payable                      | fallback() external [payable] 或 fallback(bytes calldata) returns (bytes) | receive 固定；fallback 可选 bytes/返回值    |
-| ETH 接收             | 必然 payable（语法强制）                        | 需显式 payable，否则接 ETH revert                            | “能收钱”不代表 fallback 默认可收            |
-| 触发优先级（空数据） | 优先（若存在）                                  | 兜底                                                         | 优先级：receive > fallback                  |
-| 典型用途             | 单纯接 ETH / 记录收款                           | 代理 delegatecall / 路由 / 拒绝或记录未知调用                | 收款 vs 路由兜底                            |
-| 推荐复杂度           | 极简（事件+统计）                               | 精简（代理只做转发与冒泡）                                   | 两者都应保持最小化                          |
-| 安全关注             | 误写业务逻辑→可重入面增大                       | delegatecall 存储风险 / 重入 / 吞错                          | fallback 风险面更广                         |
-| 不想被调用策略       | 不写 receive（让空数据落到 fallback 再 revert） | 声明非 payable 并直接 revert                                 | 双层防护更清晰                              |
-| 版本演进             | 0.6.0 起从旧 fallback 拆出                      | 旧 fallback 角色被分拆后专注“未匹配”                         | 新语义更精细                                |
-| 常见误区             | 认为必须写                                      | 认为默认可接 ETH                                             | 记口诀：receive=空且存在；fallback=其它兜底 |
+| ETH 接收             | 必然 payable（语法强制）                        | 需显式 payable，否则接 ETH revert                                         | “能收钱”不代表 fallback 默认可收            |
+| 触发优先级（空数据） | 优先（若存在）                                  | 兜底                                                                      | 优先级：receive > fallback                  |
+| 典型用途             | 单纯接 ETH / 记录收款                           | 代理 delegatecall / 路由 / 拒绝或记录未知调用                             | 收款 vs 路由兜底                            |
+| 推荐复杂度           | 极简（事件+统计）                               | 精简（代理只做转发与冒泡）                                                | 两者都应保持最小化                          |
+| 安全关注             | 误写业务逻辑 → 可重入面增大                     | delegatecall 存储风险 / 重入 / 吞错                                       | fallback 风险面更广                         |
+| 不想被调用策略       | 不写 receive（让空数据落到 fallback 再 revert） | 声明非 payable 并直接 revert                                              | 双层防护更清晰                              |
+| 版本演进             | 0.6.0 起从旧 fallback 拆出                      | 旧 fallback 角色被分拆后专注“未匹配”                                      | 新语义更精细                                |
+| 常见误区             | 认为必须写                                      | 认为默认可接 ETH                                                          | 记口诀：receive=空且存在；fallback=其它兜底 |
 
-## Solidity 数据位置修饰符 (Data Location) 
+## Solidity 数据位置修饰符 (Data Location)
 
 ### 1. 三种数据位置核心对比
 
-| 位置     | 生命周期           | 可变性 | 成本特征 (读/写)                         | 典型适用                            | 是否拷贝           | 可否声明 mapping | 备注                                   |
-| -------- | ------------------ | ------ | ---------------------------------------- | ----------------------------------- | ------------------ | ---------------- | -------------------------------------- |
-| storage  | 永久（链上状态）   | 可读写 | 读贵 / 改贵；写新槽≈20k gas；改已用槽≈5k | 状态变量；需要持久修改              | 引用（指针语义）   | 只能在 storage   | 改即落链；受 EVM 暖/冷访问规则影响     |
-| memory   | 临时（函数执行期） | 可读写 | 分配线性增长；纯计算便宜                 | 临时计算、中间结果、返回值构造      | 拷贝（值拷贝）     | 不可             | 函数结束释放；大数组复制昂贵           |
-| calldata | 外部调用输入区域   | 只读   | 最便宜（零拷贝读取）                     | external 函数的入参（大数组/bytes） | 零拷贝（直接引用） | 不可             | 不能修改长度 / 元素；最省 gas 只读载体 |
+| 位置     | 生命周期           | 可变性 | 成本特征 (读/写)                           | 典型适用                            | 是否拷贝           | 可否声明 mapping | 备注                                   |
+| -------- | ------------------ | ------ | ------------------------------------------ | ----------------------------------- | ------------------ | ---------------- | -------------------------------------- |
+| storage  | 永久（链上状态）   | 可读写 | 读贵 / 改贵；写新槽 ≈20k gas；改已用槽 ≈5k | 状态变量；需要持久修改              | 引用（指针语义）   | 只能在 storage   | 改即落链；受 EVM 暖/冷访问规则影响     |
+| memory   | 临时（函数执行期） | 可读写 | 分配线性增长；纯计算便宜                   | 临时计算、中间结果、返回值构造      | 拷贝（值拷贝）     | 不可             | 函数结束释放；大数组复制昂贵           |
+| calldata | 外部调用输入区域   | 只读   | 最便宜（零拷贝读取）                       | external 函数的入参（大数组/bytes） | 零拷贝（直接引用） | 不可             | 不能修改长度 / 元素；最省 gas 只读载体 |
 
 > mapping 只能存在于 storage（不能 memory / calldata 单独声明）。
 
 ### 二、哪些场合“必须 / 需要 / 不能 / 可省略”指定数据位置
 
-| 场景                                            | 是否必须显式写       | 可写的选项                                                | 不能写                          | 说明                                                         |
-| ----------------------------------------------- | -------------------- | --------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------ |
-| 状态变量（合约级）                              | 否（隐式 storage）   | （无）                                                    | memory / calldata               | 所有合约级引用类型天生在 storage                             |
-| 函数形参（external）引用类型                    | 必须                 | calldata（最常用）、memory（少见）                        | storage                         | external 不允许 storage 参数；calldata 最省                  |
-| 函数形参（public / internal / private）引用类型 | 必须                 | memory；（internal/private 可用 storage 引用、calldata*） | （无）                          | internal/private 可接收 storage 引用：`func(T storage t)`；calldata 在较新版本可用于内部函数（编译器支持时） |
-| 返回参数（public/external）引用类型             | 必须                 | memory                                                    | storage / calldata              | 返回时会拷贝编码；不能返回 storage 指针                      |
-| 返回参数（internal/private）引用类型            | 必须                 | memory 或 storage（返回 storage 引用仅内部用）            | calldata                        | `returns (T storage r)` 仅供内部再传递，不可对外 ABI         |
-| 函数内局部变量（引用类型）                      | 必须                 | memory / storage /（external ctx 下可 calldata 引用参数） | （无）                          | `T storage ref = arr[i];` 或 `T memory tmp = arr[i];`        |
-| 内部函数参数（做库式抽象）想直接改调用方状态    | 必须                 | `T storage`                                               | memory / calldata（若需原地改） | 把 storage 引用下传实现原地修改                              |
-| mapping 声明                                    | 仅 storage 可行      | storage                                                   | memory / calldata               | 不能声明 memory / calldata mapping                           |
-| struct / array 成员自身                         | 不直接写（随“外层”） | （继承外层）                                              | （无）                          | 外层是 storage 则成员在 storage；外层在 memory 则成员在 memory |
-| 事件参数 / error 参数                           | 不适用               | （无）                                                    | （无）                          | 数据位置概念仅限运行期引用类型变量                           |
-| inline assembly 管理的字节数组                  | 需手动理解           | （依托原变量）                                            | （无）                          | 避免破坏内存/存储布局                                        |
+| 场景                                            | 是否必须显式写       | 可写的选项                                                 | 不能写                          | 说明                                                                                                         |
+| ----------------------------------------------- | -------------------- | ---------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 状态变量（合约级）                              | 否（隐式 storage）   | （无）                                                     | memory / calldata               | 所有合约级引用类型天生在 storage                                                                             |
+| 函数形参（external）引用类型                    | 必须                 | calldata（最常用）、memory（少见）                         | storage                         | external 不允许 storage 参数；calldata 最省                                                                  |
+| 函数形参（public / internal / private）引用类型 | 必须                 | memory；（internal/private 可用 storage 引用、calldata\*） | （无）                          | internal/private 可接收 storage 引用：`func(T storage t)`；calldata 在较新版本可用于内部函数（编译器支持时） |
+| 返回参数（public/external）引用类型             | 必须                 | memory                                                     | storage / calldata              | 返回时会拷贝编码；不能返回 storage 指针                                                                      |
+| 返回参数（internal/private）引用类型            | 必须                 | memory 或 storage（返回 storage 引用仅内部用）             | calldata                        | `returns (T storage r)` 仅供内部再传递，不可对外 ABI                                                         |
+| 函数内局部变量（引用类型）                      | 必须                 | memory / storage /（external ctx 下可 calldata 引用参数）  | （无）                          | `T storage ref = arr[i];` 或 `T memory tmp = arr[i];`                                                        |
+| 内部函数参数（做库式抽象）想直接改调用方状态    | 必须                 | `T storage`                                                | memory / calldata（若需原地改） | 把 storage 引用下传实现原地修改                                                                              |
+| mapping 声明                                    | 仅 storage 可行      | storage                                                    | memory / calldata               | 不能声明 memory / calldata mapping                                                                           |
+| struct / array 成员自身                         | 不直接写（随“外层”） | （继承外层）                                               | （无）                          | 外层是 storage 则成员在 storage；外层在 memory 则成员在 memory                                               |
+| 事件参数 / error 参数                           | 不适用               | （无）                                                     | （无）                          | 数据位置概念仅限运行期引用类型变量                                                                           |
+| inline assembly 管理的字节数组                  | 需手动理解           | （依托原变量）                                             | （无）                          | 避免破坏内存/存储布局                                                                                        |
 
 ### 三、判断口诀（速记）
 
@@ -2189,49 +2143,49 @@ function testTransferFlow() public {
 
 ### 四、典型正误对照（类型 + 位置 + 是否合规）
 
-| 写法                                                         | 位置分析                | 是否合规               | 解释                                                   |
-| ------------------------------------------------------------ | ----------------------- | ---------------------- | ------------------------------------------------------ |
-| `uint x;` (状态变量)                                         | 值类型 + 状态           | 合规                   | 值类型无需位置                                         |
-| `bytes data;` (状态变量)                                     | 引用 + 状态             | 合规                   | 状态变量默认 storage                                   |
-| `function f(bytes data) external {}`                         | 引用 + external 形参    | 不合规                 | 必须写：`bytes calldata data`                          |
-| `function f(bytes32 data) external {}`                       | 值类型                  | 合规                   | bytes32 是值类型                                       |
-| `function f(uint[] memory a) public {}`                      | 引用 + public           | 合规                   | 必须写 memory/calıldata（public 通常 memory）          |
-| `function f(uint[] a) public {}`                             | 引用 + public           | 不合规                 | 缺失位置                                               |
+| 写法                                                                | 位置分析                | 是否合规               | 解释                                                   |
+| ------------------------------------------------------------------- | ----------------------- | ---------------------- | ------------------------------------------------------ |
+| `uint x;` (状态变量)                                                | 值类型 + 状态           | 合规                   | 值类型无需位置                                         |
+| `bytes data;` (状态变量)                                            | 引用 + 状态             | 合规                   | 状态变量默认 storage                                   |
+| `function f(bytes data) external {}`                                | 引用 + external 形参    | 不合规                 | 必须写：`bytes calldata data`                          |
+| `function f(bytes32 data) external {}`                              | 值类型                  | 合规                   | bytes32 是值类型                                       |
+| `function f(uint[] memory a) public {}`                             | 引用 + public           | 合规                   | 必须写 memory/calıldata（public 通常 memory）          |
+| `function f(uint[] a) public {}`                                    | 引用 + public           | 不合规                 | 缺失位置                                               |
 | `function f(string calldata s) external returns (bytes memory out)` | 引用参数 + 返回引用     | 合规                   | 参数用 calldata，返回必须 memory                       |
-| `function f() internal returns (User storage u)`             | 返回 storage 引用       | 合规（仅内部）         | 不能对外                                               |
-| `mapping(address=>uint) balances;`                           | 状态 mapping            | 合规                   | 只能 storage                                           |
-| `function g() external returns (mapping(address=>uint) storage m)` | 返回 mapping            | 不合规                 | 不能返回 mapping                                       |
-| `function h(mapping(address=>uint) storage m)` external      | storage 参数 + external | 不合规                 | external 不允许 storage 引用形参                       |
-| `function h(mapping(address=>uint) storage m)` internal      | storage 参数 + internal | 合规                   | 可传引用（通常来自 struct 成员）                       |
-| `function test(bytes calldata x) public`                     | public + calldata       | 可能不支持（取决版本） | 较老版本 public 不允许 calldata；新版本仍通常用 memory |
+| `function f() internal returns (User storage u)`                    | 返回 storage 引用       | 合规（仅内部）         | 不能对外                                               |
+| `mapping(address=>uint) balances;`                                  | 状态 mapping            | 合规                   | 只能 storage                                           |
+| `function g() external returns (mapping(address=>uint) storage m)`  | 返回 mapping            | 不合规                 | 不能返回 mapping                                       |
+| `function h(mapping(address=>uint) storage m)` external             | storage 参数 + external | 不合规                 | external 不允许 storage 引用形参                       |
+| `function h(mapping(address=>uint) storage m)` internal             | storage 参数 + internal | 合规                   | 可传引用（通常来自 struct 成员）                       |
+| `function test(bytes calldata x) public`                            | public + calldata       | 可能不支持（取决版本） | 较老版本 public 不允许 calldata；新版本仍通常用 memory |
 
-## foundry测试环境
+## foundry 测试环境
 
-![image-20250806204019711](SOLIDITY FUCK NOTE.assets/image-20250806204019711.png)
+![image-20250806204019711](SOLIDITY-FUCK-NOTE.assets/image-20250806204019711.png)
 
 ## Stablecoin 的借贷/清算原理&HF 指数
 
-![image-20250807005710398](SOLIDITY FUCK NOTE.assets/image-20250807005710398.png)
+![image-20250807005710398](SOLIDITY-FUCK-NOTE.assets/image-20250807005710398.png)
 
-简单的清算规则，当LIQUIDATION_THRESHOLD是50，collateralAdjustedForThreshold就是collateralValueInUsd的一半（50/100=1/2）。此时的清算线collateralValueInUsd是totalDscMinted的两倍，即1/2的倒数。
+简单的清算规则，当 LIQUIDATION_THRESHOLD 是 50，collateralAdjustedForThreshold 就是 collateralValueInUsd 的一半（50/100=1/2）。此时的清算线 collateralValueInUsd 是 totalDscMinted 的两倍，即 1/2 的倒数。
 
-假设另一个清算线要求collateralValueInUsd是totalDscMinted的1.5倍（3/2）。那么此时的collateralAdjustedForThreshold就是collateralValueInUsd的2/3，而LIQUIDATION_THRESHOLD便是67（67/100=2/3）。
+假设另一个清算线要求 collateralValueInUsd 是 totalDscMinted 的 1.5 倍（3/2）。那么此时的 collateralAdjustedForThreshold 就是 collateralValueInUsd 的 2/3，而 LIQUIDATION_THRESHOLD 便是 67（67/100=2/3）。
 
 总之，**LIQUIDATION_THRESHOLD**和**抵押借出比**（over-collateralization ratio）呈现倒数的关系。
 
-![image-20250808012736292](SOLIDITY FUCK NOTE.assets/image-20250808012736292.png)
+![image-20250808012736292](SOLIDITY-FUCK-NOTE.assets/image-20250808012736292.png)
 
-![image-20250808014541335](SOLIDITY FUCK NOTE.assets/image-20250808014541335.png)
+![image-20250808014541335](SOLIDITY-FUCK-NOTE.assets/image-20250808014541335.png)
 
 简单理解为，自己主动还钱，欠多少还多少。被清算时，有额外惩罚。主要是理解**抵押物价值肯定是大于债务的**。
 
-正常情况下，右边负债是一比一跟左边资产抵消。清算情况下，右边负债先变大再跟左边资产抵消，也就是净资产计算时扣得更多。而由于over-collateralization，左边资产肯定比右边负债多的。
+正常情况下，右边负债是一比一跟左边资产抵消。清算情况下，右边负债先变大再跟左边资产抵消，也就是净资产计算时扣得更多。而由于 over-collateralization，左边资产肯定比右边负债多的。
 
 抵押品-债务肯定是正值，结清债务（先还钱再赎回抵押品，即-债务+抵押品=正值）就能获得这部分正值的收益。
 
-**将还债这个行为视为事件的话，这个事件对Free Assets带来的收益一定是正向的，没有理由不做。主动还债的正值收益更大，被动清算的正值收益就更小**
+**将还债这个行为视为事件的话，这个事件对 Free Assets 带来的收益一定是正向的，没有理由不做。主动还债的正值收益更大，被动清算的正值收益就更小**
 
-**手里的钱才是真的钱，还债行为一定会增加可自由支配资产的数量。** 
+**手里的钱才是真的钱，还债行为一定会增加可自由支配资产的数量。**
 
 不过还债后，债务清零，抵押物归还，此时 Free Assets = Net Assets=Total Holdings
 
@@ -2239,23 +2193,21 @@ function testTransferFlow() public {
 
 **净资产也是个重要的指标**，只从净资产的角度来看更方便记忆。只考虑净资产指标能够更加快速得做判断！
 
-![image-20250808181701150](SOLIDITY FUCK NOTE.assets/image-20250808181701150.png)
+![image-20250808181701150](SOLIDITY-FUCK-NOTE.assets/image-20250808181701150.png)
 
-在我的DSC项目中，s_DSCMinted更像是记录债务（因为别人清算的时候，被清算人实际持有的DSC balance保持不变，但是记录的s_DSCMinted变成小，清算一部分债务就是变小，清算全部债务就是变成0），而不是记录DSC铸币量或者DSC余额。Maybe改成DSCDebt更合适。
+在我的 DSC 项目中，s_DSCMinted 更像是记录债务（因为别人清算的时候，被清算人实际持有的 DSC balance 保持不变，但是记录的 s_DSCMinted 变成小，清算一部分债务就是变小，清算全部债务就是变成 0），而不是记录 DSC 铸币量或者 DSC 余额。Maybe 改成 DSCDebt 更合适。
 
-burnDSC就像是还债。先还债了之后，HF值变高，就可以更好地赎回。
+burnDSC 就像是还债。先还债了之后，HF 值变高，就可以更好地赎回。
 
-![image-20250808182120852](SOLIDITY FUCK NOTE.assets/image-20250808182120852.png)
+![image-20250808182120852](SOLIDITY-FUCK-NOTE.assets/image-20250808182120852.png)
 
-![image-20250808182257204](SOLIDITY FUCK NOTE.assets/image-20250808182257204.png)
+![image-20250808182257204](SOLIDITY-FUCK-NOTE.assets/image-20250808182257204.png)
 
-![image-20250808182134032](SOLIDITY FUCK NOTE.assets/image-20250808182134032.png)
+![image-20250808182134032](SOLIDITY-FUCK-NOTE.assets/image-20250808182134032.png)
 
-在计算Healthfactor的时候，也是直接用的totalDscMinted=s_DSCMinted来作为分母。可见s_DSCMinted就是用户的债务。
+在计算 Healthfactor 的时候，也是直接用的 totalDscMinted=s_DSCMinted 来作为分母。可见 s_DSCMinted 就是用户的债务。
 
-
-
-## Foundry测试类型对比表格
+## Foundry 测试类型对比表格
 
 | 测试类型                    | 函数前缀     | 执行特点             | 状态管理       | 适用场景          | 示例函数名                             |
 | --------------------------- | ------------ | -------------------- | -------------- | ----------------- | -------------------------------------- |
@@ -2268,37 +2220,35 @@ burnDSC就像是还债。先还债了之后，HF值变高，就可以更好地�
 
 #### 前缀要求的重要性
 
-- Foundry通过函数名前缀来识别测试类型 
-- **必须使用正确的前缀**，否则函数不会被测试框架执行 
-- 标准测试和无状态模糊测试都使用`test`前缀 
-- 不变量测试必须使用`invariant_`前缀 
+- Foundry 通过函数名前缀来识别测试类型
+- **必须使用正确的前缀**，否则函数不会被测试框架执行
+- 标准测试和无状态模糊测试都使用`test`前缀
+- 不变量测试必须使用`invariant_`前缀
 
 #### 无正确前缀的后果
 
-- **函数会被忽略**：没有`test`或`invariant_`前缀的函数不会被Forge执行 
-- **静默跳过**：系统不会报错，但这些函数不参与测试 
-- **常见用途**：通常用作辅助函数、设置函数或工具函数 
+- **函数会被忽略**：没有`test`或`invariant_`前缀的函数不会被 Forge 执行
+- **静默跳过**：系统不会报错，但这些函数不参与测试
+- **常见用途**：通常用作辅助函数、设置函数或工具函数
 
 #### 特殊情况
 
-- 可以使用`skip`关键字在函数名中跳过特定测试 
-- `testFail*`前缀已被弃用，建议使用`vm.expectRevert()`替代 
+- 可以使用`skip`关键字在函数名中跳过特定测试
+- `testFail*`前缀已被弃用，建议使用`vm.expectRevert()`替代
 
 #### 最佳实践
 
-- 确保所有测试函数都有正确的前缀 
-- 使用描述性的函数名来说明测试目的 
-- 将辅助函数命名为不以`test`或`invariant_`开头，避免意外执行 
+- 确保所有测试函数都有正确的前缀
+- 使用描述性的函数名来说明测试目的
+- 将辅助函数命名为不以`test`或`invariant_`开头，避免意外执行
 
-这种严格的命名约定确保了Foundry能够正确识别和执行不同类型的测试，同时避免意外执行非测试函数
-
-
+这种严格的命名约定确保了 Foundry 能够正确识别和执行不同类型的测试，同时避免意外执行非测试函数
 
 ## fuzz test
 
-![image-20250811025142225](SOLIDITY FUCK NOTE.assets/image-20250811025142225.png)
+![image-20250811025142225](SOLIDITY-FUCK-NOTE.assets/image-20250811025142225.png)
 
-![image-20250811030220366](SOLIDITY FUCK NOTE.assets/image-20250811030220366.png)
+![image-20250811030220366](SOLIDITY-FUCK-NOTE.assets/image-20250811030220366.png)
 
 ### Stateful/Invariant Fuzz
 
@@ -2327,33 +2277,33 @@ burnDSC就像是还债。先还债了之后，HF值变高，就可以更好地�
 
 | 方面                | Stateless Fuzz            | Stateful Fuzz                    |
 | ------------------- | ------------------------- | -------------------------------- |
-| **setUp执行**       | 每个测试函数前都执行      | 只在开始时执行一次               |
+| **setUp 执行**      | 每个测试函数前都执行      | 只在开始时执行一次               |
 | **setUp Execution** | Before each test function | Only once at the beginning       |
 | **状态重置**        | 每次测试后重置            | 状态持续累积                     |
 | **State Reset**     | Reset after each test     | State accumulates continuously   |
 | **测试序列**        | 单个函数调用              | 多个函数调用序列                 |
 | **Test Sequence**   | Single function call      | Multiple function call sequences |
 
-**Stateful Fuzz的本质是**：
+**Stateful Fuzz 的本质是**：
 
 1. ✅ **setUp()只执行一次** / setUp() runs only once
 2. ✅ **状态在测试间保持** / State persists between tests
 3. ✅ **模拟连续的用户交互** / Simulates continuous user interactions
 4. ✅ **测试系统在复杂状态下的不变量** / Tests invariants under complex states
 
-**但更准确的说法是**：Stateful Fuzz通过**连续的函数调用序列**来累积状态，而不仅仅是"不重置"这么简单。
+**但更准确的说法是**：Stateful Fuzz 通过**连续的函数调用序列**来累积状态，而不仅仅是"不重置"这么简单。
 
 **More accurately**: Stateful Fuzz accumulates state through **continuous function call sequences**, not just "not resetting" - it's more sophisticated than that.
 
-| 参数           | 精炼定义                                                  | 主要带来的价值                                               | 何时调高                                                 | 何时调低                                      | 典型参考区间                           | 风险 / 常见误区                                         | 辅助策略                                                     | 记忆助词                         |
-| -------------- | --------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------- | -------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------- |
-| runs           | 每个 invariant 目标执行的随机调用序列次数（横向试验条数） | 增加不同调用序列组合与初始/中间状态覆盖面                    | 序列多样性不足；覆盖曲线仍上升；统计波动大               | 单次序列已很长且新增覆盖趋缓；总耗时过高      | 开发 16–32；回归 64–256；深度安全 512+ | 只加 runs 不加 depth，反复在浅层打转                    | 调整 handler 函数权重 / 参数域；引入字典；监控覆盖斜率       | runs=横向铺面                    |
-| depth          | 单个序列中最多的调用步数（纵向探索深度）                  | 触达需多步累积才显现的复杂/延迟状态与跨函数交互              | 触发条件“差几步”；需要长链（清算、累计利息、限额耗尽等） | 序列后半段幂等/无新状态；shrinking 过慢       | 简单 32–64；复杂 64–128；特殊长链 128+ | 盲目加深→后半程空跑浪费时间                             | 预检条件减少必然 revert；提高关键稀有操作权重；插入时间推进 warp | depth=纵向挖深                   |
-| fail_on_revert | 是否将任意步骤的 revert 立即视为 run 失败（默认 false）   | true：快速暴露意外 revert；false：允许防护性 revert 持续探索 | 期望几乎无正常 revert；强调可组合性/鲁棒性               | 设计上存在大量“应挡住”的 revert；假阳性噪音大 | 布尔：默认 false；与场景配合双配置     | 误把安全网 revert 当漏洞；true 使深层状态难达（早截断） | false 模式统计并分类 revert；为易失败操作做前置检查          | fail_on_revert=态度（宽松/苛刻） |
+| 参数           | 精炼定义                                                  | 主要带来的价值                                               | 何时调高                                                 | 何时调低                                      | 典型参考区间                           | 风险 / 常见误区                                         | 辅助策略                                                         | 记忆助词                         |
+| -------------- | --------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------- | -------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------- |
+| runs           | 每个 invariant 目标执行的随机调用序列次数（横向试验条数） | 增加不同调用序列组合与初始/中间状态覆盖面                    | 序列多样性不足；覆盖曲线仍上升；统计波动大               | 单次序列已很长且新增覆盖趋缓；总耗时过高      | 开发 16–32；回归 64–256；深度安全 512+ | 只加 runs 不加 depth，反复在浅层打转                    | 调整 handler 函数权重 / 参数域；引入字典；监控覆盖斜率           | runs=横向铺面                    |
+| depth          | 单个序列中最多的调用步数（纵向探索深度）                  | 触达需多步累积才显现的复杂/延迟状态与跨函数交互              | 触发条件“差几步”；需要长链（清算、累计利息、限额耗尽等） | 序列后半段幂等/无新状态；shrinking 过慢       | 简单 32–64；复杂 64–128；特殊长链 128+ | 盲目加深 → 后半程空跑浪费时间                           | 预检条件减少必然 revert；提高关键稀有操作权重；插入时间推进 warp | depth=纵向挖深                   |
+| fail_on_revert | 是否将任意步骤的 revert 立即视为 run 失败（默认 false）   | true：快速暴露意外 revert；false：允许防护性 revert 持续探索 | 期望几乎无正常 revert；强调可组合性/鲁棒性               | 设计上存在大量“应挡住”的 revert；假阳性噪音大 | 布尔：默认 false；与场景配合双配置     | 误把安全网 revert 当漏洞；true 使深层状态难达（早截断） | false 模式统计并分类 revert；为易失败操作做前置检查              | fail_on_revert=态度（宽松/苛刻） |
 
-####  一、先用一句话概括
+#### 一、先用一句话概括
 
-传统单元测试：我手写一条调用序列，然后断言最终状态。 Invariant（不变量）测试：框架自动随机生成“很多条调用序列”，在每条序列执行完（或每步）后，统一检查我声明的“永远应该成立的性质（invariant_前缀函数）”。如果出现一个能让性质失败的调用序列，测试就失败并尝试 Shrink（缩短）出最小反例。
+传统单元测试：我手写一条调用序列，然后断言最终状态。 Invariant（不变量）测试：框架自动随机生成“很多条调用序列”，在每条序列执行完（或每步）后，统一检查我声明的“永远应该成立的性质（invariant\_前缀函数）”。如果出现一个能让性质失败的调用序列，测试就失败并尝试 Shrink（缩短）出最小反例。
 
 #### 二、targetContract(address(dsce)) 是什么？
 
@@ -2378,14 +2328,14 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
    - 调用 targetContract(A) → 这条 cheatcode 把地址 A 标记为“目标地址”
 4. Invariant 引擎准备一次 run 时：
    - 遍历所有目标地址列表
-   - 对每个地址，通过foundry测试本地模拟链上面的合约地址处字节码找到它对应的 artifact（通常通过你项目内的已编译信息：如果是你刚部署的合约，框架知道它是哪份字节码）
+   - 对每个地址，通过 foundry 测试本地模拟链上面的合约地址处字节码找到它对应的 artifact（通常通过你项目内的已编译信息：如果是你刚部署的合约，框架知道它是哪份字节码）
    - 解析 ABI：抽取所有 functions，筛掉 stateMutability in {view, pure}
    - 为剩余每个函数记录：
      - 4-byte selector
      - 参数类型列表（用于之后生成 fuzz 参数）
 5. “候选池”组装完成。之后每一步生成调用序列时，就从这些记录里任选一个 selector，再按 ABI 类型生成随机参数，编码成 calldata，设置随机 msg.sender 与 msg.value（如果 payable），然后执行 call。
 
-####  三、一个 invariant 测试的大体工作流（Foundry 默认）
+#### 三、一个 invariant 测试的大体工作流（Foundry 默认）
 
 以一次完整运行 (forge test --match-test InvariantsTest) 为例：
 
@@ -2398,7 +2348,7 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
    - revert 到 snapshot S0（第一轮本身就是 S0）。
    - 初始化一个空的调用序列 seq。
    - 在 depth 限制下（比如 15 步）重复： a) 随机从已注册目标中选一个函数 f（DSCEngine 的某个非 view 函数：depositCollateral、mintDsc、redeemCollateral、depositCollateralAndMintDsc、redeemCollateralForDsc、burnDsc、liquidate...） b) 为 f 的每个参数生成随机值（遵循 ABI 类型范围）。 c) 用默认 sender（这里就是 InvariantsTest 合约地址）去调用 f。如果 revert： - 若 fail_on_revert = true => 立即把这次序列当失败（Foundry 认为出现“意外”），进入 shrink。 - 若 fail_on_revert = false（默认）=> 记录一次失败调用，但继续下一步（因为很多 revert 在 DeFi 中是防御性的 & 可接受）。 d) 把成功或 revert 的尝试都算入序列步数（一般仍前进步数，除非内部策略调整）。
-   - 这条序列结束（达到 depth 或没有可再调用的函数）后，执行所有 invariant_ 前缀函数： invariant_protocolMustHaveMoreValueThanTotalSupply() 若其中 assert 失败或函数本身 revert => 整个 run 失败 -> Shrink。 若全部通过 => run 成功。
+   - 这条序列结束（达到 depth 或没有可再调用的函数）后，执行所有 invariant\_ 前缀函数： invariant_protocolMustHaveMoreValueThanTotalSupply() 若其中 assert 失败或函数本身 revert => 整个 run 失败 -> Shrink。 若全部通过 => run 成功。
 4. 进行第 2 次 run
    - revert 到 snapshot S0（确保每一条序列都是从统一的初始干净状态开始，而不是延续上一 run 的终态）。
    - 重复步骤 2。
@@ -2410,7 +2360,7 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
 
 #### 四、你的这个具体 invariant 是怎样被检查的？
 
-函数： 
+函数：
 
 ```solidity
     function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
@@ -2431,7 +2381,7 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
 - 如果任何一条生成的函数调用序列（比如 depositCollateral → mintDsc → redeemCollateral ... 随机参数）导致出现“协议内抵押价值 < DSC 总供应”，assert 触发，测试失败。
 - 失败后 Foundry 尝试缩短序列，输出最小反例（如：只需两步就造成破坏）。
 
-####  五、哪里体现了“stateful fuzz”与“不变量”的理念？
+#### 五、哪里体现了“stateful fuzz”与“不变量”的理念？
 
 理念的关键点：
 
@@ -2460,12 +2410,12 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
 
 假设 runs=3，depth=5（示例），Foundry 可能做：
 
-Run 1（初始 snapshot）： Step1: 调用 mintDsc(随机大数) → 因没有足够抵押，_revertIfHealthFactorIsBroken revert（允许，继续）。 Step2: depositCollateral(weth, 987654321...) → 可能 revert（没有 token 或未 approve） Step3: depositCollateralAndMintDsc(wbtc, smallAmount, mediumMint) → 也可能 revert Step4: burnDsc(x) → 没有余额，revert Step5: redeemCollateral(weth, y) → 余额不足，revert 序列结束 → 调 invariant： totalSupply 仍为 0（因为都没成功）； 协议持有抵押为 0； assert(0 >= 0) 成立。 Run 1 通过。
+Run 1（初始 snapshot）： Step1: 调用 mintDsc(随机大数) → 因没有足够抵押，\_revertIfHealthFactorIsBroken revert（允许，继续）。 Step2: depositCollateral(weth, 987654321...) → 可能 revert（没有 token 或未 approve） Step3: depositCollateralAndMintDsc(wbtc, smallAmount, mediumMint) → 也可能 revert Step4: burnDsc(x) → 没有余额，revert Step5: redeemCollateral(weth, y) → 余额不足，revert 序列结束 → 调 invariant： totalSupply 仍为 0（因为都没成功）； 协议持有抵押为 0； assert(0 >= 0) 成立。 Run 1 通过。
 
 Run 2 revert 回初始。 再随机 5 步…… 可能有一两步成功（如果 setUp 给了代币 + approve） 结束后再检查 invariant，仍成立。
 
 Run 3 同理。 所有 runs 结束 → 测试通过。
- 你得到“绿色”结果，但本质上探索很浅。
+你得到“绿色”结果，但本质上探索很浅。
 
 #### 八、改进：让理念真正发挥
 
@@ -2481,16 +2431,16 @@ Run 3 同理。 所有 runs 结束 → 测试通过。
    - invariant_supplyMatches: sum(userMinted) == dsc.totalSupply()
 4. 调整 foundry.toml [invariant] runs = 500 depth = 50 fail_on_revert = false （或根据速度调优）
 
-####  九、快速对照：普通单元测试 vs Invariant 测试（核心差异）
+#### 九、快速对照：普通单元测试 vs Invariant 测试（核心差异）
 
 - 编写重心：单测写“具体输入/步骤”，Invariant 写“始终成立的性质”。
 - 覆盖能力：单测覆盖你想到的场景；Invariant 通过随机序列覆盖你没想到的组合。
 - 失败信息：单测失败直接指向那条测试；Invariant 失败给出“最小导致破坏的调用序列”。
 - 适用点：状态机 / 金融安全关系 / 复杂多步骤交互。
 
-####  十、总结一句
+#### 十、总结一句
 
-targetContract(address(dsce)) 把 DSCEngine 的状态改变函数集合注册进“随机状态机动作池”，Foundry 在每个 run 中随机生成函数调用序列并在序列后执行以 invariant_ 开头的函数，验证你声明的经济安全性质是否在所有已探索到的状态路径上保持不变；这就是 Invariant 测试相对传统单测的核心理念。
+targetContract(address(dsce)) 把 DSCEngine 的状态改变函数集合注册进“随机状态机动作池”，Foundry 在每个 run 中随机生成函数调用序列并在序列后执行以 invariant\_ 开头的函数，验证你声明的经济安全性质是否在所有已探索到的状态路径上保持不变；这就是 Invariant 测试相对传统单测的核心理念。
 
 #### 十一. 什么是 snapshot S0？
 
@@ -2530,9 +2480,9 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 - 直到再也无法进一步简化而仍然触发同样的失败
 
 结果：得到一个“最小反例”（minimal counterexample）。
- 意义：大幅降低你人工调试难度，让你直接看到最核心导致失败的步骤组合。
+意义：大幅降低你人工调试难度，让你直接看到最核心导致失败的步骤组合。
 
-简单示例（概念）： 原始失败序列（长度 8）： 1 depositCollateral(500) 2 mintDsc(200) 3 depositCollateral(300) 4 redeemCollateral(700) 5 mintDsc(10) 6 burnDsc(5) 7 redeemCollateral(100) 8 mintDsc(1) 假设 shrink 后可能变成： 1 depositCollateral(500) 2 mintDsc(200) 3 redeemCollateral(700)   // 直接触发全局抵押不足 长度更短、参数更小，更易定位逻辑漏洞。
+简单示例（概念）： 原始失败序列（长度 8）： 1 depositCollateral(500) 2 mintDsc(200) 3 depositCollateral(300) 4 redeemCollateral(700) 5 mintDsc(10) 6 burnDsc(5) 7 redeemCollateral(100) 8 mintDsc(1) 假设 shrink 后可能变成： 1 depositCollateral(500) 2 mintDsc(200) 3 redeemCollateral(700) // 直接触发全局抵押不足 长度更短、参数更小，更易定位逻辑漏洞。
 
 只有当 invariant 真的被破坏时才会触发 shrink。若所有序列都未失败，就没有 shrink 过程。
 
@@ -2540,10 +2490,10 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 不会。关键点：
 
-- 在普通单元测试里：Foundry 会对每个 test_ 前缀函数调用前运行一次 setUp()（也就是“每个测试用例一个全新环境”）。
+- 在普通单元测试里：Foundry 会对每个 test\_ 前缀函数调用前运行一次 setUp()（也就是“每个测试用例一个全新环境”）。
 - 在 invariant 模式里：setUp() 只在“整套 invariant 运行开始”时执行一次，用来建立初始环境。随后创建快照 S0。
 - 每个 run（即一次随机调用序列）开始之前不是再执行 setUp，而是 revertTo(S0)。
-- 如果你有多个 invariant_ 函数，它们会在每个 run 的序列结束后“全部”被依次调用检查。（它们共享同一条序列执行结果）
+- 如果你有多个 invariant\_ 函数，它们会在每个 run 的序列结束后“全部”被依次调用检查。（它们共享同一条序列执行结果）
 
 所以：
 
@@ -2560,7 +2510,7 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 3. 你在命令行重复 forge test：
    - 整个进程重新启动，所有部署重新来过
 
-####  补充：为什么需要 snapshot 而不是每 run 重新执行 setUp？
+#### 补充：为什么需要 snapshot 而不是每 run 重新执行 setUp？
 
 性能 + 正确性：
 
@@ -2578,7 +2528,7 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 4. 增加 depth 的代价
    - 单 run 时长线性增加。
    - Shrink 复杂度上升（长反例归约更慢）。
-5. 与 k（候选池中有k个函数） 的平衡
+5. 与 k（候选池中有 k 个函数） 的平衡
    - 如果 depth << k：很多函数在一条 run 中都无法出现，依赖多次连续调用才能暴露的 bug 可能被延迟。
    - 如果 depth 远大于 k：会出现大量重复；若多数函数副作用浅，边际收益下降。Foundry 的 invariant 序列选择是“有放回、参数再随机”的顶层调用调度；同一函数可出现任意次（包括连续），除非你在逻辑上人为约束。
 
@@ -2595,15 +2545,15 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 ### Handler based methodology
 
-![defi-handler-stateful-fuzz-tests1](SOLIDITY FUCK NOTE.assets/defi-handler-stateful-fuzz-tests1.png)
+![defi-handler-stateful-fuzz-tests1](SOLIDITY-FUCK-NOTE.assets/defi-handler-stateful-fuzz-tests1.png)
 
-![defi-handler-stateful-fuzz-tests2](SOLIDITY FUCK NOTE.assets/defi-handler-stateful-fuzz-tests2.png)
+![defi-handler-stateful-fuzz-tests2](SOLIDITY-FUCK-NOTE.assets/defi-handler-stateful-fuzz-tests2.png)
 
-### Invariant Test 的msg.sender规则
+### Invariant Test 的 msg.sender 规则
 
-![image-20250812045915827](SOLIDITY FUCK NOTE.assets/image-20250812045915827.png)
+![image-20250812045915827](SOLIDITY-FUCK-NOTE.assets/image-20250812045915827.png)
 
-#### 1. ==Handler函数中的msg.sender==
+#### 1. ==Handler 函数中的 msg.sender==
 
 ```
 复制function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
@@ -2616,11 +2566,11 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 **特点：**
 
 - ✅ **随机生成**：每次调用都可能是不同的地址
-- ✅ **模拟真实用户**：模拟多用户DeFi环境
+- ✅ **模拟真实用户**：模拟多用户 DeFi 环境
 - ✅ **地址格式多样**：有些是完整地址，有些是简化地址
 - ✅ **无状态持续性**：同一个地址不保证会被重复使用
 
-#### 2. **Invariant函数中的msg.sender**
+#### 2. **Invariant 函数中的 msg.sender**
 
 ```
 复制function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
@@ -2633,8 +2583,8 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 **特点：**
 
-- ✅ **固定地址**：始终是Foundry测试运行器的内部地址
-- ✅ **框架控制**：由Foundry框架自动调用
+- ✅ **固定地址**：始终是 Foundry 测试运行器的内部地址
+- ✅ **框架控制**：由 Foundry 框架自动调用
 - ✅ **独立身份**：与测试合约地址不同
 - ✅ **系统级权限**：具有测试框架的权限
 
@@ -2656,15 +2606,15 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 #### 🎭 三者的本质区别
 
-| 方面       | Handler的msg.sender | Invariant的msg.sender | address(this) |
-| ---------- | ------------------- | --------------------- | ------------- |
-| **身份**   | 随机用户地址        | Foundry测试运行器     | 测试合约地址  |
-| **数量**   | 多个不同地址        | 单一固定地址          | 单一固定地址  |
-| **目的**   | 模拟用户行为        | 执行不变性检查        | 合约身份标识  |
-| **控制者** | Foundry Fuzzer      | Foundry Framework     | 测试合约本身  |
-| **持续性** | 无状态持续性        | 状态持续              | 永久固定      |
+| 方面       | Handler 的 msg.sender | Invariant 的 msg.sender | address(this) |
+| ---------- | --------------------- | ----------------------- | ------------- |
+| **身份**   | 随机用户地址          | Foundry 测试运行器      | 测试合约地址  |
+| **数量**   | 多个不同地址          | 单一固定地址            | 单一固定地址  |
+| **目的**   | 模拟用户行为          | 执行不变性检查          | 合约身份标识  |
+| **控制者** | Foundry Fuzzer        | Foundry Framework       | 测试合约本身  |
+| **持续性** | 无状态持续性          | 状态持续                | 永久固定      |
 
-==**疑问：我的depth= 32，可是输出日志不足32条，可见调用的函数序列长度（已注册目标函数序列长度+invariant测试函数个数）小于32，为什么？为何Invariant只输出了一次console.log信息，不应该输出[runs]=32次吗？**==
+==**疑问：我的 depth= 32，可是输出日志不足 32 条，可见调用的函数序列长度（已注册目标函数序列长度+invariant 测试函数个数）小于 32，为什么？为何 Invariant 只输出了一次 console.log 信息，不应该输出[runs]=32 次吗？**==
 
 ### 疑问一：关于 depth 参数和输出日志数量
 
@@ -2678,18 +2628,18 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 2. 某些函数调用提前返回
 
-   注意你的代码中有多处return
+   注意你的代码中有多处 return
 
    语句：
 
    ```
-   
+
    if (usersWithCollateralDeposited.length == 0) {
        return; // 不会有日志输出
    }
    ```
 
-### 🎯 **疑问2：为什么 invariant 函数只输出一次？**
+### 🎯 **疑问 2：为什么 invariant 函数只输出一次？**
 
 **Foundry Invariant 测试的实际工作流程：**
 
@@ -2748,7 +2698,7 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 #### 1. 状态重置机制确认
 
-根据 Foundry 的不变量测试机制，每次 run 之间确实会进行状态重置。在 GitHub issue #5799 中，开发者遇到了类似的困惑："Invariant function gets called after every handler function. This is a bit confusing is bc im not sure what the distinction between a run and..."  这表明状态管理在不变量测试中确实存在复杂性。
+根据 Foundry 的不变量测试机制，每次 run 之间确实会进行状态重置。在 GitHub issue #5799 中，开发者遇到了类似的困惑："Invariant function gets called after every handler function. This is a bit confusing is bc im not sure what the distinction between a run and..." 这表明状态管理在不变量测试中确实存在复杂性。
 
 #### 2. 不变量测试的运行模式
 
@@ -2771,17 +2721,17 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
     // 这里的日志只显示当前 run 的状态
     console2.log("Current run - Handler calls:", handler.timesMintIsCalled());
     console2.log("Test contract calls:", invariantCallCount); // 总是 1
-    
+
     uint256 totalSupply = dsc.totalSupply();
     uint256 totalWethDeposited = IERC20(weth).balanceOf(address(dsce));
     uint256 totalBtcDeposited = IERC20(wbtc).balanceOf(address(dsce));
-    
+
     uint256 wethValue = dsce.getUsdValue(weth, totalWethDeposited);
     uint256 wbtcValue = dsce.getUsdValue(wbtc, totalBtcDeposited);
-    
+
     console2.log("Total Supply: ", totalSupply);
     console2.log("Total Value: ", wethValue + wbtcValue);
-    
+
     assert(wethValue + wbtcValue >= totalSupply);
 }
 ```
@@ -2790,10 +2740,10 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 **是的，您的理解完全正确**：
 
-1. 日志输出只显示最后一次（或当前）run 的信息 
-2. `invariantCallCount` 始终为 1，因为每次 run 都从新状态开始 
-3. 真正的统计信息需要依赖 Handler 合约内部的计数器 
-4. Foundry 的 `runs: 32, calls: 1024` 是框架级别的统计，不受状态重置影响 
+1. 日志输出只显示最后一次（或当前）run 的信息
+2. `invariantCallCount` 始终为 1，因为每次 run 都从新状态开始
+3. 真正的统计信息需要依赖 Handler 合约内部的计数器
+4. Foundry 的 `runs: 32, calls: 1024` 是框架级别的统计，不受状态重置影响
 
 这就是为什么在不变量测试中，我们通常依赖 Handler 模式来进行状态追踪，而不是在测试合约中维护计数器。
 
@@ -2802,14 +2752,14 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 核心速览：库函数 bound(...)（来自 import {Test} from "forge-std/Test.sol";）
 
 1. 调用方式
-    继承 Test 后，直接用：
-    amount = bound(amount, min, max);
-    无需 vm. 前缀，它是 Test 合同里提供的 internal 函数。
+   继承 Test 后，直接用：
+   amount = bound(amount, min, max);
+   无需 vm. 前缀，它是 Test 合同里提供的 internal 函数。
 2. 签名（uint 版）
-    function bound(uint256 val, uint256 min, uint256 max) internal pure returns (uint256);
-    要求 max >= min，否则 revert。
+   function bound(uint256 val, uint256 min, uint256 max) internal pure returns (uint256);
+   要求 max >= min，否则 revert。
 3. 作用
-    把任意 val 映射进闭区间 [min, max]：
+   把任意 val 映射进闭区间 [min, max]：
 
 - 若 val 已在范围内，原样返回
 - 否则执行 (val % (max - min + 1)) + min 得到落点
@@ -2818,19 +2768,21 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 ### 👻 Ghost Variables 精简总结
 
 #### 🎯 核心概念
+
 **Ghost Variables** = Foundry fuzz testing 中用于**跨函数调用跟踪状态**的变量
 
 #### 📝 基本用法
+
 ```solidity
 contract Handler {
     // Ghost Variables - 以 ghost_ 前缀命名
     uint256 public ghost_totalDeposits;
     uint256 public ghost_callCount;
-    
+
     function deposit(uint256 amount) public {
         // 执行操作
         vault.deposit(amount);
-        
+
         // 更新 Ghost Variables
         ghost_totalDeposits += amount;
         ghost_callCount++;
@@ -2839,11 +2791,13 @@ contract Handler {
 ```
 
 #### ✨ 主要特点
+
 - **持久性**: 在多次函数调用间保持状态
 - **累积性**: 可以统计总数、计数等
 - **验证性**: 用于不变量检查
 
 #### 🔍 典型应用
+
 ```solidity
 // 不变量测试
 function invariant_balanceCorrect() public {
@@ -2852,69 +2806,70 @@ function invariant_balanceCorrect() public {
 ```
 
 #### 💡 一句话总结
+
 **Ghost Variables 是 Handler 合约中的"记账本"，记录所有操作的累积状态，用于验证系统不变量。**
 
-### mark：console.log不起作用
+### mark：console.log 不起作用
 
-![image-20250811124326204](SOLIDITY FUCK NOTE.assets/image-20250811124326204.png)
+![image-20250811124326204](SOLIDITY-FUCK-NOTE.assets/image-20250811124326204.png)
 
-![image-20250811234618196](SOLIDITY FUCK NOTE.assets/image-20250811234618196.png)
+![image-20250811234618196](SOLIDITY-FUCK-NOTE.assets/image-20250811234618196.png)
 
 #### 结论先给
 
-------
+---
 
 1. console 与 console2 本质上调用的是同一个 cheatcode（hevm/forge 的调试地址），只是“包装函数的集合不同”。
 2. 你看到“换成 console2 就打印”并不是因为 console2 拥有“更强的打印能力”，而是当前 Foundry 版本里对 invariant + 低 verbosity 的抑制策略（或一个版本差异 / bug）对 console 和 console2 的处理行为不完全一致（或者你之前使用 console 时刚好触发了静态调用 + 抑制路径）。
 3. 严格来说，不应该依赖 “console2 在 view invariant 下 -vv 就能打印” 这一偶发现象；最稳的仍是：去掉 view 或提升到 -vvvv，或在 Handler/非 view 中采样打印。
 4. 这类问题在社区里是有人反映过“invariant 里 console.log 不出 / 只有失败才出 / 要到 -vvvv 才出”，也有人表示“console2 可以看到”。通常会被归类为 Foundry 的输出过滤细节或小 bug。
 
-------
+---
 
 #### console.sol 与 console2.sol 的真正区别
 
-------
+---
 
 查看 forge-std 源码（lib/forge-std/src）可以看到：
 
 - 两个文件都定义了一组 internal view 函数，最终都是对同一个 Vm (cheatcode) 地址发起调用。
-- console.sol 追求“Hardhat 兼容”，提供了大量 Hardhat 风格的重载：log, logInt, logUint, logBytes, logBytes32, logString, logAddress, logBool, log (带 1~N 参数的各种组合)、log_named_* 系列等。
+- console.sol 追求“Hardhat 兼容”，提供了大量 Hardhat 风格的重载：log, logInt, logUint, logBytes, logBytes32, logString, logAddress, logBool, log (带 1~N 参数的各种组合)、log*named*\* 系列等。
 - console2.sol 是一个“更精简/更 gas 友好”的版本（重载组合更少，删去部分 Hardhat 兼容接口；历史上最初是为了减少字节码膨胀和降低调试开销）。
 - 两者都不是“事件”，也不是写入链上，只是调用 cheatcode，测试环境捕获后渲染到 stdout。
 
 因此功能本质：
- console ＝ 兼容 + 全量多重载
- console2 ＝ 精简 + 微优化（更少函数 -> 更少字节码 size / 编译时间 / 可能更低调用开销）
+console ＝ 兼容 + 全量多重载
+console2 ＝ 精简 + 微优化（更少函数 -> 更少字节码 size / 编译时间 / 可能更低调用开销）
 
 没有“权限”或“能不能在 staticcall 下输出”的正式区别设计。
 
-------
+---
 
 #### 为什么会出现你当前的差异表现
 
-------
+---
 
 可归纳几个叠加因素（任选一个就可能触发）：
 
 A. Invariant + view + verbosity（详细程度） 抑制
- Foundry 在跑 invariant 时，会对 view/pure 的 invariant 用 staticcall 包装；内部有一层“除非失败，否则少打印”逻辑。不同版本中，这层逻辑对于哪些函数签名/调用 pattern 触发输出有差异。
- 某些版本中，console（那批众多重载）可能被一并“降噪”到较高 verbosity 才统一 flush，而 console2 那套较少的接口没有被列在同一个过滤表里，于是提前显示。
- （注意：这是基于一些用户反馈与源码阅读推导的行为差异，而不是官方“特性”。）
+Foundry 在跑 invariant 时，会对 view/pure 的 invariant 用 staticcall 包装；内部有一层“除非失败，否则少打印”逻辑。不同版本中，这层逻辑对于哪些函数签名/调用 pattern 触发输出有差异。
+某些版本中，console（那批众多重载）可能被一并“降噪”到较高 verbosity 才统一 flush，而 console2 那套较少的接口没有被列在同一个过滤表里，于是提前显示。
+（注意：这是基于一些用户反馈与源码阅读推导的行为差异，而不是官方“特性”。）
 
 B. 编译/缓存切换导致你误判
- 有时候第一次运行因为缓存+verbosity 没刷新，你看到“空 Logs”；改 import 触发一次完整重编译，verbosity flush 行为不同，恰好出现日志，让你以为“换 console2 起作用”。（你的终端里确实出现多次“Compiling 1 files”——重编译会改变上下文，偶尔影响调试输出顺序。）
+有时候第一次运行因为缓存+verbosity 没刷新，你看到“空 Logs”；改 import 触发一次完整重编译，verbosity flush 行为不同，恰好出现日志，让你以为“换 console2 起作用”。（你的终端里确实出现多次“Compiling 1 files”——重编译会改变上下文，偶尔影响调试输出顺序。）
 
 C. grep / 过滤的副作用
- 你使用 grep -v "Bound Result" 过滤。若之前 console 的输出里恰好与 Bound/某些行混杂且被进一步管道处理，有极小可能性被过滤掉（不过你给的日志显示是完全空，说明更可能是 A。）
+你使用 grep -v "Bound Result" 过滤。若之前 console 的输出里恰好与 Bound/某些行混杂且被进一步管道处理，有极小可能性被过滤掉（不过你给的日志显示是完全空，说明更可能是 A。）
 
 D. Foundry 具体版本差异
- 某些 commit 之后调整过 invariant 日志策略。升级/切换版本时行为会变。很多人在升级后突然看到“之前不出的 log 出来了”或相反。
+某些 commit 之后调整过 invariant 日志策略。升级/切换版本时行为会变。很多人在升级后突然看到“之前不出的 log 出来了”或相反。
 
-------
+---
 
 #### 社区/他人是否遇到
 
-------
+---
 
 典型的问法（英文）：
 
@@ -2925,17 +2880,17 @@ D. Foundry 具体版本差异
 
 （如果你想自行验证：把 forge 升到最新 nightly 和一个较旧 release，跑同一份最小复现：一个 view invariant 内部各自调用 console.log 与 console2.log，看对比。）
 
-#### Stateless Fuzz test中console和console2都无输出
+#### Stateless Fuzz test 中 console 和 console2 都无输出
 
-github issue链接：https://github.com/foundry-rs/foundry/issues/11039
+github issue 链接：https://github.com/foundry-rs/foundry/issues/11039
 
-![image-20250820182908375](SOLIDITY FUCK NOTE.assets/image-20250820182908375.png)
+![image-20250820182908375](SOLIDITY-FUCK-NOTE.assets/image-20250820182908375.png)
 
-#### 用最高verbosity  -vvvv 其实可以看到。
+#### 用最高 verbosity -vvvv 其实可以看到。
 
 你的 console 调用已经执行了
 
-------
+---
 
 在 -vvvv 的输出里有： console::log("User balance:2", 0) [staticcall]
 
@@ -2943,12 +2898,12 @@ github issue链接：https://github.com/foundry-rs/foundry/issues/11039
 
 为什么没有单独的“Logs:”文本块
 
-------
+---
 
 Foundry 不同冗长度显示不同内容（简化版）：
 
-- -v只显示测试结果（通过用例不显示 console 输出）
-- -vv显示“测试结果 + Logs”（即传统的 console 输出块）
+- -v 只显示测试结果（通过用例不显示 console 输出）
+- -vv 显示“测试结果 + Logs”（即传统的 console 输出块）
 - -vvvv 显示“完整调用 Trace”（此时不再重复单独列出 Logs，console 调用以 trace 节点形式出现） （有些版本会在 -vvvv 同时保留 Logs，但你的版本显然选择只显示 trace）
 
 所以你错把 -vvvv 当成“更详细=含日志”，实际上它切到了另一种视图。
@@ -3040,25 +2995,25 @@ cmd | grep -v 'noise' | grep --color=always 'target' | less -R
 
 # Cross Chain Rebase Token
 
-![image-20250812081452007](SOLIDITY FUCK NOTE.assets/image-20250812081452007.png)
+![image-20250812081452007](SOLIDITY-FUCK-NOTE.assets/image-20250812081452007.png)
 
-![image-20250812083603667](SOLIDITY FUCK NOTE.assets/image-20250812083603667.png)
+![image-20250812083603667](SOLIDITY-FUCK-NOTE.assets/image-20250812083603667.png)
 
-![image-20250812083755771](SOLIDITY FUCK NOTE.assets/image-20250812083755771.png)
+![image-20250812083755771](SOLIDITY-FUCK-NOTE.assets/image-20250812083755771.png)
 
- Cross-Chain Interoperability Protocol (CCIP)
+Cross-Chain Interoperability Protocol (CCIP)
 
-![image-20250812094305307](SOLIDITY FUCK NOTE.assets/image-20250812094305307.png)
+![image-20250812094305307](SOLIDITY-FUCK-NOTE.assets/image-20250812094305307.png)
 
-##  **"dust" problem**
+## **"dust" problem**
 
- tiny, fractional amounts of tokens (often from interest) that might accrue between the moment a user initiates a transaction (like a full withdrawal) and the time it's actually executed on the blockchain due to network latency or block confirmation times.
+tiny, fractional amounts of tokens (often from interest) that might accrue between the moment a user initiates a transaction (like a full withdrawal) and the time it's actually executed on the blockchain due to network latency or block confirmation times.
 
 ## Security Considerations and Design Rationale
 
 - **Centralization Risk with `Ownable` and Role Granting:** In our current implementation, the `owner` (established by `Ownable`) has the power to call `grantMintAndBurnRole`. This means the owner can grant the powerful `MINT_AND_BURN_ROLE` to any address, including their own. This gives the owner significant control over the token supply, which could be a point of centralization and potential misuse.
 - **Mitigation:** This level of control must be clearly documented. Users and auditors interacting with this contract need to understand the trust assumptions placed on the owner.
-- **Circular Dependency Avoidance:** As mentioned, ==**granting roles *after* deployment (rather than in the constructor)**== helps avoid deployment complexities, especially when integrating with other contracts like a Vault that might need the token's address during its own deployment.
+- **Circular Dependency Avoidance:** As mentioned, ==**granting roles _after_ deployment (rather than in the constructor)**== helps avoid deployment complexities, especially when integrating with other contracts like a Vault that might need the token's address during its own deployment.
 - **Cross-Chain Considerations:** This design also facilitates scenarios where certain functionalities (like minting/burning via a vault) might only exist on a "source" chain, justifying the separation of deployment and role assignment.
 
 ## Key features of an interface:
@@ -3069,15 +3024,15 @@ cmd | grep -v 'noise' | grep --color=always 'target' | less -R
 
 - All functions declared in an interface are implicitly `external`.
 
-- ​    // Note: We only include functions that the Vault contract will call.
+- ​ // Note: We only include functions that the Vault contract will call.
 
-  ​    // Other functions from the actual RebaseToken.sol are not needed here.
+  ​ // Other functions from the actual RebaseToken.sol are not needed here.
 
-  合理，因为external, public, fallback, recieve才会ABI暴露。
+  合理，因为 external, public, fallback, recieve 才会 ABI 暴露。
 
 测试合约余额很大：
 
-![image-20250813162309243](SOLIDITY FUCK NOTE.assets/image-20250813162309243.png)
+![image-20250813162309243](SOLIDITY-FUCK-NOTE.assets/image-20250813162309243.png)
 
 ## 🔍 **深度解析：为什么转账失败但没有 revert**
 
@@ -3123,8 +3078,8 @@ if (!success) {
 
 #### 📊 **详细对比表**
 
-| 方法       | 失败时行为   | Gas 限制      | 返回值          | 推荐使用 |
-| ---------- | ------------ | ------------- | --------------- | -------- |
+| 方法       | 失败时行为   | Gas 限制      | 返回值          | 推荐使用  |
+| ---------- | ------------ | ------------- | --------------- | --------- |
 | `call`     | 返回 `false` | 转发所有 gas  | `(bool, bytes)` | ✅ 推荐   |
 | `transfer` | 自动 revert  | 固定 2300 gas | 无              | ❌ 不推荐 |
 | `send`     | 返回 `false` | 固定 2300 gas | `bool`          | ❌ 不推荐 |
@@ -3136,30 +3091,30 @@ Blockchain bridges employ various mechanisms to facilitate the transfer of asset
 **1. Burn-and-Mint:**
 This mechanism is often used for tokens that can be controlled by the bridge protocol on both chains.
 
-- **Process:** The user sends tokens to a smart contract managed by the bridge on the source chain. These tokens are then *burned* (destroyed or permanently removed from circulation) on the source chain. A cross-chain message is relayed to the destination chain, instructing a corresponding smart contract to *mint* (create) an equivalent amount of the same token. These newly minted tokens are then delivered to the user's address on the destination chain.
-- **Key Feature:** This method ensures that the *total supply* of the token remains constant across all integrated chains.
+- **Process:** The user sends tokens to a smart contract managed by the bridge on the source chain. These tokens are then _burned_ (destroyed or permanently removed from circulation) on the source chain. A cross-chain message is relayed to the destination chain, instructing a corresponding smart contract to _mint_ (create) an equivalent amount of the same token. These newly minted tokens are then delivered to the user's address on the destination chain.
+- **Key Feature:** This method ensures that the _total supply_ of the token remains constant across all integrated chains.
 
 **2. Lock-and-Unlock:**
 This approach is common when the bridge doesn't have minting control over the token or deals with pre-existing token supplies on the destination chain.
 
-- **Process:** The user deposits tokens into a smart contract (often a liquidity pool or vault) on the source chain, where they are *locked*. A cross-chain message signals the destination chain. On the destination chain, an equivalent amount of pre-existing tokens, typically supplied by liquidity providers (LPs), is *unlocked* from a corresponding pool/vault and sent to the user.
-- **Challenge:** This model relies on sufficient liquidity being available on the destination chain, which can lead to *fragmented liquidity* (liquidity split across many pools on different chains). It also necessitates LPs who expect to be compensated.
+- **Process:** The user deposits tokens into a smart contract (often a liquidity pool or vault) on the source chain, where they are _locked_. A cross-chain message signals the destination chain. On the destination chain, an equivalent amount of pre-existing tokens, typically supplied by liquidity providers (LPs), is _unlocked_ from a corresponding pool/vault and sent to the user.
+- **Challenge:** This model relies on sufficient liquidity being available on the destination chain, which can lead to _fragmented liquidity_ (liquidity split across many pools on different chains). It also necessitates LPs who expect to be compensated.
 
 **3. Lock-and-Mint:**
 This mechanism is frequently used when bridging native tokens (like ETH) or tokens that the bridge cannot burn on the source chain, to a destination chain where a representation of that asset is needed.
 
-- **Process:** The user sends their native tokens to a bridge contract on the source chain, where the tokens are *locked* in a vault. A cross-chain message is then sent. On the destination chain, a *new, wrapped version* of the token is *minted* and delivered to the user.
+- **Process:** The user sends their native tokens to a bridge contract on the source chain, where the tokens are _locked_ in a vault. A cross-chain message is then sent. On the destination chain, a _new, wrapped version_ of the token is _minted_ and delivered to the user.
 - **Example:** USDC.e is a common example. This represents USDC that has been locked on Ethereum (its native chain), with a corresponding wrapped version (USDC.e) minted on other chains like Arbitrum, Linea, or zkSync to enable its use in those ecosystems.
-- **Concept:** These wrapped tokens act as an *IOU* (I Owe You) for the underlying asset locked on the source chain. They are redeemable for the original asset by reversing the process.
+- **Concept:** These wrapped tokens act as an _IOU_ (I Owe You) for the underlying asset locked on the source chain. They are redeemable for the original asset by reversing the process.
 
 **4. Burn-and-Unlock:**
 This is essentially the reverse of the Lock-and-Mint mechanism, used when returning a wrapped asset to its native chain or redeeming it for the original.
 
-- **Process:** The user sends the *wrapped* tokens to the bridge contract on the chain where they hold the wrapped version (this is the source chain for this specific transaction, though it might have been the destination chain in the initial Lock-and-Mint operation). These wrapped tokens are *burned* on this chain. A cross-chain message is relayed to the original, native chain of the asset (now the destination chain for this transaction). The equivalent amount of the *original, native* token is then *unlocked* from the vault where it was initially secured and sent to the user.
+- **Process:** The user sends the _wrapped_ tokens to the bridge contract on the chain where they hold the wrapped version (this is the source chain for this specific transaction, though it might have been the destination chain in the initial Lock-and-Mint operation). These wrapped tokens are _burned_ on this chain. A cross-chain message is relayed to the original, native chain of the asset (now the destination chain for this transaction). The equivalent amount of the _original, native_ token is then _unlocked_ from the vault where it was initially secured and sent to the user.
 
 ## CCIP(Cross-Chain Interoperability Protocol)
 
-![CCIP High-Level Architecture](SOLIDITY FUCK NOTE.assets/ccip-hl-v1.6.gif)
+![CCIP High-Level Architecture](SOLIDITY-FUCK-NOTE.assets/ccip-hl-v1.6.gif)
 
 ### Understanding Chainlink CCIP: The Internet of Contracts
 
@@ -3205,8 +3160,8 @@ Security is paramount in cross-chain communication, and Chainlink CCIP is engine
 - **Powered by Chainlink Oracles:** CCIP leverages the proven security, reliability, and extensive track record of Chainlink's industry-standard Decentralized Oracle Networks (DONs). These networks are already trusted to secure billions of dollars across DeFi and other Web3 applications.
 - **Decentralization as a Core Principle:** The system relies on decentralized networks of independent, Sybil-resistant node operators. This eliminates single points of failure and ensures that the misbehavior of one or a few nodes does not compromise the entire system, as honest nodes can reach consensus and potentially penalize malicious actors.
 - **The Risk Management Network (RMN):**
-  A cornerstone of CCIP's security is the Risk Management Network. The RMN is a *secondary*, independent network of nodes that vigilantly monitors the primary Committing DON. Key characteristics of the RMN include:
-  - **Independent Verification:** It runs *different* client software and has distinct node operators from the primary DON. This diversity protects against potential bugs or exploits that might affect the primary DON's codebase.
+  A cornerstone of CCIP's security is the Risk Management Network. The RMN is a _secondary_, independent network of nodes that vigilantly monitors the primary Committing DON. Key characteristics of the RMN include:
+  - **Independent Verification:** It runs _different_ client software and has distinct node operators from the primary DON. This diversity protects against potential bugs or exploits that might affect the primary DON's codebase.
   - **Dual Validation Process:** The RMN provides a critical second layer of validation for all cross-chain messages.
   - **Off-Chain RMN Node Operations:**
     - **Blessing:** RMN nodes cross-verify messages. They check if the messages committed on the destination chain (via Merkle roots posted by the Committing DON) accurately match the messages that originated from the source chain. They monitor all messages and commit to their own Merkle roots, representing batches of these verified messages.
@@ -3229,13 +3184,13 @@ To fully grasp Chainlink CCIP, it's essential to understand its key concepts and
 - **OnRamp Contract:** A smart contract on the source chain that validates outgoing messages, manages token locking/burning, and interacts with the Committing DON.
 - **OffRamp Contract:** A smart contract on the destination chain that validates incoming messages, manages token unlocking/minting, and is called by the Executing DON.
 - **Token Pools:** Smart contracts associated with specific tokens on each chain. They handle the logic for cross-chain token transfers (e.g., Lock/Unlock for existing tokens, Burn/Mint for tokens with native cross-chain capabilities) and enforce rate limits.
-- **Lane:** A specific, *unidirectional* communication pathway between a source blockchain and a destination blockchain. For example, Ethereum Sepolia to Arbitrum Sepolia is one lane, and Arbitrum Sepolia to Ethereum Sepolia is a separate, distinct lane.
+- **Lane:** A specific, _unidirectional_ communication pathway between a source blockchain and a destination blockchain. For example, Ethereum Sepolia to Arbitrum Sepolia is one lane, and Arbitrum Sepolia to Ethereum Sepolia is a separate, distinct lane.
 - **Chain Selector:** A unique numerical identifier assigned to each blockchain network supported by CCIP. This allows contracts and off-chain systems to unambiguously refer to specific chains.
 - **Message ID:** A unique identifier generated for every CCIP message, allowing for precise tracking and identification of individual cross-chain transactions.
 - **CCT (Cross Chain Token Standard):** Introduced in CCIP v1.5, CCT (specifically ERC-7281) allows developers to register their existing tokens for transfer via CCIP and create "Self-Managed" token pools. This offers more flexibility compared to relying solely on "CCIP-Managed" token pools for a limited set of widely-used tokens.
 - **Receiver Types:**
-  - **Smart Contract:** Can receive both tokens *and* an arbitrary data payload. This enables developers to design sophisticated cross-chain applications where, for example, a receiving contract automatically executes a function (like staking the received tokens) upon message arrival.
-  - **EOA (Externally Owned Account):** A standard user wallet address. EOAs can *only* receive tokens via CCIP; they cannot process arbitrary data payloads directly.
+  - **Smart Contract:** Can receive both tokens _and_ an arbitrary data payload. This enables developers to design sophisticated cross-chain applications where, for example, a receiving contract automatically executes a function (like staking the received tokens) upon message arrival.
+  - **EOA (Externally Owned Account):** A standard user wallet address. EOAs can _only_ receive tokens via CCIP; they cannot process arbitrary data payloads directly.
 
 ### The Value Proposition: Benefits of Cross-Chain Interoperability with CCIP
 
@@ -3248,17 +3203,17 @@ Interoperability protocols like Chainlink CCIP unlock significant advantages for
 
 ## CCT(Cross-Chain Token)
 
-![image-20250821223406211](SOLIDITY FUCK NOTE.assets/image-20250821223406211.png)
+![image-20250821223406211](SOLIDITY-FUCK-NOTE.assets/image-20250821223406211.png)
 
-![image-20250821223509563](SOLIDITY FUCK NOTE.assets/image-20250821223509563.png)
+![image-20250821223509563](SOLIDITY-FUCK-NOTE.assets/image-20250821223509563.png)
 
-![image-20250821223604076](SOLIDITY FUCK NOTE.assets/image-20250821223604076.png)
+![image-20250821223604076](SOLIDITY-FUCK-NOTE.assets/image-20250821223604076.png)
 
-![image-20250821223751695](SOLIDITY FUCK NOTE.assets/image-20250821223751695.png)
+![image-20250821223751695](SOLIDITY-FUCK-NOTE.assets/image-20250821223751695.png)
 
-![Cross-Chain Token Standard - Architecture (EVM)](SOLIDITY FUCK NOTE.assets/onchain-evm-architecture-registry.jpg)
+![Cross-Chain Token Standard - Architecture (EVM)](SOLIDITY-FUCK-NOTE.assets/onchain-evm-architecture-registry.jpg)
 
-![Process for enabling a token in CCIP.](SOLIDITY FUCK NOTE.assets/CCIP_enabled_tokens_flowchart.jpg)
+![Process for enabling a token in CCIP.](SOLIDITY-FUCK-NOTE.assets/CCIP_enabled_tokens_flowchart.jpg)
 
 ### Unlocking Advanced Use Cases with Programmable Token Transfers
 
@@ -3397,7 +3352,7 @@ Token Admin Registry 提供跨链 Token 权限统一可信映射；Registry Modu
 
 You will need your deployer address and keystore name (if using `forge` with a local keystore, otherwise ensure `PRIVATE_KEY` is set in `.env` for scripts to use). The following `forge script` commands will perform the deployment and configuration. Replace `<your-keystore-name>` and `<your-address>` where applicable if not using private key from `.env`.
 
-![Process for enabling a token in CCIP.](SOLIDITY FUCK NOTE.assets/CCIP_enabled_tokens_flowchart-17560967306005.jpg)
+![Process for enabling a token in CCIP.](SOLIDITY-FUCK-NOTE.assets/CCIP_enabled_tokens_flowchart-17560967306005.jpg)
 
 **1. Deploy Token Contracts:**
 Deploy your custom token contract (e.g., `MyCrossChainToken.sol` which inherits from `ERC20Burnable`, `ERC20Mintable`, `Ownable`) on both Sepolia and Arbitrum Sepolia. The `DeployToken.s.sol` script handles this, grants initial mint/burn roles to the deployer, and saves the deployed token addresses to output JSON files (e.g., `./script/output/deployedToken_ethereumSepolia.json`).
@@ -3411,7 +3366,7 @@ Deploy your custom token contract (e.g., `MyCrossChainToken.sol` which inherits 
   forge script script/DeployToken.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC_URL --broadcast --sender <your-address> -vvvv
 
 **2. Deploy Token Pools:**
-Deploy the `BurnMintTokenPool` contract on both chains. This script associates the pool with the token deployed in step 1 and, importantly, grants mint/burn roles *to the token pool contract* on the respective token contracts. This allows the pool to mint tokens on the destination chain and burn them on the source chain during a transfer.
+Deploy the `BurnMintTokenPool` contract on both chains. This script associates the pool with the token deployed in step 1 and, importantly, grants mint/burn roles _to the token pool contract_ on the respective token contracts. This allows the pool to mint tokens on the destination chain and burn them on the source chain during a transfer.
 
 - On Sepolia:
 
@@ -3455,7 +3410,7 @@ As the registered admin, you now associate your deployed token contract address 
   forge script script/SetPool.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC_URL --broadcast --sender <your-address> -vvvv
 
 **6. Add Remote Chain to Pools:**
-To enable cross-chain transfers *between* your deployed pools, you must register each pool with its counterpart on the other chain. The `ApplyChainUpdates.s.sol` script achieves this by constructing a `TokenPool.ChainUpdate` struct. This struct contains information about the remote chain, including its CCIP chain selector, the remote token pool address, the remote token address, and the developer-defined rate limits for transfers *to* that remote chain. This struct is then passed to the `applyChainUpdates` function on the *local* token pool contract.
+To enable cross-chain transfers _between_ your deployed pools, you must register each pool with its counterpart on the other chain. The `ApplyChainUpdates.s.sol` script achieves this by constructing a `TokenPool.ChainUpdate` struct. This struct contains information about the remote chain, including its CCIP chain selector, the remote token pool address, the remote token address, and the developer-defined rate limits for transfers _to_ that remote chain. This struct is then passed to the `applyChainUpdates` function on the _local_ token pool contract.
 
 - On Sepolia (to link to Arbitrum Sepolia pool):
 
@@ -3479,10 +3434,7 @@ If your deployer address doesn't yet have tokens on the source chain (Sepolia), 
   forge script script/MintTokens.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast --sender <your-address> -vvvv
 
 **2. Transfer Tokens Cross-Chain:**
-Initiate a cross-chain transfer from Sepolia to Arbitrum Sepolia. The `TransferTokens.s.sol` script handles this. Internally, it:
-\* Constructs a `Client.EVM2AnyMessage` struct. This struct includes details like the receiver address on the destination chain, the amount of tokens to transfer, the fee token to use (LINK or native), and any extra data for programmable transfers.
-\* Approves the CCIP Router contract to spend the required amount of your tokens (and fee tokens, if using LINK).
-\* Calls the `ccipSend` function on the CCIP Router contract on the source chain (Sepolia).
+Initiate a cross-chain transfer from Sepolia to Arbitrum Sepolia. The `TransferTokens.s.sol` script handles this. Internally, it: \* Constructs a `Client.EVM2AnyMessage` struct. This struct includes details like the receiver address on the destination chain, the amount of tokens to transfer, the fee token to use (LINK or native), and any extra data for programmable transfers. \* Approves the CCIP Router contract to spend the required amount of your tokens (and fee tokens, if using LINK). \* Calls the `ccipSend` function on the CCIP Router contract on the source chain (Sepolia).
 
 - On Sepolia (sending to an address on Arbitrum Sepolia):
 
@@ -3490,28 +3442,21 @@ Initiate a cross-chain transfer from Sepolia to Arbitrum Sepolia. The `TransferT
 
   The script will output the source transaction hash.
 
-**3. Verify the Transfer:**
-\* Copy the source transaction hash from your terminal.
-\* Navigate to the Chainlink CCIP Explorer: `https://ccip.chain.link/`.
-\* Paste the transaction hash into the search bar.
-\* The explorer will display the transaction details: Message ID, Source Transaction Hash, Status (e.g., "Waiting for finality," then "Processing," then "Success"), Source Chain, Destination Chain, From/To addresses, and the token transferred.
-\* Refresh the explorer page until the status shows "Success". This confirms that the tokens were burned on Sepolia and subsequently minted on Arbitrum Sepolia to the recipient address.
+**3. Verify the Transfer:** \* Copy the source transaction hash from your terminal. \* Navigate to the Chainlink CCIP Explorer: `https://ccip.chain.link/`. \* Paste the transaction hash into the search bar. \* The explorer will display the transaction details: Message ID, Source Transaction Hash, Status (e.g., "Waiting for finality," then "Processing," then "Success"), Source Chain, Destination Chain, From/To addresses, and the token transferred. \* Refresh the explorer page until the status shows "Success". This confirms that the tokens were burned on Sepolia and subsequently minted on Arbitrum Sepolia to the recipient address.
 
 ### Conclusion: Simplifying Cross-Chain Tokenization
 
 The Cross-Chain Token (CCT) Standard, enabled by CCIP v1.5, significantly simplifies the process of creating and managing cross-chain tokens. It provides developers with unprecedented autonomy, control, and security, underpinned by Chainlink's robust infrastructure. By offering permissionless integration, developer-owned token pools, configurable rate limits, and support for programmable transfers, the CCT Standard empowers developers to build truly interoperable applications and seamlessly extend their token's reach across the multi-chain landscape. We encourage you to explore the official Chainlink documentation and experiment with the CCT Standard to unlock new possibilities for your projects.
 
-
-
 ## CCTP(Circle's Cross-Chain Transfer Protocol )
 
-![image-20250822150145198](SOLIDITY FUCK NOTE.assets/image-20250822150145198.png)
+![image-20250822150145198](SOLIDITY-FUCK-NOTE.assets/image-20250822150145198.png)
 
 ### CCTP: A Native Solution with Burn-and-Mint
 
 Circle's Cross-Chain Transfer Protocol (CCTP) offers a fundamentally different approach to moving USDC across blockchains, utilizing a "burn-and-mint" mechanism.
 
-**Mechanism:** Instead of locking USDC and minting a wrapped IOU, CCTP facilitates the *burning* (destruction) of native USDC on the source chain. Once this burn event is verified and finalized, an equivalent amount of *native* USDC is *minted* (created) directly on the destination chain.
+**Mechanism:** Instead of locking USDC and minting a wrapped IOU, CCTP facilitates the _burning_ (destruction) of native USDC on the source chain. Once this burn event is verified and finalized, an equivalent amount of _native_ USDC is _minted_ (created) directly on the destination chain.
 
 **Advantages of CCTP:**
 
@@ -3541,11 +3486,11 @@ This method prioritizes the highest level of security by waiting for hard finali
 
 - **Step 1: Initiation:** A user interacts with a CCTP-enabled application (e.g., Chainlink Transporter). They specify the amount of USDC to transfer, the destination blockchain, and the recipient's address on that chain. The user must first approve the CCTP TokenMessenger contract on the source chain to spend the specified amount of their USDC.
 - **Step 2: Burn Event:** The user's specified USDC amount is burned (destroyed) on the source chain by the TokenMessenger contract.
-- **Step 3: Attestation (Hard Finality):** Circle's Attestation Service observes the burn event. It waits until *hard finality* is reached for that transaction on the source chain. Once confirmed, the Attestation Service issues a signed attestation.
+- **Step 3: Attestation (Hard Finality):** Circle's Attestation Service observes the burn event. It waits until _hard finality_ is reached for that transaction on the source chain. Once confirmed, the Attestation Service issues a signed attestation.
 - **Step 4: Mint Event:** The application (or potentially the user, depending on the implementation) fetches the signed attestation from Circle's Attestation API. This attestation is then submitted to the MessageTransmitter contract on the destination chain.
 - **Step 5: Completion:** The MessageTransmitter contract on the destination chain verifies the authenticity and validity of the attestation. Upon successful verification, it mints the equivalent amount of native USDC directly to the specified recipient address on the destination chain.
 
-*When to Use Standard Transfer:* Ideal when reliability and security are paramount, and waiting approximately 13+ minutes for hard finality is acceptable. This method generally incurs lower fees compared to Fast Transfers.
+_When to Use Standard Transfer:_ Ideal when reliability and security are paramount, and waiting approximately 13+ minutes for hard finality is acceptable. This method generally incurs lower fees compared to Fast Transfers.
 
 **2. Fast Transfer (V2 - Uses Soft Finality)**
 
@@ -3553,13 +3498,13 @@ This method, available in CCTP V2, prioritizes speed by leveraging soft finality
 
 - **Step 1: Initiation:** Similar to the Standard Transfer, the user interacts with a CCTP V2-enabled application, specifies transfer details, and approves the TokenMessenger contract.
 - **Step 2: Burn Event:** The specified USDC amount is burned on the source chain.
-- **Step 3: Instant Attestation (Soft Finality):** Circle's Attestation Service observes the burn event and issues a signed attestation much sooner, *after only soft finality* is reached on the source chain.
+- **Step 3: Instant Attestation (Soft Finality):** Circle's Attestation Service observes the burn event and issues a signed attestation much sooner, _after only soft finality_ is reached on the source chain.
 - **Step 4: Fast Transfer Allowance Backing:** While awaiting hard finality for the burn event on the source chain, the amount of the transfer is temporarily debited from Circle's Fast Transfer Allowance. This service incurs an additional fee, which is collected on-chain during the minting process.
 - **Step 5: Mint Event:** The application fetches the (sooner available) attestation and submits it to the MessageTransmitter contract on the destination chain. The fee for the fast transfer is collected at this stage.
-- **Step 6: Fast Transfer Allowance Replenishment:** Once *hard finality is eventually reached* for the original burn transaction on the source chain, Circle's Fast Transfer Allowance is credited back or replenished.
+- **Step 6: Fast Transfer Allowance Replenishment:** Once _hard finality is eventually reached_ for the original burn transaction on the source chain, Circle's Fast Transfer Allowance is credited back or replenished.
 - **Step 7: Completion:** The recipient receives native USDC on the destination chain much faster, typically within seconds.
 
-*When to Use Fast Transfer:* Best suited for use cases where speed is critical and the user/application cannot wait for hard finality. Note that this method incurs an additional fee for leveraging the Fast Transfer Allowance. (As of the video's recording, CCTP V2 and Fast Transfers were primarily available on testnet).
+_When to Use Fast Transfer:_ Best suited for use cases where speed is critical and the user/application cannot wait for hard finality. Note that this method incurs an additional fee for leveraging the Fast Transfer Allowance. (As of the video's recording, CCTP V2 and Fast Transfers were primarily available on testnet).
 
 ### Implementing CCTP: A Practical Ethers.js Example (Standard Transfer)
 
@@ -3626,7 +3571,7 @@ CCTP's ability to move native USDC securely and efficiently opens up a wide rang
 
 Circle's Cross-Chain Transfer Protocol represents a significant advancement in enabling true interoperability for native USDC across the burgeoning multi-chain landscape. By moving away from the risks and inefficiencies of wrapped assets and traditional bridges, CCTP provides a secure, efficient, and developer-friendly foundation for a new generation of cross-chain applications. Its burn-and-mint mechanism, backed by Circle's robust Attestation Service, ensures that users are always dealing with genuine, native USDC, thereby fostering greater trust and liquidity in the Web3 ecosystem. As CCTP adoption grows and its features (like Fast Transfers) become more widespread, it will undoubtedly play a pivotal role in unifying liquidity and simplifying user experiences across diverse blockchain networks.
 
-![CCIP High-Level Architecture](SOLIDITY FUCK NOTE.assets/ccip-hl-v1.6-1756127409920121.gif)
+![CCIP High-Level Architecture](SOLIDITY-FUCK-NOTE.assets/ccip-hl-v1.6-1756127409920121.gif)
 
 ## Forge Install 版本指定方式总结表格
 
@@ -3649,20 +3594,20 @@ Circle's Cross-Chain Transfer Protocol represents a significant advancement in e
 
 ### 常用选项参数（最新版本）
 
-| 选项                  | 功能            | 示例                                       | 说明                                         |
-| --------------------- | --------------- | ------------------------------------------ | -------------------------------------------- |
-| `--shallow`           | 浅克隆          | `forge install --shallow <repo>@<ref>`     | 提高性能，减少磁盘使用，但无法切换分支或标签 |
-| `--no-git`            | 不使用git子模块 | `forge install --no-git <repo>@<ref>`      | 安装时不将依赖添加为git子模块                |
-| `--commit`            | 自动提交        | `forge install --commit <repo>@<ref>`      | 安装依赖后自动创建git提交                    |
-| `--root <PATH>`       | 指定项目根目录  | `forge install --root ./my-project <repo>` | 指定项目的根路径，默认为git仓库根目录        |
-| `-j, --threads <NUM>` | 指定线程数      | `forge install -j 4 <repo>`                | 指定使用的线程数量，0表示使用逻辑核心数      |
+| 选项                  | 功能              | 示例                                       | 说明                                         |
+| --------------------- | ----------------- | ------------------------------------------ | -------------------------------------------- |
+| `--shallow`           | 浅克隆            | `forge install --shallow <repo>@<ref>`     | 提高性能，减少磁盘使用，但无法切换分支或标签 |
+| `--no-git`            | 不使用 git 子模块 | `forge install --no-git <repo>@<ref>`      | 安装时不将依赖添加为 git 子模块              |
+| `--commit`            | 自动提交          | `forge install --commit <repo>@<ref>`      | 安装依赖后自动创建 git 提交                  |
+| `--root <PATH>`       | 指定项目根目录    | `forge install --root ./my-project <repo>` | 指定项目的根路径，默认为 git 仓库根目录      |
+| `-j, --threads <NUM>` | 指定线程数        | `forge install -j 4 <repo>`                | 指定使用的线程数量，0 表示使用逻辑核心数     |
 
 ### 性能优化组合（更新版）
 
 | 场景                 | 推荐命令                                                | 说明                               |
 | -------------------- | ------------------------------------------------------- | ---------------------------------- |
 | **大型仓库快速安装** | `forge install --shallow --no-git <repo>@tag=<tag>`     | 浅克隆且不使用子模块，最快安装方式 |
-| **CI/CD环境**        | `forge install --shallow -j 0 <repo>@tag=<tag>`         | 使用所有可用核心并行安装           |
+| **CI/CD 环境**       | `forge install --shallow -j 0 <repo>@tag=<tag>`         | 使用所有可用核心并行安装           |
 | **本地开发**         | `forge install --commit <alias>=<repo>@branch=<branch>` | 自动提交并使用别名，便于管理       |
 | **精确版本控制**     | `forge install <repo>@rev=<commit>`                     | 使用精确提交匹配，避免歧义         |
 
@@ -3682,7 +3627,7 @@ Circle's Cross-Chain Transfer Protocol represents a significant advancement in e
 
 - 完全跳过 Git 子模块机制
 - 直接将依赖代码复制到项目中，而不是作为子模块引用
-- 提高性能并减少磁盘使用，但会阻止切换分支或标签 
+- 提高性能并减少磁盘使用，但会阻止切换分支或标签
 
 ### 主要区别
 
@@ -3690,7 +3635,7 @@ Circle's Cross-Chain Transfer Protocol represents a significant advancement in e
    - `--no-commit`：仍使用 Git 子模块，只是跳过提交步骤
    - `--no-git`：完全不使用 Git 子模块机制
 2. **使用场景**：
-   - `--no-commit`：当工作区有未提交更改但仍想使用子模块时 
+   - `--no-commit`：当工作区有未提交更改但仍想使用子模块时
    - `--no-git`：当不想使用子模块管理依赖时
 3. **后续管理**：
    - `--no-commit`：依赖仍可通过 Git 子模块命令管理
@@ -3715,7 +3660,7 @@ Forge 默认使用 Git 子模块管理依赖 ，这两个参数提供了不同�
 
 ## [CCIPLocalSimulator](https://docs.chain.link/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator)
 
-![CCIP High-Level Architecture](SOLIDITY FUCK NOTE.assets/ccip-hl-v1.6-1756127413220123.gif)
+![CCIP High-Level Architecture](SOLIDITY-FUCK-NOTE.assets/ccip-hl-v1.6-1756127413220123.gif)
 
 A contract that simulates local CCIP (Cross-Chain Interoperability Protocol) operations for testing and development purposes.
 
@@ -3729,19 +3674,19 @@ function configuration() public view returns (uint64 chainSelector_, IRouterClie
 
 #### [Returns](https://docs.chain.link/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#returns)
 
-|     Parameter      |          Type          |                       Description                        |
-| :----------------: | :--------------------: | :------------------------------------------------------: |
-|   chainSelector_   |        `uint64`        |              The unique CCIP Chain Selector              |
-|   sourceRouter_    |    `IRouterClient`     |             The source chain Router contract             |
-| destinationRouter_ |    `IRouterClient`     |          The destination chain Router contract           |
-|   wrappedNative_   |        `WETH9`         | The wrapped native token which can be used for CCIP fees |
-|     linkToken_     |      `LinkToken`       |                      The LINK token                      |
-|      ccipBnM_      | `BurnMintERC677Helper` |                    The ccipBnM token                     |
-|      ccipLnM_      | `BurnMintERC677Helper` |                    The ccipLnM token                     |
+|      Parameter      |          Type          |                       Description                        |
+| :-----------------: | :--------------------: | :------------------------------------------------------: |
+|   chainSelector\_   |        `uint64`        |              The unique CCIP Chain Selector              |
+|   sourceRouter\_    |    `IRouterClient`     |             The source chain Router contract             |
+| destinationRouter\_ |    `IRouterClient`     |          The destination chain Router contract           |
+|   wrappedNative\_   |        `WETH9`         | The wrapped native token which can be used for CCIP fees |
+|     linkToken\_     |      `LinkToken`       |                      The LINK token                      |
+|      ccipBnM\_      | `BurnMintERC677Helper` |                    The ccipBnM token                     |
+|      ccipLnM\_      | `BurnMintERC677Helper` |                    The ccipLnM token                     |
 
 ## 1. 真实 Chainlink CCIP 架构快速回顾
 
-![CCIP High-Level Architecture](SOLIDITY FUCK NOTE.assets/ccip-hl-v1.6-1756127417746125.gif)
+![CCIP High-Level Architecture](SOLIDITY-FUCK-NOTE.assets/ccip-hl-v1.6-1756127417746125.gif)
 
 真实 CCIP（简化视角）涉及组件：
 
@@ -3750,13 +3695,13 @@ function configuration() public view returns (uint64 chainSelector_, IRouterClie
 - CommitStore：维护消息批次（batches）与 Merkle/根摘要，供 OffRamp 验证。
 - OffRamp：目标链侧，接收经 Chainlink 网络提交的批次证明并执行消息。
 - Token Pools：处理跨链 Token 的锁定(Lock)/铸造(Mint)/销毁(Burn)/释放(Release) 等模式。
-- Fee/Price oracles：决定手续费（LINK / 原生币 / Gas * 汇率）。
+- Fee/Price oracles：决定手续费（LINK / 原生币 / Gas \* 汇率）。
 - 风险/速率限制（Rate Limiter）、重播保护（Nonce / Sequence）、执行 Gas 限制等。
 - Chainlink 节点网络：离线完成路径发现、报价、消息中继、证明提交。
 
 真实环境是“两个或更多链 + 一个独立的去中心化预言机网络”协同运行。
 
-------
+---
 
 ## 2. CCIPLocalSimulatorFork 的目标
 
@@ -3780,18 +3725,18 @@ function configuration() public view returns (uint64 chainSelector_, IRouterClie
 
 ## Shell 脚本(.sh)执行指令总结表
 
-![img](SOLIDITY FUCK NOTE.assets/amh8Kj2A8wuxfSrJ.png)
+![img](SOLIDITY-FUCK-NOTE.assets/amh8Kj2A8wuxfSrJ.png)
 
 ### 基础执行指令表格
 
 | 执行方式          | 命令格式               | 是否需要执行权限 | 适用场景       | 说明                 |
 | ----------------- | ---------------------- | ---------------- | -------------- | -------------------- |
-| **相对路径执行**  | `./script.sh`          | ✅ 需要           | 脚本在当前目录 | 最常用的执行方式     |
-| **绝对路径执行**  | `/full/path/script.sh` | ✅ 需要           | 脚本在其他目录 | 指定完整路径执行     |
-| **bash 直接执行** | `bash script.sh`       | ❌ 不需要         | 无执行权限时   | 通过 bash 解释器执行 |
-| **sh 直接执行**   | `sh script.sh`         | ❌ 不需要         | 兼容性执行     | 使用 sh 解释器执行   |
-| **source 执行**   | `source script.sh`     | ❌ 不需要         | 在当前环境执行 | 脚本变量影响当前会话 |
-| **点号执行**      | `. script.sh`          | ❌ 不需要         | source 的简写  | 等同于 source 命令   |
+| **相对路径执行**  | `./script.sh`          | ✅ 需要          | 脚本在当前目录 | 最常用的执行方式     |
+| **绝对路径执行**  | `/full/path/script.sh` | ✅ 需要          | 脚本在其他目录 | 指定完整路径执行     |
+| **bash 直接执行** | `bash script.sh`       | ❌ 不需要        | 无执行权限时   | 通过 bash 解释器执行 |
+| **sh 直接执行**   | `sh script.sh`         | ❌ 不需要        | 兼容性执行     | 使用 sh 解释器执行   |
+| **source 执行**   | `source script.sh`     | ❌ 不需要        | 在当前环境执行 | 脚本变量影响当前会话 |
+| **点号执行**      | `. script.sh`          | ❌ 不需要        | source 的简写  | 等同于 source 命令   |
 
 ### 权限设置指令表格
 
@@ -3833,7 +3778,7 @@ function configuration() public view returns (uint64 chainSelector_, IRouterClie
 
 ## Merkle Tree
 
-![image-20250827140821153](SOLIDITY FUCK NOTE.assets/image-20250827140821153.png)
+![image-20250827140821153](SOLIDITY-FUCK-NOTE.assets/image-20250827140821153.png)
 
 ### The Structure of a Merkle Tree
 
@@ -3888,13 +3833,11 @@ Merkle trees and proofs find diverse applications in the Web3 space due to their
 2. **Blockchain Rollups:** Layer 2 scaling solutions like Arbitrum and Optimism utilize Merkle trees (or variations like Patricia Merkle Tries) to prove state changes committed from Layer 2 back to Layer 1. They can also help verify the order of transactions processed on Layer 2.
 3. **Efficient Airdrops:** Merkle proofs are instrumental in managing airdrops of tokens. Instead of storing a potentially massive list of eligible addresses directly in a smart contract, only the Root Hash of a Merkle tree (where each leaf is a hash of an eligible address) is stored. Claimants then provide their address and a Merkle proof to demonstrate their eligibility, allowing for selective and gas-efficient claims.
 
-
-
 ## Merkle Proof
 
-![image-20250827160155677](SOLIDITY FUCK NOTE.assets/image-20250827160155677.png)
+![image-20250827160155677](SOLIDITY-FUCK-NOTE.assets/image-20250827160155677.png)
 
-standard：需要在Merkle proof中进行二次hash避免结果冲撞(collisons)
+standard：需要在 Merkle proof 中进行二次 hash 避免结果冲撞(collisons)
 
 | 参数                    | 提供方          | 来源           | 作用               |
 | ----------------------- | --------------- | -------------- | ------------------ |
@@ -3931,7 +3874,7 @@ bytes32 finalLeaf = keccak256(concatenated);
 | **数据准备**   | 为第二次哈希准备输入数据    | 确保数据格式正确       |
 | **标准化处理** | 统一数据处理流程            | 保持与链下生成的一致性 |
 
-## Second Pre-image Attack 
+## Second Pre-image Attack
 
 ### 什么是 Second Pre-image Attack
 
@@ -3953,15 +3896,13 @@ bytes32 finalLeaf = keccak256(concatenated);
 | **中间节点攻击** | 伪造分支证明 | 构造相同哈希的不同子树               | 绕过验证逻辑 |
 | **根节点攻击**   | 伪造整个树   | 构造相同根哈希的不同树结构           | 完全控制空投 |
 
+## Openzzeplin MerkleProof 计算剖析
 
+![image-20250827160155677](SOLIDITY-FUCK-NOTE.assets/image-20250827160155677.png)
 
-## Openzzeplin MerkleProof计算剖析
+![image-20250827162856082](SOLIDITY-FUCK-NOTE.assets/image-20250827162856082.png)
 
-![image-20250827160155677](SOLIDITY FUCK NOTE.assets/image-20250827160155677.png)
-
-![image-20250827162856082](SOLIDITY FUCK NOTE.assets/image-20250827162856082.png)
-
-![image-20250827163241841](SOLIDITY FUCK NOTE.assets/image-20250827163241841.png)
+![image-20250827163241841](SOLIDITY-FUCK-NOTE.assets/image-20250827163241841.png)
 
 ### 1. 参数提供方分析
 
@@ -3975,16 +3916,16 @@ bytes32 finalLeaf = keccak256(concatenated);
 
 ### 2. OpenZeppelin MerkleProof 计算规则
 
-![image-20250827140821153](SOLIDITY FUCK NOTE.assets/image-20250827140821153.png)
+![image-20250827140821153](SOLIDITY-FUCK-NOTE.assets/image-20250827140821153.png)
 
 如果要证明 **Hash 3**，让我们分析计算过程：
 
 #### 📋 **Hash 3 证明所需的 Proof**
 
-| 步骤      | 需要的兄弟节点 | 计算过程                   | 结果        |
-| --------- | -------------- | -------------------------- | ----------- |
-| **第1步** | `Hash 4`       | `hash(Hash 3, Hash 4)`     | `Hash 3-4`  |
-| **第2步** | `Hash 1-2`     | `hash(Hash 1-2, Hash 3-4)` | `Root Hash` |
+| 步骤        | 需要的兄弟节点 | 计算过程                   | 结果        |
+| ----------- | -------------- | -------------------------- | ----------- |
+| **第 1 步** | `Hash 4`       | `hash(Hash 3, Hash 4)`     | `Hash 3-4`  |
+| **第 2 步** | `Hash 1-2`     | `hash(Hash 1-2, Hash 3-4)` | `Root Hash` |
 
 **因此，证明 Hash 3 的 proof 数组为：`[Hash 4, Hash 1-2]`**
 
@@ -3994,10 +3935,10 @@ bytes32 finalLeaf = keccak256(concatenated);
 // OpenZeppelin MerkleProof.verify 的简化逻辑
 function verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns (bool) {
     bytes32 computedHash = leaf; // 从叶子节点开始
-    
+
     for (uint256 i = 0; i < proof.length; i++) {
         bytes32 proofElement = proof[i];
-        
+
         // 关键：OpenZeppelin 使用排序规则确定哈希顺序
         if (computedHash <= proofElement) {
             // 如果当前哈希 <= proof元素，当前哈希在左
@@ -4007,7 +3948,7 @@ function verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pur
             computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
         }
     }
-    
+
     return computedHash == root;
 }
 ```
@@ -4029,21 +3970,21 @@ bytes32[] memory proof = [hash4, hash1_2];
 // 验证过程
 function verifyHash3Example() {
     bytes32 computedHash = hash3; // 起始：Hash 3
-    
+
     // 第1轮：与 Hash 4 组合
     if (hash3 <= hash4) {
         computedHash = keccak256(abi.encodePacked(hash3, hash4)); // Hash 3-4
     } else {
         computedHash = keccak256(abi.encodePacked(hash4, hash3)); // Hash 4-3
     }
-    
+
     // 第2轮：与 Hash 1-2 组合
     if (computedHash <= hash1_2) {
         computedHash = keccak256(abi.encodePacked(computedHash, hash1_2));
     } else {
         computedHash = keccak256(abi.encodePacked(hash1_2, computedHash));
     }
-    
+
     // 最终比较
     return computedHash == rootHash;
 }
@@ -4063,7 +4004,7 @@ function verifyHash3Example() {
 ```solidity
 // 链下生成 Merkle Tree 时也必须使用相同排序规则
 function hashPair(a, b) {
-    return a <= b ? 
+    return a <= b ?
         keccak256(solidityPack(['bytes32', 'bytes32'], [a, b])) :
         keccak256(solidityPack(['bytes32', 'bytes32'], [b, a]));
 }
@@ -4082,9 +4023,9 @@ function hashPair(a, b) {
 3. **证明 Hash 3 需要**：`[Hash 4, Hash 1-2]`
 4. **关键是保持链上链下一致性**：排序规则、编码方式、哈希算法都必须完全相同
 
-### 扩展场景：6个叶子节点的 Merkle Tree 分析
+### 扩展场景：6 个叶子节点的 Merkle Tree 分析
 
-#### 1. 6叶子节点树结构图
+#### 1. 6 叶子节点树结构图
 
 ```
                     Root Hash
@@ -4098,19 +4039,19 @@ function hashPair(a, b) {
 
 #### 2. 证明 Hash 3 的计算过程分析
 
-📋 **Hash 3 在6节点树中的证明路径**
+📋 **Hash 3 在 6 节点树中的证明路径**
 
-| 步骤      | 当前节点   | 需要的兄弟节点 | 计算过程                   | 结果        |
-| --------- | ---------- | -------------- | -------------------------- | ----------- |
-| **第1步** | `Hash 3`   | `Hash 4`       | `hash(Hash 3, Hash 4)`     | `Hash 3-4`  |
-| **第2步** | `Hash 3-4` | `Hash 1-2`     | `hash(Hash 1-2, Hash 3-4)` | `Hash 1-4`  |
-| **第3步** | `Hash 1-4` | `Hash 5-6`     | `hash(Hash 1-4, Hash 5-6)` | `Root Hash` |
+| 步骤        | 当前节点   | 需要的兄弟节点 | 计算过程                   | 结果        |
+| ----------- | ---------- | -------------- | -------------------------- | ----------- |
+| **第 1 步** | `Hash 3`   | `Hash 4`       | `hash(Hash 3, Hash 4)`     | `Hash 3-4`  |
+| **第 2 步** | `Hash 3-4` | `Hash 1-2`     | `hash(Hash 1-2, Hash 3-4)` | `Hash 1-4`  |
+| **第 3 步** | `Hash 1-4` | `Hash 5-6`     | `hash(Hash 1-4, Hash 5-6)` | `Root Hash` |
 
 **因此，证明 Hash 3 的 proof 数组为：`[Hash 4, Hash 1-2, Hash 5-6]`**
 
-### 扩展场景：12个叶子节点的 Merkle Tree 分析
+### 扩展场景：12 个叶子节点的 Merkle Tree 分析
 
-#### 1. 12叶子节点树结构图
+#### 1. 12 叶子节点树结构图
 
 ```
                                 Root Hash
@@ -4126,25 +4067,25 @@ function hashPair(a, b) {
 
 #### 2. 证明 Hash 5 的计算过程分析
 
-📋 **Hash 5 在12节点树中的证明路径**
+📋 **Hash 5 在 12 节点树中的证明路径**
 
-| 步骤      | 当前节点   | 需要的兄弟节点 | 计算过程                    | 结果        |
-| --------- | ---------- | -------------- | --------------------------- | ----------- |
-| **第1步** | `Hash 5`   | `Hash 6`       | `hash(Hash 5, Hash 6)`      | `Hash 5-6`  |
-| **第2步** | `Hash 5-6` | `Hash 7-8`     | `hash(Hash 5-6, Hash 7-8)`  | `Hash 5-8`  |
-| **第3步** | `Hash 5-8` | `Hash 1-4`     | `hash(Hash 1-4, Hash 5-8)`  | `Hash 1-8`  |
-| **第4步** | `Hash 1-8` | `Hash 9-12`    | `hash(Hash 1-8, Hash 9-12)` | `Root Hash` |
+| 步骤        | 当前节点   | 需要的兄弟节点 | 计算过程                    | 结果        |
+| ----------- | ---------- | -------------- | --------------------------- | ----------- |
+| **第 1 步** | `Hash 5`   | `Hash 6`       | `hash(Hash 5, Hash 6)`      | `Hash 5-6`  |
+| **第 2 步** | `Hash 5-6` | `Hash 7-8`     | `hash(Hash 5-6, Hash 7-8)`  | `Hash 5-8`  |
+| **第 3 步** | `Hash 5-8` | `Hash 1-4`     | `hash(Hash 1-4, Hash 5-8)`  | `Hash 1-8`  |
+| **第 4 步** | `Hash 1-8` | `Hash 9-12`    | `hash(Hash 1-8, Hash 9-12)` | `Root Hash` |
 
 **因此，证明 Hash 5 的 proof 数组为：`[Hash 6, Hash 7-8, Hash 1-4, Hash 9-12]`**
 
-## 使用 mapping(address => bool)  s_hasRightToClaim验证与使用 MerkleProof 验证的区别与优劣对比
+## 使用 mapping(address => bool) s_hasRightToClaim 验证与使用 MerkleProof 验证的区别与优劣对比
 
 问题：
- “如果我用 `mapping(address => bool) s_hasRightToClaim` 预先把允许领取的地址都写进去，`bool=true` 就说明它可以 claim，这样不也能验证吗？那和现在用 MerkleProof 有什么差异？哪个更好？”
+“如果我用 `mapping(address => bool) s_hasRightToClaim` 预先把允许领取的地址都写进去，`bool=true` 就说明它可以 claim，这样不也能验证吗？那和现在用 MerkleProof 有什么差异？哪个更好？”
 
 答案：两种方式都能实现“地址是否在白名单/空投名单中”的校验，但它们在 数据上链成本、扩展性、可变性、透明度、信任假设、批量规模、隐私特征 等方面差异很大。下面系统比较。
 
-------
+---
 
 ### 1. 两种方案的基本形态
 
@@ -4196,13 +4137,13 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 - 用户调用时需提交 `proof`（O(log N) 个兄弟节点）
 - 叶子全集不在链上（链下文件 / 前端 / GitHub 公布）
 
-------
+---
 
 ### 2. 核心差异维度对比
 
 | 维度                     | mapping 白名单                                      | Merkle 树                                             |
 | ------------------------ | --------------------------------------------------- | ----------------------------------------------------- |
-| 上链初始化成本（N 地址） | 约 N * 20,000 gas（每个新 SSTORE）                  | 约 20,000 gas（仅存 root 一次）                       |
+| 上链初始化成本（N 地址） | 约 N \* 20,000 gas（每个新 SSTORE）                 | 约 20,000 gas（仅存 root 一次）                       |
 | 可支持地址规模           | 受 gas & 交易数限制，大规模极贵                     | 轻松支持十万 / 百万级（只影响 proof 长度）            |
 | 用户 claim 时 gas        | 仅几次 SLOAD + 1 次 SSTORE（约 30k~45k 总体含转账） | SLOAD + 若干 keccak（≈ 多 5k~15k），总体仍 40k~60k 级 |
 | 数据透明度               | 全名单上链，可直接链上枚举                          | root 不泄露全部名单；但通常名单公开在链下             |
@@ -4218,7 +4159,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 | 批量发放（无需用户交互） | 可以写循环（但昂贵）                                | 依然昂贵（批量 claim 不推荐）                         |
 | 与 off-chain 对账        | 直接 on-chain 读取                                  | 需对照链下公布的 CSV 与 root 计算                     |
 
-------
+---
 
 ### 3. 成本举例（粗略估算）
 
@@ -4235,7 +4176,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 
 > 说明：Merkle 方案把成本推迟到分发阶段（每个用户多付一点点 keccak 验证 gas），mapping 把成本前置并集中由部署方承担。
 
-------
+---
 
 ### 4. 领取（claim）阶段的差异
 
@@ -4247,7 +4188,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 | 出错面   | 漏掉地址则需补写（再花 gas） | root 里漏了需重算 root（新版本）   |
 | 用户体验 | 简单（签一笔）               | 需要前端自动附加 proof（仍可无感） |
 
-------
+---
 
 ### 5. 安全与信任对比
 
@@ -4258,7 +4199,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 | 被动防“后门修改”         | 必须写死 / 冻结 set 函数，否则 owner 可加/换额 | root 变量设 immutable 或写一次后不允许再改      |
 | 欺诈空间                 | 若 owner 动态加自己地址、或改别人额度          | 若 root 多次更新可做“滑动”修改，需事件/版本记录 |
 
-------
+---
 
 ### 6. 何时选择 mapping 的合理场景
 
@@ -4277,7 +4218,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 - 或使用 BitMap（OpenZeppelin BitMaps）存 claimed 减少存储开销；
 - 如果地址不多（几十个），可以直接在 constructor 里写死数组并循环设置。
 
-------
+---
 
 ### 7. 何时应坚持使用 Merkle
 
@@ -4293,7 +4234,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 - 可存 `bytes32[] public merkleRoots;` 支持多轮；
 - 每轮单独 claimed 位图：`mapping(uint256 => mapping(address => bool))`.
 
-------
+---
 
 ### 8. “mapping + Merkle” 混合方案？
 
@@ -4303,7 +4244,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 - 到某个时间点封顶 -> 导出 snapshot -> 生成 Merkle root -> 冻结旧 mapping -> 开始 claim。
   实际可行，但一般直接一次性用 Merkle 更简单，除非你需要“动态加入 / 严格审计”阶段。
 
-------
+---
 
 ### 9. 隐私与信息延迟
 
@@ -4317,7 +4258,7 @@ function claim(uint256 amount, bytes32[] calldata proof) external {
 - Merkle：初始化极廉价，可支持超大规模，claim 时需要用户携带证明，适合一次性静态空投，是行业主流。
 - 安全性上两者“是否允许地址领取”这件事只要代码正确都可靠；差异在成本结构、可扩展性、透明/可变策略和操作复杂度。
 
-------
+---
 
 ### 11. 快速决策树
 
@@ -4329,15 +4270,11 @@ N 巨大(>1k) 或 想最小部署成本？ => Merkle
 是否担心 owner 篡改白名单？ => Merkle + immutable root
 ```
 
-
-
-
-
 ## Signature Standards
 
-![image-20250828161301721](SOLIDITY FUCK NOTE.assets/image-20250828161301721.png)
+![image-20250828161301721](SOLIDITY-FUCK-NOTE.assets/image-20250828161301721.png)
 
-![image-20250828161505684](SOLIDITY FUCK NOTE.assets/image-20250828161505684.png)
+![image-20250828161505684](SOLIDITY-FUCK-NOTE.assets/image-20250828161505684.png)
 
 ### The Need for EIP-191 and EIP-712: Solving Unreadable Messages and Replay Attacks
 
@@ -4365,7 +4302,7 @@ Let's look at a simplified smart contract example:
 function getSignerSimple(uint256 message, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
     // Note: Hashing is simplified here for demonstration.
     // For a string, one would typically use keccak256(abi.encodePacked(string)).
-    bytes32 hashedMessage = bytes32(message); 
+    bytes32 hashedMessage = bytes32(message);
     address signer = ecrecover(hashedMessage, _v, _r, _s);
     return signer;
 }
@@ -4440,25 +4377,23 @@ While EIP-191 standardizes the signing format and adds a layer of domain separat
 
 ### EIP-712: Typed Structured Data Hashing and Signing
 
-![image-20250828162503494](SOLIDITY FUCK NOTE.assets/image-20250828162503494.png)
+![image-20250828162503494](SOLIDITY-FUCK-NOTE.assets/image-20250828162503494.png)
 
-![image-20250828163158062](SOLIDITY FUCK NOTE.assets/image-20250828163158062.png)
+![image-20250828163158062](SOLIDITY-FUCK-NOTE.assets/image-20250828163158062.png)
 
-![image-20250828162524795](SOLIDITY FUCK NOTE.assets/image-20250828162524795.png)
+![image-20250828162524795](SOLIDITY-FUCK-NOTE.assets/image-20250828162524795.png)
 
-![image-20250828162538044](SOLIDITY FUCK NOTE.assets/image-20250828162538044.png)
+![image-20250828162538044](SOLIDITY-FUCK-NOTE.assets/image-20250828162538044.png)
 
-![image-20250828162630361](SOLIDITY FUCK NOTE.assets/image-20250828162630361.png)
+![image-20250828162630361](SOLIDITY-FUCK-NOTE.assets/image-20250828162630361.png)
 
-![image-20250828162656270](SOLIDITY FUCK NOTE.assets/image-20250828162656270.png)
+![image-20250828162656270](SOLIDITY-FUCK-NOTE.assets/image-20250828162656270.png)
 
-![image-20250828162745037](SOLIDITY FUCK NOTE.assets/image-20250828162745037.png)
+![image-20250828162745037](SOLIDITY-FUCK-NOTE.assets/image-20250828162745037.png)
 
-![image-20250828162931767](SOLIDITY FUCK NOTE.assets/image-20250828162931767.png)
+![image-20250828162931767](SOLIDITY-FUCK-NOTE.assets/image-20250828162931767.png)
 
-![image-20250828162940835](SOLIDITY FUCK NOTE.assets/image-20250828162940835.png)
-
-
+![image-20250828162940835](SOLIDITY-FUCK-NOTE.assets/image-20250828162940835.png)
 
 EIP-712 builds upon EIP-191, specifically utilizing EIP-191 version `0x01`, to achieve two primary objectives:
 
@@ -4490,7 +4425,7 @@ Let's dissect these components:
 - **`<hashStruct(message)>`**: This is the "data to sign" part of the EIP-191 structure. It's a `bytes32` hash representing the specific structured message the user is signing.
   Its calculation involves two main parts: `hashStruct(structData) = keccak256(typeHash || encodeData(structData))`.
 
-  - **`typeHash`**: This is a `keccak256` hash of the *definition* of the message's struct type. It includes the struct name and the names and types of its members, formatted as a string. For example, for a struct `Message { uint256 amount; address to; }`, the type string would be `"Message(uint256 amount,address to)"`, and the `typeHash` would be `keccak256("Message(uint256 amount,address to)")`.
+  - **`typeHash`**: This is a `keccak256` hash of the _definition_ of the message's struct type. It includes the struct name and the names and types of its members, formatted as a string. For example, for a struct `Message { uint256 amount; address to; }`, the type string would be `"Message(uint256 amount,address to)"`, and the `typeHash` would be `keccak256("Message(uint256 amount,address to)")`.
   - **`encodeData(structData)`**: This is the ABI-encoded data of the struct instance itself. The EIP-712 specification details how different data types within the struct should be encoded before hashing. For Solidity, this typically involves `abi.encode(...)` where the first argument is the `typeHash` of the primary type, followed by the values of the struct members in their defined order.
 
 The **final `bytes32` digest** that is actually passed to `ecrecover` (or a safer alternative) for EIP-712 compliant signatures is:
@@ -4519,8 +4454,6 @@ Manually implementing EIP-712 hashing and signature verification can be complex 
   - **Safe Error Handling:** `tryRecover` returns a zero address and an error code if the signature is invalid (e.g., `v` is incorrect, or point decompression fails), instead of `ecrecover`'s behavior which can sometimes revert or return garbage for certain invalid inputs.
 
 EIP-191 established a foundational standard for formatting signed data in Ethereum, ensuring signed messages are distinct from transactions. Building upon this, EIP-712 revolutionized how structured data is handled for signing, introducing human-readable formats in wallets and, critically, strong replay protection mechanisms through the `domainSeparator` and `hashStruct` concepts.
-
-
 
 ## Unveiling ECDSA: Understanding Digital Signatures and v, r, s Values
 
@@ -4563,7 +4496,7 @@ Public-Key Cryptography involves a pair of keys: a private key and a public key.
 - **Externally Owned Accounts (EOAs):** In Ethereum, user accounts (EOAs) are defined by these public-private key pairs. They provide the means for users to interact with the blockchain, such as signing data and sending transactions securely.
 - **Ethereum Address:** Your Ethereum address, the identifier you share to receive funds, is derived from your public key. Specifically, it is the last 20 bytes of the Keccak-256 hash of the public key.
 
-![image-20250828174720245](SOLIDITY FUCK NOTE.assets/image-20250828174720245.png)
+![image-20250828174720245](SOLIDITY-FUCK-NOTE.assets/image-20250828174720245.png)
 
 ### How ECDSA Works: A Closer Look at the Algorithm
 
@@ -4597,7 +4530,7 @@ Two important constants are defined for the `secp256k1` curve:
 - **s:** This value serves as cryptographic proof that the signer possesses the private key. Its calculation involves the hash of the message, the private key, the `r` value, the random nonce `k`, and the order `n` of the curve. The nonce `k` is critical because it ensures that `s` (and thus the entire signature) is unique each time a message is signed, even if the message and private key are identical.
 - **v:** Known as the "recovery ID" or "parity/polarity indicator." It's a small integer (typically 27 or 28 in Ethereum, or 0 or 1 in some raw contexts before an offset is added). Its purpose is to help efficiently recover the correct public key from the `r` and `s` components of the signature. Since there are two possible y-coordinates for a given `r` (due to the curve's symmetry), `v` indicates which of these two y-values (and thus which of the two possible public keys) was used in generating the signature.
 
-![image-20250828180039718](SOLIDITY FUCK NOTE.assets/image-20250828180039718.png)
+![image-20250828180039718](SOLIDITY-FUCK-NOTE.assets/image-20250828180039718.png)
 
 ### Generating Your Digital Identity: ECDSA Key Pairs
 
@@ -4704,7 +4637,7 @@ The `--legacy` flag highlighted here directly indicates the use of a Type 0 tran
 
 ### Transaction Type 1 (Optional Access Lists / 0x01 / EIP-2930)
 
-Transaction Type 1, denoted as `0x01`, was introduced by EIP-2930, titled "Optional Access Lists." Its primary purpose was to **mitigate potential contract breakage risks** associated with EIP-2929, an earlier proposal that repriced certain storage-accessing opcodes (SLOAD and EXT*).
+Transaction Type 1, denoted as `0x01`, was introduced by EIP-2930, titled "Optional Access Lists." Its primary purpose was to **mitigate potential contract breakage risks** associated with EIP-2929, an earlier proposal that repriced certain storage-accessing opcodes (SLOAD and EXT\*).
 
 Type 1 transactions maintain the same fields as legacy (Type 0) transactions but introduce a significant addition: an `accessList` parameter. This parameter is an array containing addresses and storage keys that the transaction plans to access during its execution. The main benefit of including an access list is the potential for gas savings on cross-contract calls. By pre-declaring the intended contracts and storage slots, users can offset some of the gas cost increases introduced by EIP-2929, leading to more efficient transactions.
 
@@ -4724,7 +4657,7 @@ Consequently, Type 2 transactions include new parameters:
 
 Block explorers like Etherscan often display these as "Txn Type: 2 (EIP-1559)".
 
-**zkSync Note:** While zkSync supports Type 2 transactions, its handling of the fee parameters differs from Ethereum L1. Currently, zkSync *does not* actively use the `maxPriorityFeePerGas` and `maxFeePerGas` parameters to prioritize or price transactions in the same way as Ethereum, due to its distinct gas mechanism and fee structure.
+**zkSync Note:** While zkSync supports Type 2 transactions, its handling of the fee parameters differs from Ethereum L1. Currently, zkSync _does not_ actively use the `maxPriorityFeePerGas` and `maxFeePerGas` parameters to prioritize or price transactions in the same way as Ethereum, due to its distinct gas mechanism and fee structure.
 
 ### Transaction Type 3 (Blob Transactions / 0x03 / EIP-4844 / Proto-Danksharding)
 
@@ -4737,7 +4670,7 @@ Key features of Type 3 transactions include:
   - `max_fee_per_blob_gas`: The maximum fee the sender is willing to pay per unit of gas for the blob data.
   - `blob_versioned_hashes`: A list of versioned hashes corresponding to the data blobs carried by the transaction.
 
-A crucial aspect of the blob fee mechanism is that this fee is deducted from the sender's account and burned *before* the transaction itself is executed. This means that if the transaction fails for any reason during execution, the blob fee is **non-refundable**. For a more in-depth exploration of EIP-4844, Proto-Danksharding, and the mechanics of blobs, a subsequent lesson from Patrick Collins will provide further details.
+A crucial aspect of the blob fee mechanism is that this fee is deducted from the sender's account and burned _before_ the transaction itself is executed. This means that if the transaction fails for any reason during execution, the blob fee is **non-refundable**. For a more in-depth exploration of EIP-4844, Proto-Danksharding, and the mechanics of blobs, a subsequent lesson from Patrick Collins will provide further details.
 
 ## zkSync-Specific Transaction Types
 
@@ -4774,16 +4707,14 @@ Priority transactions bridge the two layers, ensuring that L1-initiated actions 
 
 Understanding these diverse transaction types is fundamental for developers navigating the Ethereum and zkSync ecosystems. Whether you're optimizing for gas costs, deploying complex smart contract systems, or leveraging advanced features like account abstraction and paymasters on zkSync, a solid grasp of each transaction type's purpose and structure will empower you to build more efficient, robust, and innovative Web3 applications.
 
-
-
-## Blob:  Binary Large Object
+## Blob: Binary Large Object
 
 ### Understanding Blob Transactions: The Core Innovation
 
 To appreciate the impact of EIP-4844, it's essential to distinguish between traditional Ethereum transactions and the new blob-carrying transactions:
 
 - **Normal Transactions (Type 2 - EIP-1559):** In standard Ethereum transactions, all associated data, including input data (known as `calldata`), **is permanently stored on the Ethereum blockchain.** Every Ethereum node is required to store this data indefinitely.
-- **Blob Transactions (Type 3 - EIP-4844):** These transactions introduce a novel component: "blobs." Blobs are large, additional chunks of data carried by the transaction. Crucially, this **blob data** is ***not* stored permanently by the L1 execution layer** (the Ethereum Virtual Machine - EVM). Instead, it's guaranteed to be available on the consensus layer for a temporary period—approximately 18 days (or 4096 epochs)—after which it is pruned (deleted) by the nodes. **The core transaction details (such as sender, recipient, value, etc.) remain permanently stored on-chain.**
+- **Blob Transactions (Type 3 - EIP-4844):** These transactions introduce a novel component: "blobs." Blobs are large, additional chunks of data carried by the transaction. Crucially, this **blob data** is **_not_ stored permanently by the L1 execution layer** (the Ethereum Virtual Machine - EVM). Instead, it's guaranteed to be available on the consensus layer for a temporary period—approximately 18 days (or 4096 epochs)—after which it is pruned (deleted) by the nodes. **The core transaction details (such as sender, recipient, value, etc.) remain permanently stored on-chain.**
 
 Think of a blob as a temporary "sidecar" attached to a motorcycle (the transaction). The motorcycle and its essential components are kept, but the sidecar, after serving its purpose of temporary data transport, is eventually detached and discarded.
 
@@ -4808,7 +4739,7 @@ Layer 2 rollups (such as ZK Sync, Arbitrum, and Optimism) have emerged as the pr
 Before EIP-4844, rollups posted their compressed transaction batches to L1 using the `calldata` field of a standard L1 transaction. This approach was a significant cost driver because:
 
 - `Calldata` consumes valuable and limited L1 block space.
-- This `calldata` had to be stored *permanently* by all L1 nodes. This was inefficient because the L1 primarily needed to verify the *availability* of this data temporarily, not store it forever.
+- This `calldata` had to be stored _permanently_ by all L1 nodes. This was inefficient because the L1 primarily needed to verify the _availability_ of this data temporarily, not store it forever.
 - The requirement for permanent storage of large data volumes increases hardware and computational demands on node operators, which directly translates into higher gas fees for all users. Imagine being forced to carry around every exam paper you ever passed, indefinitely; this is analogous to the burden of permanent calldata storage for data that only needed short-term verifiability.
 
 Consequently, rollups were incurring substantial fees for this permanent calldata storage, a feature they didn't strictly require for their long-term operational integrity.
@@ -4819,7 +4750,7 @@ EIP-4844, or Proto-Danksharding, provides an elegant solution by allowing rollup
 
 - **Temporary Data Availability:** Blobs are designed for short-term data availability. After the defined window (around 18 days), this data is pruned from the consensus layer. This significantly lessens the long-term storage burden on L1 nodes.
 - **A New, Cheaper Data Market:** Blobs introduce their own independent fee market, distinct from the gas market for computation and standard calldata. This is a form of "multidimensional gas pricing." Blob gas is priced differently and, at present, is substantially cheaper than using an equivalent amount of calldata.
-- **Verification Without EVM Access:** A cornerstone of EIP-4844's design is that the L1 can verify the *availability* and *integrity* of blob data *without* the EVM needing to directly access or process the contents of the blobs themselves. In fact, the EVM *cannot* directly access blob data. This efficient verification is achieved through:
+- **Verification Without EVM Access:** A cornerstone of EIP-4844's design is that the L1 can verify the _availability_ and _integrity_ of blob data _without_ the EVM needing to directly access or process the contents of the blobs themselves. In fact, the EVM _cannot_ directly access blob data. This efficient verification is achieved through:
   - **KZG Commitments:** For each blob, a KZG (Kate-Zaverucha-Goldberg) commitment is generated. This is a type of polynomial commitment, serving as a small, fixed-size cryptographic proof (akin to a hash) that represents the entire blob.
   - **`BLOBHASH` Opcode:** A new EVM opcode, `BLOBHASH`, was introduced. This opcode allows smart contracts on L1 to retrieve the KZG commitment (the hash) of a blob associated with the current transaction.
   - **Point Evaluation Precompile:** A new precompiled contract enables the verification of blob data. A smart contract can call this precompile, providing a KZG commitment and a proof (submitted as part of the L1 transaction). The precompile then cryptographically verifies that the provided proof is valid for the given commitment, thereby confirming the integrity and availability of the original blob data without the EVM ever needing to "see" the raw blob.
@@ -4847,13 +4778,13 @@ Block explorers like Etherscan provide visibility into these new transaction typ
 - `Txn Type: 3 (EIP-4844)` clearly indicated.
 - A "Blobs" tab or section, listing the KZG commitments (often displayed as hashes) of the blobs associated with the transaction.
 - Viewing the raw data of a blob would show a large hexadecimal string, representing the 128 KiB of data.
-- Crucially, Etherscan often provides a gas cost comparison, showing `Blob Gas Used` versus what the cost *would have been* if the same data had been posted as `Calldata Gas`. This frequently demonstrates massive cost savings, potentially reducing data posting costs by orders of magnitude compared to the old calldata method.
+- Crucially, Etherscan often provides a gas cost comparison, showing `Blob Gas Used` versus what the cost _would have been_ if the same data had been posted as `Calldata Gas`. This frequently demonstrates massive cost savings, potentially reducing data posting costs by orders of magnitude compared to the old calldata method.
 
 Transaction debugging tools like Tenderly can offer even deeper insights, showing internal function calls within the L1 contracts, such as those interacting with the `BLOBHASH` opcode and the Point Evaluation Precompile.
 
-![image-20250828213010053](SOLIDITY FUCK NOTE.assets/image-20250828213010053.png)
+![image-20250828213010053](SOLIDITY-FUCK-NOTE.assets/image-20250828213010053.png)
 
-![image-20250828213221395](SOLIDITY FUCK NOTE.assets/image-20250828213221395.png)
+![image-20250828213221395](SOLIDITY-FUCK-NOTE.assets/image-20250828213221395.png)
 
 ### Proto-Danksharding vs. Full Danksharding: The Path Ahead
 
@@ -4894,7 +4825,7 @@ To appreciate the innovation of Account Abstraction on zkSync, let's quickly rec
    - A standard MetaMask account is a prime example of an EOA.
 2. **Smart Contract Accounts (or Contract Accounts):**
    - These are essentially pieces of code deployed on the blockchain.
-   - On traditional Ethereum, smart contract accounts *cannot* initiate transactions on their own. They only react to transactions sent *to* them.
+   - On traditional Ethereum, smart contract accounts _cannot_ initiate transactions on their own. They only react to transactions sent _to_ them.
    - They can house arbitrary logic, enabling complex systems like multisig wallets or Decentralized Autonomous Organizations (DAOs).
 
 The key distinction here is that, traditionally, only EOAs could start a transaction sequence.
@@ -4922,11 +4853,11 @@ This inherent programmability at the account level unlocks powerful benefits:
 
 ### 1. 基本概念对比
 
-| 方面         | Cast Wallet Sign   | VM.sign         |
-| ------------ | ------------------ | --------------- |
-| **环境**     | 命令行工具         | Foundry测试环境 |
-| **使用场景** | 真实签名、脚本部署 | 单元测试、模拟  |
-| **签名格式** | 标准以太坊签名     | 测试环境签名    |
+| 方面         | Cast Wallet Sign   | VM.sign          |
+| ------------ | ------------------ | ---------------- |
+| **环境**     | 命令行工具         | Foundry 测试环境 |
+| **使用场景** | 真实签名、脚本部署 | 单元测试、模拟   |
+| **签名格式** | 标准以太坊签名     | 测试环境签名     |
 
 ### 2. 签名数据格式差异
 
@@ -4943,7 +4874,7 @@ function splitSignature(bytes memory sig) public pure returns (uint8 v, bytes32 
     }
     assembly {
         r := mload(add(sig, 32))      // 前32字节
-        s := mload(add(sig, 64))      // 中32字节  
+        s := mload(add(sig, 64))      // 中32字节
         v := byte(0, mload(add(sig, 96))) // 最后1字节
     }
 }
@@ -4963,7 +4894,7 @@ function signMessage(uint256 privKey, address account) public view returns (uint
 
 | 特性           | Cast Wallet Sign       | VM.sign                           |
 | -------------- | ---------------------- | --------------------------------- |
-| **返回格式**   | `bytes` (65字节)       | `(uint8 v, bytes32 r, bytes32 s)` |
+| **返回格式**   | `bytes` (65 字节)      | `(uint8 v, bytes32 r, bytes32 s)` |
 | **数据结构**   | `r(32) + s(32) + v(1)` | 已分离的三个组件                  |
 | **处理复杂度** | 需要手动分割           | 直接可用                          |
 | **适用环境**   | 生产环境、脚本         | 测试环境                          |
@@ -4983,7 +4914,7 @@ cast wallet sign "message" --private-key $PRIVATE_KEY
 
 - ✅ 真实的以太坊签名
 - ✅ 可在主网/测试网使用
-- ✅ 与MetaMask等钱包兼容
+- ✅ 与 MetaMask 等钱包兼容
 - ❌ 需要手动处理签名格式
 
 #### VM.sign - 测试环境
@@ -5006,7 +4937,7 @@ function testSignature() public {
 
 ### 5. 签名数据结构详解
 
-#### 以太坊签名标准格式 (65字节)
+#### 以太坊签名标准格式 (65 字节)
 
 ```
 Byte Position: 0-31    32-63   64
@@ -5014,7 +4945,7 @@ Component:     r       s       v
 Length:        32      32      1
 ```
 
-#### Cast输出需要分割的原因
+#### Cast 输出需要分割的原因
 
 ```
 // Cast输出的hex字符串实际上是：
@@ -5040,7 +4971,7 @@ function testClaim() public {
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
     bytes32 messageHash = airdrop.getMessage(user, amount);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, messageHash);
-    
+
     airdrop.claim(user, amount, proof, v, r, s);
 }
 ```
@@ -5063,12 +4994,10 @@ function run() external {
 | ------------ | ---------------- | -------------- |
 | **最佳用途** | 生产部署脚本     | 单元测试       |
 | **数据格式** | 需要分割的字节串 | 直接可用的组件 |
-| **兼容性**   | 标准以太坊格式   | Foundry专用    |
+| **兼容性**   | 标准以太坊格式   | Foundry 专用   |
 | **便利性**   | 需要额外处理     | 开箱即用       |
 
-**核心区别**: Cast输出标准格式需要分割，VM.sign直接输出可用组件，各自适用于不同的开发阶段。
-
-
+**核心区别**: Cast 输出标准格式需要分割，VM.sign 直接输出可用组件，各自适用于不同的开发阶段。
 
 ## Best Practice: Airdrop Signature
 
@@ -5081,8 +5010,6 @@ deploy:
 0: contract MerkleAirdrop 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 1: contract BagelToken 0x5FbDB2315678afecb367f032d93F642f64180aa3
 ```
-
-
 
 ```solidity
 // src/MerkleAirdrop.sol
@@ -5110,10 +5037,10 @@ yoyi@DESKTOP-U4E23IF:~/foundry-f23/merkle-airdrop$ cast call 0xe7f1725E7734CE288
 ```
 
 This command will return the `bytes32` message hash, for instance:
-`0x39430e4990aa8a1f7d056d9a5f611eb27f8280425efbf03634690a02f26b957a`  
+`0x39430e4990aa8a1f7d056d9a5f611eb27f8280425efbf03634690a02f26b957a`
 
-即_hashTypedDataV4(
-        keccak256(abi.encode(MESSAGE_TYPEHASH, AirdropClaim({account: account, amount: amount})))
+即\_hashTypedDataV4(
+keccak256(abi.encode(MESSAGE_TYPEHASH, AirdropClaim({account: account, amount: amount})))
 
 ### 2.Signing the Message Hash: Authorizing the Claim
 
@@ -5130,7 +5057,7 @@ This command will output the digital signature as a hexadecimal string, for exam
 
 It's worth noting that if you were operating on a testnet or mainnet and your private key was managed in an encrypted keystore file, you would use the `--account <ACCOUNT_ALIAS_OR_ADDRESS>` flag instead of `--private-key`. `cast` would then prompt for your keystore password.
 
-然后用户为_hashTypedDataV4签名
+然后用户为\_hashTypedDataV4 签名
 
 ### 3.Deconstructing the Signature: Understanding v, r, and s
 
@@ -5140,17 +5067,15 @@ The signature generated by `cast wallet sign` is a single, concatenated hexadeci
 - `s`: The next 32 bytes of the signature.
 - `v`: The final 1 byte of the signature (the recovery identifier).
 
-
-
 ### 4. Verify Signature
 
-![image-20250830115804947](SOLIDITY FUCK NOTE.assets/image-20250830115804947.png)
+![image-20250830115804947](SOLIDITY-FUCK-NOTE.assets/image-20250830115804947.png)
 
-_isValidSignature()中*digest*传入的就是 _hashTypedDataV4(structHash)。
+\_isValidSignature()中*digest*传入的就是 \_hashTypedDataV4(structHash)。
 
-通过(*address* actualSigner,,) = ECDSA.tryRecover(digest, v, r, s);解码获取actualSigner
+通过(_address_ actualSigner,,) = ECDSA.tryRecover(digest, v, r, s);解码获取 actualSigner
 
-MESSAGE_TYPEHASH是提前计算的：
+MESSAGE_TYPEHASH 是提前计算的：
 
 ```solidity
     bytes32 private constant MESSAGE_TYPEHASH = 0x810786b83997ad50983567660c1d9050f79500bb7c2470579e75690d45184163;
@@ -5176,10 +5101,1425 @@ yoyi@DESKTOP-U4E23IF:~/foundry-f23/merkle-airdrop$ cast --to-dec 0x0000000000000
 25000000000000000000
 ```
 
-![image-20250830164736754](SOLIDITY FUCK NOTE.assets/image-20250830164736754.png)
+![image-20250830164736754](SOLIDITY-FUCK-NOTE.assets/image-20250830164736754.png)
 
-这里是用anvil第二个默认账户支付gas费用为第一个账户claim token。v,r,s是账户一的签名。
-
-
+这里是用 anvil 第二个默认账户支付 gas 费用为第一个账户 claim token。v,r,s 是账户一的签名。
 
 # Upgradeable Smart Contracts
+
+To put this into perspective, upgradable smart contracts are a complex subject with potential drawbacks, which isn't the best route to default on. They sound great in theory, promising flexibility and adaptability. However, we've repeatedly seen that when there's too much centralized control over contracts, problems arise.
+
+![image-20250831172211412](SOLIDITY-FUCK-NOTE.assets/image-20250831172211412.png)
+
+There are a ton of proxy methodologies, but three are worth discussing here: **Transparent Proxies, Universal Upgradable Proxies (UPS), and the Diamond Pattern.** Each has its benefits and drawbacks, but the focus is on maintaining contract functionality and decentralization.
+
+我来重新详细解释可升级智能合约中的这两个主要问题，并提供完整的代理合约和实现合约对照示例：
+
+## 2 Clashes
+
+### 1. 存储冲突 (Storage Clashes)
+
+#### 什么是存储冲突？
+
+存储冲突发生在代理合约模式中，当实现合约的存储布局发生变化时，可能会覆盖或错误地读取已有的存储数据。
+
+#### 完整示例对照：
+
+#### 代理合约 (Proxy Contract)
+
+```solidity
+contract Proxy {
+    // 代理合约的存储变量
+    address public implementation; // slot 0
+    address public admin;          // slot 1
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not admin");
+        _;
+    }
+
+    function upgrade(address newImplementation) external onlyAdmin {
+        implementation = newImplementation;
+    }
+
+    fallback() external payable {
+        address impl = implementation;
+        assembly {
+            calldatacopy(0, 0, calldatasize())
+            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)
+            returndatacopy(0, 0, returndatasize())
+            switch result
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
+        }
+    }
+}
+```
+
+#### 实现合约 V1
+
+```solidity
+contract TokenV1 {
+    // 注意：这些变量实际存储在代理合约的存储空间中
+    address public implementation; // slot 0 - 被代理合约占用
+    address public admin;          // slot 1 - 被代理合约占用
+
+    // 业务逻辑的存储变量从 slot 2 开始
+    uint256 public totalSupply;    // slot 2
+    string public name;            // slot 3
+    mapping(address => uint256) public balances; // slot 4
+
+    function mint(address to, uint256 amount) external {
+        balances[to] += amount;
+        totalSupply += amount;
+    }
+}
+```
+
+#### 实现合约 V2 - ❌ 错误的升级方式
+
+```solidity
+contract TokenV2_Wrong {
+    address public implementation; // slot 0
+    address public admin;          // slot 1
+
+    // ❌ 错误：在现有变量前插入新变量
+    uint256 public decimals;       // slot 2 - 冲突！覆盖了 totalSupply
+    uint256 public totalSupply;    // slot 3 - 数据错位，读取到原来的 name
+    string public name;            // slot 4 - 数据错位，读取到原来的 balances
+    mapping(address => uint256) public balances; // slot 5 - 全新的映射，丢失所有余额数据
+
+    function mint(address to, uint256 amount) external {
+        balances[to] += amount;
+        totalSupply += amount;
+    }
+
+    function setDecimals(uint256 _decimals) external {
+        decimals = _decimals; // 这会覆盖原来的 totalSupply！
+    }
+}
+```
+
+#### 实现合约 V2 - ✅ 正确的升级方式
+
+```solidity
+contract TokenV2_Correct {
+    address public implementation; // slot 0
+    address public admin;          // slot 1
+
+    // ✅ 正确：保持原有变量顺序不变
+    uint256 public totalSupply;    // slot 2 - 保持不变
+    string public name;            // slot 3 - 保持不变
+    mapping(address => uint256) public balances; // slot 4 - 保持不变
+
+    // ✅ 正确：只在末尾添加新变量
+    uint256 public decimals;       // slot 5 - 新增变量
+    mapping(address => bool) public minters; // slot 6 - 新增变量
+
+    function mint(address to, uint256 amount) external {
+        require(minters[msg.sender], "Not a minter");
+        balances[to] += amount;
+        totalSupply += amount;
+    }
+
+    function setDecimals(uint256 _decimals) external {
+        decimals = _decimals;
+    }
+
+    function addMinter(address minter) external {
+        minters[minter] = true;
+    }
+}
+```
+
+### 2. 函数选择器冲突 (Function Selector Clashes)
+
+#### 完整示例对照：
+
+#### 代理合约 - 透明代理模式
+
+```solidity
+contract TransparentProxy {
+    address public implementation;
+    address public admin;
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not admin");
+        _;
+    }
+
+    // 管理函数 - 只有管理员能调用
+    function upgrade(address newImplementation) external onlyAdmin {
+        implementation = newImplementation;
+    }
+
+    function changeAdmin(address newAdmin) external onlyAdmin {
+        admin = newAdmin;
+    }
+
+    // 函数选择器: 0x3659cfe6
+    function upgradeTo(address newImplementation) external onlyAdmin {
+        implementation = newImplementation;
+    }
+
+    fallback() external payable {
+        require(msg.sender != admin, "Admin cannot call implementation");
+        _delegate(implementation);
+    }
+
+    function _delegate(address impl) internal {
+        assembly {
+            calldatacopy(0, 0, calldatasize())
+            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)
+            returndatacopy(0, 0, returndatasize())
+            switch result
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
+        }
+    }
+}
+```
+
+#### 实现合约 - 可能产生冲突
+
+```solidity
+contract ImplementationWithClash {
+    address public implementation;
+    address public admin;
+
+    uint256 public totalSupply;
+    mapping(address => uint256) public balances;
+
+    // ❌ 危险：这个函数选择器可能与代理合约冲突
+    function upgradeTo(address newToken) external {
+        // 业务逻辑：迁移到新代币
+        // 函数选择器也是: 0x3659cfe6 - 与代理合约冲突！
+    }
+
+    // 这两个函数产生相同的选择器
+    function transfer(address to, uint256 amount) external returns (bool) {
+        // 选择器: 0xa9059cbb
+        balances[msg.sender] -= amount;
+        balances[to] += amount;
+        return true;
+    }
+
+    // 人为构造的冲突函数（实际中很少见）
+    function collate_propagate_storage(bytes16) external {
+        // 选择器也可能是: 0xa9059cbb
+    }
+}
+```
+
+#### UUPS 代理模式 - 解决冲突
+
+```solidity
+// UUPS 代理合约 - 功能最小化
+contract UUPSProxy {
+    address public implementation;
+
+    constructor(address _implementation) {
+        implementation = _implementation;
+    }
+
+    fallback() external payable {
+        _delegate(implementation);
+    }
+
+    function _delegate(address impl) internal {
+        assembly {
+            calldatacopy(0, 0, calldatasize())
+            let result := delegatecall(gas(), impl, 0, calldatasize(), 0, 0)
+            returndatacopy(0, 0, returndatasize())
+            switch result
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
+        }
+    }
+}
+
+// UUPS 实现合约 - 包含升级逻辑
+contract UUPSImplementation {
+    address public implementation;
+    address public admin;
+
+    uint256 public totalSupply;
+    mapping(address => uint256) public balances;
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not admin");
+        _;
+    }
+
+    // 升级逻辑在实现合约中
+    function upgradeTo(address newImplementation) external onlyAdmin {
+        implementation = newImplementation;
+
+        // 调用代理合约更新实现地址
+        (bool success,) = address(this).call(
+            abi.encodeWithSignature("updateImplementation(address)", newImplementation)
+        );
+        require(success, "Upgrade failed");
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        balances[msg.sender] -= amount;
+        balances[to] += amount;
+        return true;
+    }
+}
+```
+
+#### 检测和预防选择器冲突的工具：
+
+```solidity
+contract SelectorChecker {
+    function checkSelectors() external pure {
+        bytes4 selector1 = bytes4(keccak256("transfer(address,uint256)"));
+        bytes4 selector2 = bytes4(keccak256("upgradeTo(address)"));
+        bytes4 selector3 = bytes4(keccak256("collate_propagate_storage(bytes16)"));
+
+        require(selector1 != selector2, "Selector clash: transfer vs upgradeTo");
+        require(selector1 != selector3, "Selector clash: transfer vs collate");
+        require(selector2 != selector3, "Selector clash: upgradeTo vs collate");
+
+        // 输出选择器用于检查
+        // transfer(address,uint256): 0xa9059cbb
+        // upgradeTo(address): 0x3659cfe6
+    }
+}
+```
+
+#### 实际部署流程对照：
+
+```solidity
+// 1. 部署代理合约
+Proxy proxy = new Proxy();
+
+// 2. 部署实现合约 V1
+TokenV1 tokenV1 = new TokenV1();
+
+// 3. 初始化代理
+proxy.upgrade(address(tokenV1));
+
+// 4. 通过代理调用实现合约
+TokenV1(address(proxy)).mint(user, 1000);
+
+// 5. 升级到 V2
+TokenV2_Correct tokenV2 = new TokenV2_Correct();
+proxy.upgrade(address(tokenV2));
+
+// 6. 升级后的调用
+TokenV2_Correct(address(proxy)).setDecimals(18);
+```
+
+这样的对照展示了代理合约和实现合约如何协同工作，以及在升级过程中可能遇到的问题和正确的解决方案。
+
+## delegatecall 的底层工作原理
+
+### 1. delegatecall vs call 的区别
+
+```
+contract A {
+    uint256 public value = 10;
+
+    function normalCall(address target) external {
+        // 普通 call：在目标合约的上下文中执行
+        target.call(abi.encodeWithSignature("setValue(uint256)", 20));
+        // 这会修改目标合约的存储，不会修改合约A的存储
+    }
+
+    function delegateCall(address target) external {
+        // delegatecall：用目标合约的代码，但在当前合约的上下文中执行
+        target.delegatecall(abi.encodeWithSignature("setValue(uint256)", 30));
+        // 这会修改合约A的存储！
+    }
+}
+
+contract B {
+    uint256 public value;
+
+    function setValue(uint256 _value) external {
+        value = _value; // 这个操作会写入调用者的存储空间
+    }
+}
+```
+
+### 2. delegatecall 的执行上下文
+
+当代理合约执行 `delegatecall` 时：
+
+```
+┌─────────────────┬─────────────────┬─────────────────┐
+│     属性        │   普通 call     │  delegatecall   │
+├─────────────────┼─────────────────┼─────────────────┤
+│ 执行的代码      │   目标合约代码   │   目标合约代码   │
+├─────────────────┼─────────────────┼─────────────────┤
+│ 执行环境/上下文  │   目标合约环境   │   调用者环境     │
+├─────────────────┼─────────────────┼─────────────────┤
+│ 存储空间        │   目标合约存储   │   调用者存储     │
+├─────────────────┼─────────────────┼─────────────────┤
+│ msg.sender      │   调用者地址     │   原始调用者     │
+├─────────────────┼─────────────────┼─────────────────┤
+│ msg.value       │   传递的以太币   │   原始传递值     │
+├─────────────────┼─────────────────┼─────────────────┤
+│ address(this)   │   目标合约地址   │   调用者地址     │
+│ (在目标代码中)   │   (B的地址)     │   (A的地址)     │
+└─────────────────┴─────────────────┴─────────────────┘
+```
+
+address(this)解释：
+
+```
+目标合约 B
+contract B {
+    uint256 public value;
+
+    function setValue(uint256 _value) external {
+        value = _value;
+
+        // 这行代码在两种调用方式下都会执行
+        // 但返回的地址不同！
+        address currentContract = address(this);
+
+        // 在普通 call 中：currentContract = B 合约地址
+        // 在 delegatecall 中：currentContract = A 合约地址
+    }
+}
+
+// 调用者合约 A
+contract A {
+    uint256 public value = 10;
+
+    function normalCall(address target) external {
+        // 普通 call：B 的代码在 B 的环境中执行
+        target.call(abi.encodeWithSignature("setValue(uint256)", 20));
+    }
+
+    function delegateCall(address target) external {
+        // delegatecall：B 的代码在 A 的环境中执行
+        target.delegatecall(abi.encodeWithSignature("setValue(uint256)", 30));
+    }
+}
+```
+
+下面是对你原始总结的增强版，使用 Markdown，并重点补充：
+
+1. 存储槽（storage slot）分配/计算的底层逻辑
+2. 如何“修改/扩展”存储布局的正确方式（而不是直接“改槽”）
+3. 语法与关键字（assembly 中的 .slot / .offset / sload / sstore）
+4. 代理 / 升级中的安全操作步骤
+5. 常见误区与实用脚本/技巧
+
+## Solidity 存储槽（Storage Slots）精炼与实战指南
+
+### 1. 核心概念
+
+- 每个合约拥有 2^256 个存储槽（slot），每槽 32 字节，初始值均为 0。
+- 状态变量（state variables）按照“声明顺序”分配槽位，并进行“紧凑打包”（packing）。
+- 你**不能在 Solidity 源码里显式写 slot 编号**（除非用 assembly 手工 `sload / sstore`），只能通过：
+  - 正常声明的顺序控制布局；
+  - 预留 gap；
+  - “非结构化存储”（Unstructured Storage）模式手工指定哈希槽；
+  - assembly + 固定 bytes32 key 方式访问。
+
+```solidity
+contract BasicStorage {
+    uint256 public var1; // slot 0
+    address public owner; // slot 1
+    bool    public active; // slot 2
+    // 后续 slot 3,4,5... 仍存在，默认为 0
+}
+```
+
+---
+
+### 2. 槽位分配与类型打包
+
+#### 2.1 基本顺序与打包规则
+
+- 大于 16 字节的类型（如 `uint256`, `bytes32`, `mapping`, `dynamic array` “头”）独占一个槽。
+- 小于等于 16 字节的值类型（`uint128`, `uint64`, `uint32`, `bool`, `address` 等）可放在同一个 32 字节槽内，按声明顺序顺次填充，不跨槽回填。
+- 遇到下一个需要独占槽的类型，若当前槽未满也会“换行”。
+
+```solidity
+contract PackingDemo {
+    // slot 0:
+    uint128 a;   // 前 16 字节
+    uint128 b;   // 后 16 字节
+    // slot 1:
+    uint256 c;   // 独占
+    // slot 2:
+    uint64  d;
+    uint64  e;
+    uint64  f;
+    bool    ok;  // 与前面合计未超过 32 字节
+    // slot 3:
+    address owner; // 20 字节 -> 独自起新槽（因为 slot 2 已塞满）
+}
+```
+
+#### 2.2 坑：改变类型会重排
+
+```solidity
+// V1
+uint256 a;   // slot0
+uint128 b;   // slot1(前半)
+uint128 c;   // slot1(后半)
+uint256 d;   // slot2
+
+// V2（错误：把 a 改成 uint128）
+uint128 a;   // slot0(前半)
+uint128 b;   // slot0(后半)   // b 的“视觉槽”变了
+uint128 c;   // slot1(前半)   // c 位置变化
+uint256 d;   // slot2          // 仍然是 slot2 但之前语义错位
+```
+
+> 升级中**禁止改变已存在变量的类型/顺序/删除**，否则数据解释错乱。
+
+---
+
+### 3. 特殊类型存储计算
+
+| 类型               | “声明槽”内容                                                                                 | 实际元素存储位置                                     |
+| ------------------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `mapping(K => V)`  | 占一个槽（标识符，不存任何有效数据）                                                         | `keccak256(abi.encode(key, slot))`                   |
+| 动态数组 `T[]`     | 槽存长度 (length)                                                                            | 起始基址：`keccak256(slot)`，第 n 个元素：`base + n` |
+| `bytes` / `string` | 长度 < 32：槽内直接存（最低位存 len\*2+1 标志）；>=32：槽存 length，数据在 `keccak256(slot)` | 同动态数组延伸规则                                   |
+| 结构体 struct      | 在其“外层”存储布局中顺序展开                                                                 | 结构体内部各字段按顺序打包                           |
+
+#### 3.1 mapping 示例
+
+```solidity
+mapping(address => uint256) public balance; // 假设其 slot = p
+
+// balance[alice] 存在 slot = keccak256(abi.encode(alice, p))
+```
+
+#### 3.2 动态数组示例
+
+```solidity
+uint256[] public arr; // slot = q
+// arr.length 存在 slot q
+// arr[0] 在 keccak256(q)
+// arr[1] 在 keccak256(q) + 1
+```
+
+#### 3.3 嵌套 mapping
+
+```solidity
+mapping(address => mapping(uint256 => uint256)) data; // slot = s
+// data[a][i] slot = keccak256(abi.encode(i, keccak256(abi.encode(a, s))))
+```
+
+---
+
+### 4. 在 assembly 中获取槽信息的语法
+
+| 语法                  | 说明                                                                |
+| --------------------- | ------------------------------------------------------------------- |
+| `<stateVar>.slot`     | 状态变量的主槽号                                                    |
+| `<stateVar>.offset`   | 结构体成员/数组元素的偏移（多数情况下为 0，主要在复杂内联访问时用） |
+| `sload(slot)`         | 读取 32 字节                                                        |
+| `sstore(slot, value)` | 写入 32 字节                                                        |
+
+示例：
+
+```solidity
+address public implementation;
+
+function implSlot() external pure returns (bytes32 slot) {
+    assembly { slot := implementation.slot } // 取变量 implementation 的 slot 编号
+}
+
+function readImplementation() external view returns (address impl) {
+    assembly {
+        impl := sload(implementation.slot)
+    }
+}
+```
+
+---
+
+### 5. 手动读取 / 写入任意槽
+
+#### 5.1 Solidity 内联 assembly
+
+```solidity
+function readSlot(uint256 slot) external view returns (bytes32 r) {
+    assembly { r := sload(slot) }
+}
+
+function writeSlot(uint256 slot, bytes32 val) external {
+    assembly { sstore(slot, val) }
+}
+```
+
+> 危险：绕开类型系统，除非做调试 / 非结构化存储，不建议在生产逻辑中随意使用。
+
+#### 5.2 Foundry Cheatcodes
+
+```solidity
+function testReadStorage() public {
+    bytes32 raw = vm.load(target, bytes32(uint256(0)));
+    console2.logBytes32(raw);
+}
+
+function testWriteStorage() public {
+    vm.store(target, bytes32(uint256(0)), bytes32(uint256(999)));
+    assertEq(uint256(vm.load(target, bytes32(0))), 999);
+}
+```
+
+---
+
+### 6. “修改存储槽”到底是什么意思？
+
+严格说：
+
+- 你不能“直接改某变量的 slot 编号”——编译器按声明顺序决定。
+- 你能做的是“设计 / 迁移存储布局”以避免破坏既有槽的数据语义。
+- 真正需要手控槽时，用“非结构化存储”或 Diamond Storage。
+
+#### 6.1 升级中安全修改（Append-only）
+
+```solidity
+// V1
+contract TokenV1 {
+    uint256 public totalSupply; // slot0
+    address public owner;       // slot1
+}
+
+// V2（安全：只追加）
+contract TokenV2 is TokenV1 {
+    uint256 public feeRate;     // slot2
+}
+```
+
+#### 6.2 错误示例（重排）
+
+```solidity
+// 错误：把 owner 放在最前
+contract TokenV2_Bad is TokenV1 {
+    address public owner;   // 重新声明 + 顺序改变 -> 冲突 & 覆盖
+    uint256 public totalSupply;
+    uint256 public feeRate;
+}
+```
+
+#### 6.3 使用 gap 预留
+
+```solidity
+contract BaseUpgradeable {
+    uint256 public a;
+    address public b;
+    uint256[50] private __gap; // 预留 slot2..51
+}
+// 后续新增变量时“占用” gap 最前端：
+contract V2 is BaseUpgradeable {
+    uint256 public c; // 使用原 slot2 （替代 __gap[0]）
+}
+```
+
+> gap 原理：预留可被将来插入的“缓冲区”，防止需要在父合约和子合约之间加变量却破坏继承顺序。
+
+#### 6.4 非结构化存储（EIP-1967 / 自定义 key）
+
+```solidity
+bytes32 internal constant _OWNER_SLOT = keccak256("my.project.owner");
+
+function _getOwner() internal view returns (address o) {
+    assembly { o := sload(_OWNER_SLOT) }
+}
+function _setOwner(address o) internal {
+    assembly { sstore(_OWNER_SLOT, o) }
+}
+```
+
+优点：减少对“声明顺序”的依赖。  
+缺点：人为管理 key，易出错，建议统一常量命名 & 注释。
+
+#### 6.5 Diamond Storage (命名空间结构)
+
+```solidity
+library LibAppStorage {
+    bytes32 internal constant STORAGE_SLOT = keccak256("my.app.storage");
+
+    struct AppStorage {
+        uint256 total;
+        address owner;
+        mapping(address => uint256) balance;
+    }
+
+    function s() internal pure returns (AppStorage storage st) {
+        bytes32 slot = STORAGE_SLOT;
+        assembly { st.slot := slot }
+    }
+}
+
+contract FacetA {
+    function setOwner(address o) external {
+        LibAppStorage.s().owner = o;
+    }
+}
+```
+
+---
+
+#### 7. 存储布局迁移（带数据处理）示例
+
+场景：V1 有 `uint256 fee` 想改为“以基点表示 + 引入上限”。
+
+错误做法：直接把 `uint256 fee` 改成 `uint16 feeBps; uint16 maxFeeBps;` —— 会改变随后变量 slot 排布。
+
+安全迁移：
+
+```solidity
+// V1
+uint256 public fee;        // slot0
+address public treasury;   // slot1
+
+// V2
+// 保留旧 fee，不删除
+uint256 public fee;        // slot0 原数据仍在
+address public treasury;   // slot1
+uint16  public feeBps;     // slot2 (前 2 bytes)
+uint16  public maxFeeBps;  // slot2 (紧接 2 bytes)
+uint224 private __reserved; // 填满 slot2 防止下次误插
+```
+
+可选：写一个升级初始化函数把旧 `fee` 转换为 `feeBps`（只跑一次）。
+
+---
+
+### 8. 查看 & Diff 存储布局
+
+#### 8.1 Foundry
+
+```bash
+forge inspect ContractName storage-layout
+```
+
+输出包含：
+
+- slot 编号
+- offset
+- type
+- label
+- astId
+
+#### 8.2 Hardhat + OpenZeppelin
+
+安装：
+
+```bash
+npm i --save-dev @openzeppelin/hardhat-upgrades @nomicfoundation/hardhat-toolbox
+```
+
+脚本（示意）：
+
+```javascript
+const layout = await hre.artifacts.getBuildInfo("contracts/My.sol:My");
+console.log(layout.output.storageLayout.storage);
+```
+
+或使用社区插件（如 hardhat-storage-layout）。
+
+#### 8.3 升级前自动 Diff（伪代码）
+
+```js
+function diffSlots(oldLayout, newLayout) {
+  // 检查相同变量名的 slot 是否改变
+  // 检查是否有删除 / 类型更改
+}
+```
+
+---
+
+### 9. 代理合约与槽冲突
+
+#### 9.1 传统（不安全）写法
+
+```solidity
+contract Proxy {
+    address implementation; // slot0
+    address admin;          // slot1
+    // fallback delegatecall
+}
+
+contract LogicV1 {
+    uint256 totalSupply; // slot0 (冲突)
+    address owner;       // slot1 (冲突)
+}
+```
+
+#### 9.2 使用 EIP-1967 槽
+
+```solidity
+bytes32 constant _IMPL_SLOT  = bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1);
+bytes32 constant _ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
+
+function _getImplementation() internal view returns (address impl) {
+    assembly { impl := sload(_IMPL_SLOT) }
+}
+```
+
+这些预定义槽“高随机性”，避免与线性分配的 slot0 / slot1 冲突。
+
+---
+
+### 10. 实用优化与技巧
+
+#### 10.1 打包结构体
+
+```solidity
+struct PackedData {
+    uint128 amount;    // 16
+    uint64  timestamp; // 8
+    uint32  id;        // 4
+    bool    active;    // 1  (其余 3 字节浪费，可再塞小字段)
+}
+// 以上合计 29 bytes -> 1 slot
+```
+
+#### 10.2 避免“稀疏浪费”
+
+```solidity
+// 不佳
+uint256 big1; // slot0
+uint8   small; // slot1 (浪费 31 bytes)
+uint256 big2; // slot2
+
+// 改进
+uint256 big1; // slot0
+uint256 big2; // slot1
+uint8   small; // slot2 (可以与后续其它小类型再打包)
+```
+
+#### 10.3 利用位运算自打包（高级）
+
+```solidity
+uint256 private _packed; // 手工布局
+
+function set(uint128 a, uint64 b, uint64 c) external {
+    _packed = (uint256(a) << 128) | (uint256(b) << 64) | uint256(c);
+}
+
+function getA() external view returns (uint128) {
+    return uint128(_packed >> 128);
+}
+```
+
+> 提升 gas / 降低槽数，但牺牲可读性，需谨慎。
+
+---
+
+### 11. 常见误区澄清
+
+| 误区                              | 事实                                     |
+| --------------------------------- | ---------------------------------------- |
+| “升级时我重排一下更整齐”          | 会破坏既有数据解释，禁止                 |
+| “把 uint256 改成 uint128 更省”    | 已部署后改类型 = 数据错位                |
+| “删掉不用的变量”                  | 不能删除；可以弃用但保留占位             |
+| “packing 省 gas，所以随便改”      | packing 设计需在首次部署前定好           |
+| “selector 冲突比 slot 冲突更常见” | slot 冲突更破坏性；selector 冲突也需检测 |
+| “EIP-1967 自动防所有冲突”         | 仅保护管理槽；业务变量仍需遵守追加原则   |
+
+---
+
+### 12. 升级安全 Checklist
+
+存储：
+
+- [ ] 不重排、不删、不改类型
+- [ ] 仅追加（或使用 gap 覆盖）
+- [ ] 升级前后关键变量值（owner、balances）校验一致
+- [ ] 运行 storage layout diff 并人工审查
+- [ ] 使用 EIP-1967 / Unstructured Storage 对系统级槽
+
+代码：
+
+- [ ] 不随意把变量从父合约挪到子合约
+- [ ] 未在 assembly 中写入与常规变量重叠槽
+- [ ] 升级初始化逻辑（if any）防重入（initializer guard）
+
+测试：
+
+- [ ] Fork 主网模拟升级
+- [ ] Foundry/Hardhat 脚本读取 slot 校验
+- [ ] Invariant：余额和总量保持守恒
+- [ ] 事件 Upgraded / AdminChanged 正常发出
+
+运维：
+
+- [ ] 多签 + timelock 批准
+- [ ] 发布前公开新实现字节码与代码
+- [ ] 监控实现地址变更
+
+---
+
+### 13. 代码层面“修改存储槽”实战对照
+
+| 目标           | 推荐做法                           | 非推荐                      |
+| -------------- | ---------------------------------- | --------------------------- |
+| 新增字段       | 末尾追加 / 使用 gap                | 插入到中间                  |
+| 改类型         | 新增新变量 + 迁移函数 + 弃用旧变量 | 直接改原变量类型            |
+| 删除变量       | 标记废弃（保留）                   | 直接移除                    |
+| 改槽号         | 使用 unstructured storage 新 key   | 重排或复制变量顺序          |
+| 自定义命名空间 | Diamond Storage / bytes32 key      | 多个 facet 直接声明重名变量 |
+
+---
+
+### 14. 进阶：如何验证升级后不“错位”
+
+示例（Foundry）：
+
+```solidity
+contract UpgradeTest is Test {
+    Proxy proxy;
+    TokenV1 v1;
+    TokenV2 v2;
+
+    function setUp() external {
+        v1 = new TokenV1();
+        proxy = new Proxy(address(v1));
+        TokenV1(address(proxy)).initialize(...);
+    }
+
+    function testUpgradeLayout() external {
+        // 升级前快照
+        bytes32 slot0_before = vm.load(address(proxy), bytes32(uint256(0)));
+        bytes32 slot1_before = vm.load(address(proxy), bytes32(uint256(1)));
+
+        // 部署新逻辑并升级
+        v2 = new TokenV2();
+        proxy.upgradeTo(address(v2));
+
+        // 升级后再读
+        bytes32 slot0_after = vm.load(address(proxy), bytes32(uint256(0)));
+        bytes32 slot1_after = vm.load(address(proxy), bytes32(uint256(1)));
+
+        assertEq(slot0_before, slot0_after, "slot0 changed!");
+        assertEq(slot1_before, slot1_after, "slot1 changed!");
+    }
+}
+```
+
+---
+
+### 15. 快速参考表
+
+| 主题            | 记忆点                                           |
+| --------------- | ------------------------------------------------ |
+| 槽大小          | 32 字节                                          |
+| 打包            | 同槽按声明顺序紧密放置，不回填                   |
+| mapping         | 元素：`keccak256(key, slot)`                     |
+| 动态数组        | 元素基址：`keccak256(slot)`                      |
+| bytes/string 小 | 直接放槽（len\*2 + 1 标志）                      |
+| 升级原则        | Append-only                                      |
+| gap             | 预留数组占位                                     |
+| 非结构化存储    | 固定 bytes32 key + sload/sstore                  |
+| assembly 变量槽 | `<var>.slot`                                     |
+| 升级风险        | 重排/改类型/删除                                 |
+| 检测工具        | forge inspect / hardhat storage layout / slither |
+
+---
+
+### 16. 快速答复你的核心疑惑：“如何修改存储槽（从语法/关键词角度）”
+
+| 需求             | 正确做法                                | 语法关键点              |
+| ---------------- | --------------------------------------- | ----------------------- |
+| 想读第 N 槽      | assembly { let v := sload(N) }          | `sload(slot)`           |
+| 想写第 N 槽      | assembly { sstore(N, value) }           | `sstore(slot,val)`      |
+| 想获取某变量的槽 | assembly { let s := variable.slot }     | `.slot`                 |
+| 想使用自定义槽   | bytes32 常量 + `sstore(constSlot, val)` | 常量哈希                |
+| 想安全扩展布局   | 在末尾追加新变量                        | 顺序追加                |
+| 想在父合约预留   | `uint256[NN] private __gap;`            | gap 数组                |
+| 想命名空间隔离   | Diamond Storage struct + 固定 bytes32   | assembly 设置 `st.slot` |
+| 想压缩多个字段   | 位运算或 struct 打包                    | 位移/或运算             |
+
+> “修改存储槽”本质＝“设计或以受控方式访问某些 slot”，不是任性移动已部署变量的位置。
+
+---
+
+### 17. 常见调试片段合集
+
+```solidity
+// 读任意槽
+function slotAt(uint256 slot) external view returns (bytes32 v) {
+    assembly { v := sload(slot) }
+}
+
+// 计算 mapping(k) 槽 (外部工具推导)
+function mappingSlot(address key, uint256 mappingSlot) external pure returns (bytes32) {
+    return keccak256(abi.encode(key, mappingSlot));
+}
+
+// 计算动态数组元素槽
+function arrayElemSlot(uint256 arraySlot, uint256 index) external pure returns (bytes32) {
+    return bytes32(uint256(keccak256(abi.encode(arraySlot))) + index);
+}
+```
+
+---
+
+### 18. 总结
+
+- 存储安全的核心：不要破坏“既有槽号 -> 语义”映射。
+- 控制槽的手段：顺序 + gap + 非结构化存储 + 命名空间。
+- 升级流程：布局 diff -> fork 验证 -> 多签批准 -> 上链执行 -> 事件记录。
+- 语法层面：`.slot`, `.offset`, `sload`, `sstore`, 固定 bytes32 key。
+- 不要“试图改变量的槽”，而是“追加 / 新 key / 迁移”。
+
+---
+
+## Solidity inline assembly / Yul 常用语法速查（开发者实战版）
+
+> 目标：一份“拿来即用”的 Yul（Solidity 内联 assembly）语法与常见模式总结。涵盖：基本结构、变量、内存/存储/调用、控制流、函数、错误处理、代理模式、ABI 手工编码、优化与陷阱。
+
+---
+
+### 0. 术语速览
+
+| 名称             | 说明                                                    |
+| ---------------- | ------------------------------------------------------- |
+| Yul              | Solidity 使用的“结构化低级中间语言”                     |
+| inline assembly  | 在 Solidity 中 `assembly { ... }` 写 Yul                |
+| EVM 三块核心数据 | storage（持久） / memory（临时） / calldata（只读输入） |
+| 栈（stack）      | EVM 1024 深度，每条指令消费/产出 32 字节词 (word)       |
+
+---
+
+### 1. 基本结构
+
+```solidity
+assembly {
+    // 语句列表
+    let x := 1
+    x := add(x, 2)
+}
+```
+
+- 赋值语法：`标识符 := 表达式`
+- 表达式是函数式风格：`add(a, b)` 而不是 `a + b`
+- 变量作用域：块级，`let` 声明后仅在当前 block 与其子块有效
+
+---
+
+### 2. 变量与作用域
+
+```solidity
+assembly {
+    let a := 10          // 声明 + 赋值
+    let b                // 仅声明（值未定义，读取=风险）
+    b := mul(a, 3)       // 赋值
+    {
+        let a := 99      // 作用域屏蔽（shadow）
+        // 这里的 a = 99
+    }
+    // 外层 a 仍 = 10
+}
+```
+
+| 用法               | 说明                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| `let x := expr`    | 定义并初始化                                                 |
+| `let x`            | 定义未初始化（危险）                                         |
+| `x := expr`        | 赋值（x 必须已声明；外层 Solidity 变量可直接赋）             |
+| 外层 Solidity 变量 | 可直接读写：`r := sload(slot)` / `someVar := add(someVar,1)` |
+
+---
+
+### 3. 基础运算（常用内建）
+
+| 类别   | 指令例子                                       | 说明                        |
+| ------ | ---------------------------------------------- | --------------------------- |
+| 算术   | `add`, `sub`, `mul`, `div`, `mod`, `exp`       | 256-bit 模运算（自动 wrap） |
+| 比较   | `lt`, `gt`, `slt`, `sgt`, `eq`, `iszero`       | 有符号：`slt/sgt`           |
+| 位运算 | `and`, `or`, `xor`, `not`, `shl`, `shr`, `sar` | 移位：`sar` 算术右移        |
+| 哈希   | `keccak256(ptr, len)`                          | 对内存区域哈希              |
+| 其他   | `byte(n, x)`                                   | 取 x 的第 n 字节（高位=0）  |
+
+示例：
+
+```solidity
+assembly {
+    let x := 0xff
+    let hi := shl(128, x)        // 左移 128 bits
+    let lowByte := byte(31, hi)  // 取末尾字节
+}
+```
+
+---
+
+### 4. 内存 (memory) 操作
+
+| 指令            | 说明                                |
+| --------------- | ----------------------------------- |
+| `mload(p)`      | 读内存 p（32 字节）                 |
+| `mstore(p, v)`  | 写 32 字节                          |
+| `mstore8(p, v)` | 写 1 字节（低 8 位）                |
+| 约定            | `0x40` 位置存 “free memory pointer” |
+
+示例：申请一段临时内存并写入
+
+```solidity
+assembly {
+    let ptr := mload(0x40)      // 取当前空闲指针
+    mstore(ptr, 0x1234)         // 写 32 bytes
+    mstore(0x40, add(ptr, 0x20))// 更新空闲指针
+}
+```
+
+对齐建议：
+
+- 内存指针对齐 32 字节（EVM 不强制，利于哈希 / ABI）
+- 批量拼接：`mstore(add(base, offset), value)`
+
+---
+
+### 5. 存储 (storage) 操作
+
+| 指令                | 说明                                        |
+| ------------------- | ------------------------------------------- |
+| `sload(slot)`       | 读 storage 槽（冷/热访问 gas 不同）         |
+| `sstore(slot, val)` | 写入（首次改非零昂贵；改为 0 退还部分 gas） |
+
+复杂位置计算：
+
+- `mapping(k => v)`：`keccak256(abi.encode(key, slot))`
+- 动态数组元素 i：`keccak256(slot) + i`
+- 在 Yul：需先写入内存，再 `keccak256(ptr, len)`
+
+---
+
+### 6. Calldata 操作
+
+| 指令                               | 说明                                      |
+| ---------------------------------- | ----------------------------------------- |
+| `calldatasize()`                   | 输入长度                                  |
+| `calldataload(p)`                  | 从 p 读取 32 字节（不足右对齐，高位补 0） |
+| `calldatacopy(memPos, cdPos, len)` | 复制                                      |
+| `callvalue()`                      | msg.value                                 |
+| `caller()`                         | msg.sender                                |
+| `callerdatasize()`                 | （不存在，易混淆）                        |
+
+解析选择器 + 第一参数：
+
+```solidity
+assembly {
+    let selector := shr(224, calldataload(0)) // 前 4 字节
+    let arg1 := calldataload(4)               // 后面第一个 32 字节参数
+}
+```
+
+---
+
+### 7. 返回数据与错误
+
+| 指令                           | 说明                            |
+| ------------------------------ | ------------------------------- |
+| `return(ptr, size)`            | 正常返回                        |
+| `revert(ptr, size)`            | 回退                            |
+| `invalid()`                    | 触发 0xfe（耗尽剩余 gas，谨慎） |
+| `returndatasize()`             | 上一次外部调用返回长度          |
+| `returndatacopy(ptr, 0, size)` | 拷贝返回数据                    |
+
+---
+
+### 8. 外部调用指令全集
+
+| 指令                                             | 说明                    | 是否允许写存储 | 上下文       |
+| ------------------------------------------------ | ----------------------- | -------------- | ------------ |
+| `call(g,to,v,inPtr,inSize,outPtr,outSize)`       | 普通调用                | 是             | 新上下文     |
+| `delegatecall(g,to,inPtr,inSize,outPtr,outSize)` | 共享 msg.sender/storage | 是             | 调用者上下文 |
+| `staticcall(g,to,inPtr,inSize,outPtr,outSize)`   | 只读                    | 否             | 只读上下文   |
+| `callcode`                                       | 废弃                    | -              | -            |
+
+输出未知典型模式：
+
+```solidity
+assembly {
+    let ok := call(gas(), target, 0, inPtr, inSize, 0, 0)
+    let size := returndatasize()
+    let ptr := mload(0x40)
+    returndatacopy(ptr, 0, size)
+    if iszero(ok) { revert(ptr, size) }
+    // 使用 ptr..ptr+size
+}
+```
+
+---
+
+### 9. 控制流
+
+| 结构   | 语法                                         | 说明          |
+| ------ | -------------------------------------------- | ------------- |
+| if     | `if cond { ... }`                            | cond 非零执行 |
+| switch | `switch expr case v { ... } default { ... }` | 多分支        |
+| for    | `for { init } cond { post } { body }`        | 结构化循环    |
+| block  | `{ ... }`                                    | 新作用域      |
+
+数组求和示例：
+
+```solidity
+assembly {
+    function sum(ptr, len) -> s {
+        for { let i := 0 } lt(i, len) { i := add(i, 1) } {
+            s := add(s, mload(add(ptr, mul(i, 32))))
+        }
+    }
+}
+```
+
+---
+
+### 10. 内联函数（Yul 内部）
+
+```solidity
+assembly {
+    function mulmod256(a, b) -> r {
+        r := mul(a, b) // 示例
+    }
+}
+```
+
+注意：
+
+- 仅在当前 assembly 块内可见
+- 不捕获外层变量；需显式传参
+- 返回值以 `->` 声明
+
+---
+
+### 11. 事件 (LOG) 指令
+
+| 指令                 | 说明            |
+| -------------------- | --------------- |
+| `log0(p, s)`         | 无 topic        |
+| `log1(p, s, t1)`     | 1 个 topic      |
+| `log2 / log3 / log4` | 最多 4 个 topic |
+
+示例：
+
+```solidity
+assembly {
+    // topic1 = keccak256("Stored(uint256)")
+    log1(ptr, 32, 0x<topic1 hash>)
+}
+```
+
+---
+
+### 12. 创建合约
+
+| 指令                              | 说明                                   |
+| --------------------------------- | -------------------------------------- |
+| `create(value, ptr, size)`        | 用内存中的“初始化代码”部署             |
+| `create2(value, ptr, size, salt)` | 可预测地址（与 salt + init code 相关） |
+
+```solidity
+assembly {
+    let newAddr := create(0, codePtr, codeSize)
+    if iszero(extcodesize(newAddr)) { revert(0, 0) }
+}
+```
+
+注意：`codePtr` 需是 constructor 字节码，不是 runtime 字节码。
+
+---
+
+### 13. 销毁合约
+
+| 指令                 | 说明                                   |
+| -------------------- | -------------------------------------- |
+| `selfdestruct(addr)` | 发送余额给 addr 并清除代码（留空账户） |
+
+---
+
+### 14. 代理 fallback 模板（规范版）
+
+```solidity
+fallback() external payable {
+    assembly {
+        let impl := sload(_IMPL_SLOT)
+        if iszero(impl) { revert(0, 0) }
+
+        let ptr := mload(0x40)
+        calldatacopy(ptr, 0, calldatasize())
+
+        let success := delegatecall(gas(), impl, ptr, calldatasize(), 0, 0)
+        let size := returndatasize()
+        returndatacopy(ptr, 0, size)
+
+        switch success
+        case 0 { revert(ptr, size) }
+        default { return(ptr, size) }
+    }
+}
+```
+
+---
+
+### 15. 手工 ABI 编码（函数调用）
+
+调用 `foo(uint256 a, address b)`，选择器：`bytes4(keccak256("foo(uint256,address)"))`
+
+```solidity
+assembly {
+    let ptr := mload(0x40)
+    mstore(ptr, shl(224, sel))        // selector 占前 4 字节
+    mstore(add(ptr, 4), a)            // 参数1
+    mstore(add(ptr, 36), b)           // 参数2（地址左填充）
+    let success := call(gas(), target, 0, ptr, 68, 0, 0)
+    let size := returndatasize()
+    returndatacopy(ptr, 0, size)
+    if iszero(success) { revert(ptr, size) }
+}
+```
+
+动态参数需：offset 表 + 实体长度 + 数据体。
+
+---
+
+### 16. 位与打包技巧
+
+| 任务                  | 示例                                                    |
+| --------------------- | ------------------------------------------------------- |
+| 拼合高低 128 位       | `let packed := or(shl(128, hi), lo)`                    |
+| 取高 128 位           | `hi := shr(128, packed)`                                |
+| 取低 128 位           | `lo := and(packed, 0xffffffffffffffffffffffffffffffff)` |
+| 构造 (1<<bits)-1 掩码 | `mask := sub(shl(bits, 1), 1)`                          |
+
+---
+
+### 17. 常用模式片段库
+
+1. mapping 槽：
+
+```solidity
+assembly {
+    mstore(0x00, key)
+    mstore(0x20, slotBase)
+    let slot := keccak256(0x00, 0x40)
+    let val := sload(slot)
+}
+```
+
+2. 动态数组元素 i：
+
+```solidity
+assembly {
+    let slotBase := <arraySlot>
+    mstore(0x00, slotBase)
+    let base := keccak256(0x00, 0x20)
+    let elemSlot := add(base, i)
+    let elem := sload(elemSlot)
+}
+```
+
+3. revert with string：
+
+```solidity
+assembly {
+    let ptr := mload(0x40)
+    // Error(string) selector = 0x08c379a0
+    mstore(ptr, shl(224, 0x08c379a0))
+    mstore(add(ptr, 4), 32)      // 偏移
+    mstore(add(ptr, 36), 5)      // 长度
+    mstore(add(ptr, 68),
+        0x48656c6c6f000000000000000000000000000000000000000000000000000000) // "Hello"
+    revert(ptr, 100)
+}
+```
+
+---
+
+### 18. Gas & 优化提示
+
+| 情况                  | 建议                                      |
+| --------------------- | ----------------------------------------- |
+| 频繁读同一 storage 槽 | `let tmp := sload(slot)` 缓存             |
+| 写后立即读            | 直接用写入值                              |
+| 减少冷访问            | 将同一 mapping key 操作聚合               |
+| 避免覆盖关键内存      | 不随意写 0x00..0x3f（除非完全掌控流程）   |
+| 大量拼接              | 先计算整体长度，最后一次更新 free pointer |
+
+---
+
+### 19. 安全与陷阱清单
+
+| 风险                     | 原因                     | 缓解                             |
+| ------------------------ | ------------------------ | -------------------------------- |
+| 未初始化变量             | `let x` 后直接读         | 始终初始化                       |
+| 覆盖 free memory pointer | 误写 0x40                | 合规更新：`mstore(0x40, newPtr)` |
+| delegatecall 存储碰撞    | impl 与 proxy 布局不一致 | EIP-1967 / unstructured storage  |
+| 未复制返回数据即 revert  | 丢失真实错误             | 先 `returndatacopy`              |
+| 位移方向错误             | 混淆 `shl/shr`           | 记忆：shl=左移                   |
+| calldata 偏移错误        | 未跳过 4 字节选择器      | 参数起始偏移 = 4                 |
+| Magic number 无注释      | 可读性差                 | 注释/常量化                      |
+| 滥用 `invalid()`         | Gas 全耗                 | 用 `revert`                      |
+| 复用内存 0 地址          | 后续逻辑读取错           | 使用 `mload(0x40)` 指针          |
+
+---
+
+### 20. 迁移到独立 Yul（高级）
+
+```yul
+object "Simple" {
+  code {
+    datacopy(0, dataoffset("Runtime"), datasize("Runtime"))
+    return(0, datasize("Runtime"))
+  }
+  object "Runtime" {
+    code {
+      mstore(0x00, 0x2a)
+      return(0x00, 0x20)
+    }
+  }
+}
+```
+
+大多数情况不需独立 Yul，inline assembly 已足够。
+
+---
+
+### 21. 快速记忆表（最常用 30 指令）
+
+| 分类     | 指令                                             |
+| -------- | ------------------------------------------------ |
+| 算术     | add sub mul div mod exp                          |
+| 比较     | lt gt slt sgt eq iszero                          |
+| 位       | and or xor not shl shr sar                       |
+| 内存     | mload mstore mstore8                             |
+| 存储     | sload sstore                                     |
+| Calldata | calldatasize calldataload calldatacopy           |
+| 返回     | return revert returndatasize returndatacopy      |
+| 调用     | call delegatecall staticcall                     |
+| 账户     | address balance selfbalance caller callvalue     |
+| 环境     | gas pc codesize codecopy extcodesize extcodecopy |
+| 哈希     | keccak256                                        |
+| 事件     | log0 log1 log2 log3 log4                         |
+| 创建     | create create2                                   |
+| 终止     | selfdestruct stop                                |
+
+---
+
+### 22. 学习路线建议
+
+| 阶段 | 重点                          | 练习               |
+| ---- | ----------------------------- | ------------------ |
+| 入门 | sload / sstore / mload / call | 写读槽函数         |
+| 进阶 | delegatecall 代理             | fallback 透传      |
+| 编码 | 手工 ABI                      | 构造 selector 调用 |
+| 优化 | 打包 + 减少 sload             | Gas benchmark      |
+| 安全 | 升级/存储碰撞                 | 模拟恶意 impl      |
+| 高级 | create2 / 手写 revert         | 最小代理部署       |
+
+---
+
+### 23. 一句话总结
+
+Yul = “EVM 指令的结构化皮肤”：用函数式指令表达栈操作；掌控 calldata / memory / storage / call；核心是精确管理指针、返回数据与错误路径。
+
+---
