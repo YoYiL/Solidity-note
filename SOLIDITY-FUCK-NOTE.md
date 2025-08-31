@@ -1,6 +1,8 @@
-NOTE: This is a notebook used to record personal learning and debugging experiences.
-
-这是一个用来记录个人学习和 debug 经验的笔记。
+> **注意 / NOTE**: 这是一个用来记录个人学习和 debug 经验的笔记。  
+> This is a notebook used to record personal learning and debugging experiences.
+>
+> 📋 **目录导航 / Table of Contents**: 点击右上角的目录图标 (📋) 查看完整目录  
+> Click the table of contents icon (📋) in the upper right corner to view the complete directory
 
 [TOC]
 
