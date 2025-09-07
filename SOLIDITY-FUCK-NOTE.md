@@ -1112,6 +1112,27 @@ Pruned Node Storage:
 
 ![image-20250729163041519](SOLIDITY-FUCK-NOTE.assets/image-20250729163041519.png)
 
+### Solidity 子合约调用父合约的权限表格
+
+#### 函数调用权限
+
+| 可见性修饰符 | 子合约能否调用 | 调用方式                      | 示例                                           |
+| ------------ | -------------- | ----------------------------- | ---------------------------------------------- |
+| `public`     | ✅ 能           | 直接调用或 `super.function()` | `parentFunction()` 或 `super.parentFunction()` |
+| `internal`   | ✅ 能           | 直接调用或 `super.function()` | `parentFunction()` 或 `super.parentFunction()` |
+| `external`   | ❌ 不能直接调用 | 只能通过 `this.function()`    | `this.parentFunction()`                        |
+| `private`    | ❌ 不能         | 无法调用                      | -                                              |
+
+### 变量访问权限
+
+| 可见性修饰符 | 子合约能否访问 | 访问方式                    | 示例        |
+| ------------ | -------------- | --------------------------- | ----------- |
+| `public`     | ✅ 能           | 直接访问（自动生成 getter） | `parentVar` |
+| `internal`   | ✅ 能           | 直接访问                    | `parentVar` |
+| `private`    | ❌ 不能         | 无法访问                    | -           |
+
+
+
 ## 🔧 Solidity 错误捕获方式总结
 
 | 方式             | 语法                              | 适用场景          | 特点                |
@@ -1427,7 +1448,11 @@ TokenURI stands for Token Uniform Resource Identifier. At its core it serves as 
 
 ![image-20250726234940825](SOLIDITY-FUCK-NOTE.assets/image-20250726234940825.png)
 
-## abi.encode & address(someContract).call{''}('')
+
+
+## abi.encode things
+
+### abi.encode & address(someContract).call{''}('')
 
 ![image-20250726235622891](SOLIDITY-FUCK-NOTE.assets/image-20250726235622891.png)
 
@@ -1473,21 +1498,58 @@ function callTransferFunctionDirectlyTwo(address someAddress, uint256 amount) pu
 }
 ```
 
+### abi.encode, abi.encodePacked, bytes('string')
+
+| 特性         | abi.encode        | abi.encodePacked | bytes('string') |
+| ------------ | ----------------- | ---------------- | --------------- |
+| **编码方式** | ABI 标准编码      | 紧密打包编码     | 字符串直接转换  |
+| **数据对齐** | 32字节对齐        | 无对齐           | 无对齐          |
+| **数据长度** | 较长（有填充）    | 较短（无填充）   | 字符串长度      |
+| **可解码性** | ✅ 可用 abi.decode | ❌ 不可逆解码     | ❌ 不可逆解码    |
+| **哈希计算** | 不推荐            | ✅ 常用           | ✅ 可用          |
+| **Gas 消耗** | 较高              | 较低             | 最低            |
+
+### abi.encodeCall，abi.encodeWithSelector，abi.encodeWithSignature
+
+#### 基本语法对比
+
+| 函数                      | 语法                                         | 引入版本         |
+| ------------------------- | -------------------------------------------- | ---------------- |
+| `abi.encodeCall`          | `abi.encodeCall(function_pointer, (args))`   | Solidity 0.8.11+ |
+| `abi.encodeWithSelector`  | `abi.encodeWithSelector(selector, args)`     | 早期版本         |
+| `abi.encodeWithSignature` | `abi.encodeWithSignature("signature", args)` | 早期版本         |
+
+#### 详细对比表
+
+| 特性           | encodeCall   | encodeWithSelector | encodeWithSignature |
+| -------------- | ------------ | ------------------ | ------------------- |
+| **类型安全**   | ✅ 编译时检查 | ⚠️ 部分检查         | ❌ 无检查            |
+| **函数选择器** | 🤖 自动生成   | 📝 手动提供         | 🤖 自动计算          |
+| **易出错程度** | 🟢 低         | 🟡 中等             | 🔴 高                |
+| **性能**       | 🟢 最优       | 🟢 优秀             | 🟡 需计算哈希        |
+| **IDE 支持**   | 🟢 最佳       | 🟡 一般             | 🟡 一般              |
+
+
+
+
+
 记住通过 abi encode 来 call 函数的方式就行了。**abi.encodeWithSignature 或者 abi.encodeWithSelector**。含参数的 error 也要通过这种方式来表达。不过这里貌似直接用了 .selector, 没有手动取哈希。
 
 ![image-20250809014025951](SOLIDITY-FUCK-NOTE.assets/image-20250809014025951.png)
 
-补充：![image-20250820231442384](SOLIDITY-FUCK-NOTE.assets/image-20250820231442384.png)
+补充1：![image-20250820231442384](SOLIDITY-FUCK-NOTE.assets/image-20250820231442384.png)
 
 vm.expercPartialRevert 貌似不需要传入自定义 error 的参数
 
 ![image-20250820231647095](SOLIDITY-FUCK-NOTE.assets/image-20250820231647095.png)
 
-此外，函数的 selector 需要 this.函数名.selector 的方式，error 只需要 error 名.selector.
 
-![image-20250809014705902](SOLIDITY-FUCK-NOTE.assets/image-20250809014705902.png)
 
 ## 函数类型&函数名&Error 类型
+
+函数的 selector 需要 this.函数名.selector 的方式，error 只需要 error 名.selector.
+
+![image-20250809014705902](SOLIDITY-FUCK-NOTE.assets/image-20250809014705902.png)
 
 ![image-20250809015035619](SOLIDITY-FUCK-NOTE.assets/image-20250809015035619.png)
 
@@ -1522,7 +1584,6 @@ vm.expercPartialRevert 貌似不需要传入自定义 error 的参数
 #### **函数 1：**
 
 ```
-复制
 function _checkRole(bytes32 role) internal view virtual
 ```
 
@@ -1532,7 +1593,6 @@ function _checkRole(bytes32 role) internal view virtual
 #### **函数 2：**
 
 ```
-复制
 function _checkRole(bytes32 role, address account) internal view virtual
 ```
 
@@ -1541,12 +1601,15 @@ function _checkRole(bytes32 role, address account) internal view virtual
 
 ### 🔍 **函数签名构成要素**
 
-Solidity 中函数签名由以下部分组成：
-
 ```
-复制
 函数签名 = 函数名 + 参数类型列表
 ```
+
+**Solidity 中函数签名由以下部分组成：**
+
+- 函数名
+- 参数类型
+- 参数顺序
 
 **注意：以下内容不影响函数签名：**
 
@@ -1555,13 +1618,14 @@ Solidity 中函数签名由以下部分组成：
 - 可见性修饰符 (public, internal, private)
 - 状态修改修饰符 (view, pure, payable)
 - 其他修饰符 (virtual, override)
+- "memory" 和 "calldata" 修饰符
 
 ### 💡 **重载示例对比**
 
 #### **✅ 有效的函数重载：**
 
 ```
-复制contract OverloadingExample {
+contract OverloadingExample {
     // 1. 不同参数数量
     function process(uint256 value) public {}
     function process(uint256 value, string memory data) public {}
@@ -1587,7 +1651,7 @@ Solidity 中函数签名由以下部分组成：
 #### **❌ 无效的函数重载：**
 
 ```
-复制contract InvalidOverloading {
+contract InvalidOverloading {
     // ❌ 错误：只有参数名不同
     function transfer(address to, uint256 amount) public {}
     function transfer(address recipient, uint256 value) public {} // 编译错误
@@ -1606,7 +1670,7 @@ Solidity 中函数签名由以下部分组成：
 }
 ```
 
-## 🔄 Solidity 函数重载 vs Override 详解
+## 🔄 Solidity 函数重载 vs Override继承 详解
 
 ### 🎯 **核心区别概览**
 
@@ -2008,7 +2072,7 @@ contract VisibilityDemo {
 #### **函数选择器对比：**
 
 ```
-复制// 所有函数都有选择器，但只有 external/public 的会被暴露
+// 所有函数都有选择器，但只有 external/public 的会被暴露
 const selectors = {
     // ✅ ABI中的选择器（外部可用）
     "increment()": "0xd09de08a",
@@ -8587,7 +8651,7 @@ struct PackedUserOperation {
 }
 ```
 
-细节：初始设置signature为空，调用userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(userOp);来获取userOpHash。 **userOpHash是不包含签名版本的userOp的hash。**且还要转换成以太坊签名格式之后再进行签名。 然后将签名赋值给userOp中的bytes signature。**最终生成的userOp包含签名**。
+细节：初始设置signature为空，调用userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(userOp);来获取userOpHash。 **userOpHash是不包含签名版本的userOp的hash。**且还要转换成以太坊签名格式之后再进行签名。 然后将签名赋值给userOp中的bytes signature。**最终生成的userOp包含签名,但是userOpHash还是最初版本的hash**。
 
 所以在AA合约中validate的时候需要先将userOpHash转换成以太坊签名格式（与生成时一致），再用ECDSA验证signer。
 
@@ -9177,15 +9241,172 @@ This tells us the `handleOps` call to the `EntryPoint` contract is the source of
 
 Knowing where the revert happened is useful, but to understand *why*, we often need to inspect the state and execution path leading up to it. The debugger allows us to step backward through the execution trace.
 
-**Keyboard Shortcut:** `J` (repeatedly press to step to the next EVM opcode)
+**Keyboard Shortcut:** `k` (repeatedly press to step to the previous EVM opcode)
 
 - The on-screen help shows `[k/j]: prev/next op`, where `k` steps backward (previous opcode) and `j` steps forward (next opcode).
 
-As you step forward, particularly when entering external contract calls like `handleOps`, you might encounter messages like "No source map for contract EntryPoint." This means the debugger doesn't have the source code mapping for that specific part of the dependency. However, by continuing to step back, you will eventually land on a relevant Solidity line within the `EntryPoint.sol` contract itself, if its source is available in your project's dependencies (e.g., in `lib/`).
+As you step backward, particularly when entering external contract calls like `handleOps`, you might encounter messages like "No source map for contract EntryPoint." This means the debugger doesn't have the source code mapping for that specific part of the dependency. However, by continuing to step back, you will eventually land on a relevant Solidity line within the `EntryPoint.sol` contract itself, if its source is available in your project's dependencies (e.g., in `lib/`).
 
 ![image-20250905154326828](SOLIDITY-FUCK-NOTE.assets/image-20250905154326828.png)
 
+## zkSync Native Account Abstraction
 
+![account-abstraction.png](SOLIDITY-FUCK-NOTE.assets/account-abstraction-17571502899571.png)
+
+### zkSync Native Account Abstraction vs. Ethereum ERC-4337: Key Differences and Advantages
+
+zkSync's native implementation of Account Abstraction presents several key distinctions and benefits when compared to Ethereum's ERC-4337 standard:
+
+1. **No Alternative Mempool:** Transactions intended for account abstraction contracts are sent directly to the standard zkSync mempool. This eliminates the need for a separate mempool (alt-mempool) that ERC-4337 relies on.
+2. **No Central `EntryPoint.sol` Contract:** In zkSync, transactions are routed directly to your specific account contract. This removes the `EntryPoint.sol` contract, which acts as a central coordinator in the ERC-4337 architecture, thereby simplifying the transaction flow.
+3. **Simplified Transaction Flow:**
+   - A user, interacting via a wallet like Metamask, signs a transaction (specifically, a `TxType: 113` transaction).
+   - This signed message is broadcast to the zkSync network. (签名时无需gas费用,之后execute的时候通过抽象账户合约或者paymaster的特定函数支付gas费)
+   - The network processes this message, which ultimately results in calling functions on "Your Account" – your custom smart contract.
+   - "Your Account" can then initiate interactions with other decentralized applications (DApps, e.g., `Dapp.sol`).
+   - Optional components, such as Signature Aggregators and Paymasters, can still be integrated into this flow.
+4. **Gasless Transactions from the User's Initial Perspective:**
+   - When a user initiates an action, such as deploying a contract using Remix on zkSync, they are presented with a "Signature request" for a `TxType: 113` transaction, rather than a standard transaction confirmation prompt that requests immediate gas payment.
+   - **The user *signs* this data, but they do not pay gas at this specific moment.**
+   - The signed data is transmitted to a zkSync Era node.
+   - A node, or a relayer/bundler, then executes the transaction (e.g., deploys the contract).
+   - **Gas fees are paid during this execution step. However, these fees can be covered by a paymaster or deducted from the user's account by the system after the transaction is processed.** This abstracts the immediate gas payment away from the user for certain operations, enhancing the user experience.
+
+### The Paradigm Shift: All Accounts are Smart Contracts on zkSync
+
+A fundamental design principle of zkSync Era is that all accounts are, at their core, smart contracts. This contrasts significantly with Ethereum's model.
+
+1. **Ethereum's Account Model:** Ethereum distinguishes between two primary account types:
+   - **Externally Owned Account (EOA):** Controlled by a private key (e.g., accounts managed by Metamask or Rabby).
+   - **Smart Contract Wallet/Account:** Programmable accounts represented by code deployed on the blockchain (e.g., Gnosis Safe, Argent).
+     This dichotomy can introduce complexities in development, such as needing to check `msg.sender == tx.origin` or determine if a caller is a contract.
+2. **zkSync Era's Unified Account Model:** On zkSync Era, every account, including those that appear and behave like traditional EOAs (such as your Metamask account when used on the zkSync network), is an instance of a smart contract.
+   - When an EOA interacts with zkSync, it is typically represented by a `DefaultAccount.sol` smart contract deployed on its behalf.
+   - This unification simplifies interactions and development patterns, effectively allowing EOA-like addresses to possess smart contract capabilities.
+   - The zkSync Block Explorer (e.g., `sepolia.explorer.zksync.io`) is designed to recognize these `DefaultAccount` instances. For a cleaner user experience, it often displays them as if they were simple EOAs (e.g., without a "Contract" tab), even though they are smart contracts under the hood.
+
+### Key System Contract Interfaces and Implementations for Account Abstraction
+
+Understanding the core interfaces and their default implementations is vital for building custom accounts on zkSync.
+
+1. **`IAccount.sol` Interface:**
+   - **Location in `foundry-era-contracts`:** `lib/foundry-era-contracts/src/system-contracts/contracts/interfaces/IAccount.sol`
+   - This interface is paramount. All account contracts on zkSync, including the `DefaultAccount` for EOAs and any custom account abstraction contracts you build, *must* implement `IAccount.sol`.
+   - Key functions defined in this interface include:
+     - `validateTransaction(bytes32 _txHash, bytes32 _suggestedSignedHash, Transaction calldata _transaction) external payable returns (bytes4 magic);`
+     - `executeTransaction(bytes32 _txHash, bytes32 _suggestedSignedHash, Transaction calldata _transaction) external payable;`
+     - `executeTransactionFromOutside(Transaction calldata _transaction) external payable;` (This function caters to specific use cases or legacy zkSync functionalities beyond the primary AA flow focused on `validate` and `execute`.)
+     - `payForTransaction(bytes32 _txHash, bytes32 _suggestedSignedHash, Transaction calldata _transaction) external payable;`
+     - `prepareForPaymaster(bytes32 _txHash, bytes32 _suggestedSignedHash, Transaction calldata _transaction) external payable;`
+2. **`DefaultAccount.sol` Implementation:**
+   - **Location in `foundry-era-contracts`:** `lib/foundry-era-contracts/src/system-contracts/contracts/DefaultAccount.sol`
+   - This contract provides the default smart contract implementation for accounts that function like EOAs on zkSync. When you use your Metamask wallet on zkSync, its address on the zkSync network corresponds to an instance of this `DefaultAccount` contract.
+3. **`Transaction` Struct:**
+   - The `Transaction` struct is a critical data structure passed as a parameter to many functions within the `IAccount` interface.
+   - **Imported from:** It is defined and can be imported, for example, from `lib/foundry-era-contracts/src/system-contracts/contracts/interfaces/Transaction.sol` or accessible via utility libraries like `MemoryTransactionHelper.sol` within the `foundry-era-contracts` repository. For our purposes, we will import it from the path used in the `IAccount.sol` interface context.
+
+### Account Abstraction Transactions in zkSync
+
+zkSync introduces a refined approach to transaction processing, particularly with its native support for account abstraction. A transaction under this model typically undergoes a two-phase lifecycle: Validation and Execution.
+
+1. ==**Phase 1: Validation:** This initial phase is crucial for verifying the transaction's legitimacy before it consumes significant resources or impacts the state.==
+
+   1. **User Initiates Transaction to API Client:**
+      The journey begins when a user sends their TxType 113 transaction to a "zkSync API client." This client can be thought of as a light node, serving as the initial entry point into the zkSync network.
+
+   2. **Nonce Uniqueness Check via `NonceHolder`:**
+      The zkSync API client immediately verifies the uniqueness of the transaction's nonce. This is paramount for preventing replay attacks. The check involves querying the `NonceHolder` system contract.
+
+   3. **Invoking `validateTransaction` on the Account Contract:**
+      Next, the zkSync API client calls the `validateTransaction` function directly on the user's smart contract account. This function is a cornerstone of zkSync's account abstraction model.A crucial requirement is that **this `validateTransaction` call MUST update the account's nonce**. This is a state-changing operation that signals the nonce has been consumed for this specific transaction validation.
+
+   4. **The Bootloader as `msg.sender` during Validation:**
+      For a TxType 113 transaction, the `msg.sender` during the `validateTransaction` call (and other system-initiated calls within this AA flow) is always the **Bootloader system contract**.
+
+      The Bootloader is a "super admin" system contract, analogous to the EntryPoint contract (ERC-4337) on Ethereum mainnet. It plays a fundamental role in orchestrating zkSync's native account abstraction, acting as the trusted intermediary that calls into the account contract for validation and execution steps. You can find more details in the official zkSync documentation (e.g., `docs.zksync.io/zk-stack/components/zksync-evm/bootloader.html`).
+
+   5. **Confirmation of Nonce Update:**
+      After the `validateTransaction` call returns, the zkSync API client performs a secondary check to confirm that the account's nonce has indeed been incremented as expected. If the nonce wasn't updated by the `validateTransaction` implementation, the transaction will be reverted at this stage.
+   
+   6. **Handling Transaction Payment:**
+      The API client then proceeds to handle the payment logic for the transaction. This can involve:
+   
+      - Directly calling `payForTransaction` on the account if the account pays for itself.
+      - If a paymaster is utilized, the flow involves calls to `prepareForPaymaster` and subsequently `validateAndPayForPaymasterTransaction`. These functions allow a third-party (the paymaster) to sponsor the transaction fees.
+   
+   7. **Verification of Bootloader Compensation:**
+      Finally, the zkSync API client verifies that the Bootloader contract has been adequately compensated for its role in processing the transaction. The Bootloader incurs costs for orchestrating these steps, and it needs to have a sufficient balance to cover them, similar to how an ERC-4337 EntryPoint contract might be pre-funded or reimbursed.
+   
+2. ==**Phase 2: Execution:** Once validated, the transaction proceeds to the execution phase, where its intended operations are carried out.==
+   
+   8. **Validated Transaction Relayed to Main Node/Sequencer:**
+      The zkSync API client (light node) forwards the now-validated transaction to the main zkSync node, which also currently serves as the sequencer. It's worth noting that efforts are ongoing within the zkSync ecosystem to decentralize the sequencer role.
+	   
+		This separation of concerns—validation by API clients and execution by the main node/sequencer—is a strategic design choice. It helps protect the main sequencer from potential Denial of Service (DoS) attacks by offloading the initial, potentially resource-intensive, validation checks.
+   	
+   9. **Invoking executeTransaction on the Account Contract:**
+      The main node (sequencer) takes the validated transaction and calls the executeTransaction function on the user's smart contract account.
+   
+    10. **Post-Transaction Logic (Paymaster Involvement):**
+         If a paymaster was used to sponsor the transaction fees, a postTransaction function is invoked. This function allows the paymaster to perform any necessary cleanup, reconciliation, or finalization logic after the main transaction execution is complete.
+   
+
+This sequence—from validation by the API client to execution by the sequencer via the Bootloader—constitutes the complete lifecycle for a standard TxType 113 account abstraction transaction on zkSync.
+
+### The Role of System Contracts in zkSync
+
+One of the most significant architectural distinctions between Ethereum and zkSync lies in zkSync's extensive utilization of **System Contracts**. These are pre-deployed smart contracts on the zkSync network that manage fundamental protocol-level functionalities. Unlike Ethereum, where many core operations are handled by the client software or hard-coded into the protocol, zkSync delegates these to on-chain smart contracts.
+
+The **`NonceHolder.sol`** contract is a prime example. Its responsibility is to manage nonces for all accounts on zkSync, ensuring that each transaction from a specific sender has a unique nonce. This mechanism is vital for maintaining transaction order and preventing double-spending.
+
+## Contract Deployment: A Tale of Two Networks (Ethereum vs. zkSync)
+
+The process of deploying smart contracts differs notably between Ethereum and zkSync, primarily due to zkSync's reliance on system contracts for core operations.
+
+**Ethereum's Deployment Mechanism:**
+On Ethereum, deploying a smart contract involves sending a transaction where the `to` field (recipient address) is left null or set to the zero address. The transaction's data payload contains the compiled bytecode of the contract. Ethereum nodes recognize this specific transaction format as a contract creation request and execute the deployment. This method is well-documented in Ethereum's developer resources.
+
+**zkSync's Deployment Mechanism:**
+zkSync takes a different path. Instead of the null-recipient pattern, contract deployment is facilitated by interacting with a dedicated system contract: the **`ContractDeployer`**. This contract resides at a well-known, predefined address on the zkSync network (for instance, `0x0000000000000000000000000000000000008006` on zkSync Era Mainnet, verifiable via the zkSync block explorer).
+
+To deploy a contract on zkSync, you call specific functions on this `ContractDeployer` system contract. These functions include:
+
+- `create`
+- `create2`
+- `createAccount`
+- `create2Account`
+- `forceDeployOnAddress`
+
+And others, each serving slightly different deployment scenarios or offering varied control over the deployment process. For example, `createAccount` is specifically designed for deploying account abstraction-compatible smart contract accounts. Developers can inspect the `ContractDeployer.sol` source code and its available functions directly on the zkSync block explorer by navigating to its address and viewing the "Write Contract" tab.
+
+This system contract-based approach centralizes and standardizes contract deployment logic within the zkSync protocol.
+
+### Navigating zkSync Deployment with Developer Tools: The Foundry Case
+
+To accommodate zkSync's deployment flow, `foundry-zksync` (the zkSync-compatible version of Foundry) introduces specific flags. For instance, you might use a command like:
+
+```
+# Terminal command
+forge create --zksync --legacy
+```
+
+The `--zksync` flag tells Foundry to prepare the transaction for the zkSync network. The `--legacy` flag, in this context, instructs `foundry-zksync` to use an older deployment method that specifically interacts with the `ContractDeployer` system contract's `create` function. This ensures that the deployment adheres to zkSync's native process rather than attempting an Ethereum-style deployment.
+
+## The Challenge and Solution: System Contract Calls & zkSync Simulations
+
+Directly calling zkSync system contracts from other contracts can be complex and is often restricted for security reasons. zkSync addresses this with a mechanism called "simulations." These are specially crafted call patterns within your Solidity code that the zkSync compiler recognizes and transforms, *but only when a specific compiler flag is active*.
+
+When this flag is enabled, the compiler converts these simulation calls into the actual, low-level system contract calls required to interact with contracts like `NonceHolder`. If the flag is disabled, the simulation call remains as written, likely failing or behaving unexpectedly. Simulations thus serve as a developer-friendly abstraction layer, enabling privileged system contract interactions that are resolved at compile time.
+
+### Activating Simulations: The `--system-mode` Compiler Flag (is-system is incorrect).
+
+To enable the zkSync compiler to process these simulations, you must use the `--system-mode=true` flag with your compilation command.
+
+**Crucial Correction:** While some older documentation or contexts might mention an `is-system = true` setting in `foundry.toml`, for Foundry zkSync projects, this is **incorrect**. The correct method is to pass the flag directly in the command line:
+
+forge build --zksync --system-mode=true
+
+This flag instructs the zkSync compiler to recognize and transform simulation patterns into legitimate system calls.
 
 # DAOs
 
