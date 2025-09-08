@@ -6,6 +6,8 @@
 > 📋 **目录导航 / Table of Contents**: 点击右上角的目录图标 (📋) 查看完整目录  
 > Click the table of contents icon (📋) in the upper right corner to view the complete directory
 
+
+
 - [Raffle](#raffle)
   - [Raffle Chlink VRF](#raffle-chlink-vrf)
   - [Foundry 常用指令表格总结](#foundry-常用指令表格总结)
@@ -53,6 +55,9 @@
   - [etherscan verify](#etherscan-verify)
   - [contract/interface/abstrct contract/library/abstrct function](#contractinterfaceabstrct-contractlibraryabstrct-function)
   - [C3 线性化合约继承以及重写（Override）函数调用顺序](#c3-线性化合约继承以及重写override函数调用顺序)
+    - [Solidity 子合约调用父合约的权限表格](#solidity-子合约调用父合约的权限表格)
+      - [函数调用权限](#函数调用权限)
+    - [变量访问权限](#变量访问权限)
   - [🔧 Solidity 错误捕获方式总结](#-solidity-错误捕获方式总结)
     - [📋 核心示例](#-核心示例)
     - [1. **try-catch**（推荐用于外部调用）](#1-try-catch推荐用于外部调用)
@@ -72,7 +77,12 @@
   - [TokenURI](#tokenuri)
   - [SVG onchain NFT](#svg-onchain-nft)
   - [Transaction/Contract Deployment data fields](#transactioncontract-deployment-data-fields)
-  - [abi.encode \& address(someContract).call{''}('')](#abiencode--addresssomecontractcall)
+  - [abi.encode things](#abiencode-things)
+    - [abi.encode \& address(someContract).call{''}('')](#abiencode--addresssomecontractcall)
+    - [abi.encode, abi.encodePacked, bytes('string')](#abiencode-abiencodepacked-bytesstring)
+    - [abi.encodeCall，abi.encodeWithSelector，abi.encodeWithSignature](#abiencodecallabiencodewithselectorabiencodewithsignature)
+      - [基本语法对比](#基本语法对比)
+      - [详细对比表](#详细对比表)
   - [函数类型\&函数名\&Error 类型](#函数类型函数名error-类型)
   - [🔄 Solidity 函数重载 (Function Overloading) 详解](#-solidity-函数重载-function-overloading-详解)
     - [🎯 **核心概念：函数重载**](#-核心概念函数重载)
@@ -83,7 +93,7 @@
     - [💡 **重载示例对比**](#-重载示例对比)
       - [**✅ 有效的函数重载：**](#-有效的函数重载)
       - [**❌ 无效的函数重载：**](#-无效的函数重载)
-  - [🔄 Solidity 函数重载 vs Override 详解](#-solidity-函数重载-vs-override-详解)
+  - [🔄 Solidity 函数重载 vs Override继承 详解](#-solidity-函数重载-vs-override继承-详解)
     - [🎯 **核心区别概览**](#-核心区别概览)
     - [📝 **函数重载 (Function Overloading) 详解**](#-函数重载-function-overloading-详解)
       - [**定义与特点：**](#定义与特点)
@@ -656,8 +666,26 @@
     - [Setting Up the Debugger for a Failing Test](#setting-up-the-debugger-for-a-failing-test)
     - [Tip 1: Instantly Navigate to the Revert Location](#tip-1-instantly-navigate-to-the-revert-location)
     - [Tip 2: Understanding the Pre-Revert State by Stepping Backwards](#tip-2-understanding-the-pre-revert-state-by-stepping-backwards)
+  - [zkSync Native Account Abstraction](#zksync-native-account-abstraction)
+    - [zkSync Native Account Abstraction vs. Ethereum ERC-4337: Key Differences and Advantages](#zksync-native-account-abstraction-vs-ethereum-erc-4337-key-differences-and-advantages)
+    - [The Paradigm Shift: All Accounts are Smart Contracts on zkSync](#the-paradigm-shift-all-accounts-are-smart-contracts-on-zksync)
+    - [Key System Contract Interfaces and Implementations for Account Abstraction](#key-system-contract-interfaces-and-implementations-for-account-abstraction)
+    - [Account Abstraction Transactions in zkSync](#account-abstraction-transactions-in-zksync)
+    - [The Role of System Contracts in zkSync](#the-role-of-system-contracts-in-zksync)
+  - [Contract Deployment: A Tale of Two Networks (Ethereum vs. zkSync)](#contract-deployment-a-tale-of-two-networks-ethereum-vs-zksync)
+    - [Navigating zkSync Deployment with Developer Tools: The Foundry Case](#navigating-zksync-deployment-with-developer-tools-the-foundry-case)
+  - [The Challenge and Solution: System Contract Calls \& zkSync Simulations](#the-challenge-and-solution-system-contract-calls--zksync-simulations)
+    - [Activating Simulations: The `--system-mode` Compiler Flag (is-system is incorrect).](#activating-simulations-the---system-mode-compiler-flag-is-system-is-incorrect)
+  - [ERC-4337 vs. Native AA: A Comparative Overview](#erc-4337-vs-native-aa-a-comparative-overview)
 - [DAOs](#daos)
+  - [DAOs \& Governance Intro](#daos--governance-intro)
+    - [**Voting Mechanism**](#voting-mechanism)
+    - [**Voting Implementation**](#voting-implementation)
+    - [Tools](#tools)
 - [Security](#security)
+
+
+
 
 
 # Raffle
@@ -9408,14 +9436,66 @@ forge build --zksync --system-mode=true
 
 This flag instructs the zkSync compiler to recognize and transform simulation patterns into legitimate system calls.
 
+## ERC-4337 vs. Native AA: A Comparative Overview
+
+| Feature             | ERC-4337 (Ethereum/EVM)                                     | Native AA (zkSync)                                    |
+| :------------------ | :---------------------------------------------------------- | :---------------------------------------------------- |
+| **Mechanism**       | Off-chain alt-mempool, Bundlers, global EntryPoint contract | Protocol-level integration, direct network submission |
+| **Complexity**      | Higher, involves more off-chain infrastructure              | Lower, more streamlined as AA is built-in             |
+| **`from` Address**  | Bundler's EOA                                               | Smart Contract Wallet's address                       |
+| **Gas Payer**       | Bundler initially (reimbursed by wallet or Paymaster)       | Smart Contract Wallet directly (or Paymaster)         |
+| **Protocol Change** | No core protocol change required                            | Requires L1/L2 protocol support                       |
+| **Validation Call** | `EntryPoint` calls `validateUserOp` on wallet               | zkSync protocol calls `validateTransaction` on wallet |
+| **Standardization** | ERC-4337 standard                                           | L2-specific interface (e.g., zkSync's `IAccount`)     |
+
+zkSync's native AA generally offers a more elegant solution by deeply integrating account abstraction, leading to a user and developer experience where smart contract wallets are true first-class citizens. The ERC-4337 approach, while more complex, provides a crucial pathway for AA on existing EVM chains without requiring consensus-breaking changes.
+
+
+
 # DAOs
 
+## DAOs & Governance Intro
 
+[**DAOs are not corporations: where decentralization in autonomous organizations matters**](https://vitalik.eth.limo/general/2022/09/20/daos.html) - Vitalik
 
+DAO stands for Decentralized Autonomous Organization, this is defined as:
 
+*Any group that is governed by a transparent set of rules found on a blockchain or smart contract*
+
+❗ **PROTIP**
+Don't confuse DAO with **The DAO**. The DAO was.. a DAO, one of the earliest, which was hacked back in 2016! Read more about [**The DAO Hack**](https://www.gemini.com/cryptopedia/the-dao-hack-makerdao).
+
+### **Voting Mechanism** 
+
+One consideration that must be made is: **How do we identify stakeholders, or members of the community, eligible to vote?**
+
+1. Often this is handled via an ERC20 or an NFT of some kind, but this runs the risk of being *less* fair if the tokens are more available to the wealthy than others. 
+2. One methodology is the "Skin in the Game" method whereby voting records are recording and negative outcomes result in tokens/voting power being lost.
+3. A third approach is something called "Proof of Personhood Participation" and while potentially ideal, isn't something with a sound implementation yet.
+
+### **Voting Implementation**
+
+**On-chain Voting:**
+
+Handled via smart contract, votes are placed by calling functions to this contract. A major drawback of this is the gas costs associated with placing this vote transaction
+
+**Off-chain Voting:**
+
+Transactions can actually be signed without being sent to the blockchain. What this means is a protocol could take a bunch of signed transactions, uploaded to a decentralized database (like IPFS), calculate the votes and then batch submit them to the blockchain, maybe even leveraging an oracle to ensure decentrality. This can reduce voting costs by up to 99%!
+
+It's important to be careful the the implementation of any off-chain features, if you introduce a centralized component, the decentrality of your DECENTRALIZED autonomous organization goes away.
+
+### Tools
+
+There are a number of no-code/low-code tools that can facilitate a DAO, services like [**DAO Stack**](https://www.alchemy.com/dapps/daostack), [**Aragon**](https://aragon.org/), [**Colony**](https://colony.io/) and [**DAO House**](https://www.daohouse.global/) can greatly assist in the operations side of running a DAO.
+
+Additional tools with more granular control and integrations include things like [**Snapshot**](https://snapshot.org/) which allows a team to glean sentiment of a community before execution while also including functionality to manage and execute proposals if desired. Other tools to check out include [**Zodiac**](https://github.com/gnosisguild/zodiac) a development library offered by Gnosis and our old friends [**OpenZeppelin**](https://github.com/OpenZeppelin/openzeppelin-contracts/tree/master/contracts/governance). We'll be using the OZ library in our development for sure!
+
+Lastly, another "tool" I want to mention is [**Safe**](https://safe.global/) (previously Gnosis Safe), or really any multisig wallet solution. Any protocol is going to have some degree of centrality, especially as it first launches. A multisig wallet will decentralize control to some degree while a protocol grows into adopting fully decentralized governance.
 
 
 
 
 
 # Security
+
