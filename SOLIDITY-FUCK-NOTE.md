@@ -911,7 +911,7 @@ https://getfoundry.sh/reference/cheatcodes/overview
 #### 基本断言
 
 ```
-复制// 相等断言
+// 相等断言
 assertTrue(bool condition)
 assertFalse(bool condition)
 assertEq(uint256 a, uint256 b)
@@ -940,7 +940,7 @@ assertApproxEqRel(uint256 a, uint256 b, uint256 maxPercentDelta)
 #### 时间控制
 
 ```
-复制vm.warp(uint256 timestamp)     // 设置 block.timestamp
+vm.warp(uint256 timestamp)     // 设置 block.timestamp
 vm.roll(uint256 blockNumber)   // 设置 block.number
 skip(uint256 time)             // 快进时间
 rewind(uint256 time)           // 倒退时间
@@ -949,7 +949,7 @@ rewind(uint256 time)           // 倒退时间
 #### 账户控制
 
 ```
-复制vm.prank(address user)         // 下一个调用使用指定地址
+vm.prank(address user)         // 下一个调用使用指定地址
 vm.startPrank(address user)    // 开始持续使用指定地址
 vm.stopPrank()                 // 停止 prank
 
@@ -960,7 +960,7 @@ hoax(address user, uint256 amount)     // prank + deal 的组合
 #### 期望和模拟
 
 ```
-复制// 期望事件
+// 期望事件
 vm.expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData)
 vm.expectEmit()  // 检查所有参数
 
@@ -980,7 +980,7 @@ vm.mockCall(address callee, bytes memory data, bytes memory returnData)
 #### 存储操作
 
 ```
-复制vm.store(address target, bytes32 slot, bytes32 value)  // 设置存储槽
+vm.store(address target, bytes32 slot, bytes32 value)  // 设置存储槽
 vm.load(address target, bytes32 slot)                  // 读取存储槽
 ```
 
@@ -989,7 +989,7 @@ vm.load(address target, bytes32 slot)                  // 读取存储槽
 #### 地址生成
 
 ```
-复制makeAddr(string memory name)           // 生成带标签的地址
+makeAddr(string memory name)           // 生成带标签的地址
 makeAddrAndKey(string memory name)     // 生成地址和私钥对
 vm.addr(uint256 privateKey)            // 从私钥生成地址
 ```
@@ -997,14 +997,13 @@ vm.addr(uint256 privateKey)            // 从私钥生成地址
 #### 签名相关
 
 ```
-复制
 vm.sign(uint256 privateKey, bytes32 digest)  // 签名
 ```
 
 #### 标签和追踪
 
 ```
-复制vm.label(address addr, string memory label)  // 给地址添加标签
+vm.label(address addr, string memory label)  // 给地址添加标签
 vm.assume(bool condition)                     // 模糊测试中的假设条件
 ```
 
@@ -1023,7 +1022,7 @@ vm.assume(bool condition)                     // 模糊测试中的假设条件
 #### **1. 全节点 (Full Node)**
 
 ```
-复制# 全节点存储内容
+# 全节点存储内容
 Full Node Storage:
 ├── 🏠 所有区块头 (Block Headers) - 永久
 ├── 📝 所有交易 (Transactions) - 永久
@@ -1037,7 +1036,7 @@ Full Node Storage:
 #### **2. 轻节点 (Light Node)**
 
 ```
-复制# 轻节点存储内容
+# 轻节点存储内容
 Light Node Storage:
 ├── 🏠 所有区块头 (Block Headers) - 永久
 ├── 📝 部分交易 (按需下载) - 临时
@@ -1050,7 +1049,7 @@ Light Node Storage:
 #### **3. 归档节点 (Archive Node)**
 
 ```
-复制# 归档节点存储内容
+# 归档节点存储内容
 Archive Node Storage:
 ├── 🏠 所有区块头 - 永久
 ├── 📝 所有交易 - 永久
@@ -1064,7 +1063,7 @@ Archive Node Storage:
 #### **4. 修剪节点 (Pruned Node)**
 
 ```
-复制# 修剪节点存储策略
+# 修剪节点存储策略
 Pruned Node Storage:
 ├── 🏠 所有区块头 - 永久
 ├── 📝 所有交易 - 永久
@@ -1132,7 +1131,9 @@ Pruned Node Storage:
 
 ![image-20250718231041984](SOLIDITY-FUCK-NOTE.assets/image-20250718231041984.png)
 
-## C3 线性化合约继承以及重写（Override）函数调用顺序
+## Override things /继承
+
+### C3 线性化合约继承以及重写（Override）函数调用顺序
 
 ![image-20250729162727277](SOLIDITY-FUCK-NOTE.assets/image-20250729162727277.png)
 
@@ -1140,7 +1141,63 @@ Pruned Node Storage:
 
 ![image-20250729163041519](SOLIDITY-FUCK-NOTE.assets/image-20250729163041519.png)
 
-### Solidity 子合约调用父合约的权限表格
+### Solidity Override多重继承重写语法总结
+
+#### 核心语法
+
+```solidity
+function functionName() override(ParentA, ParentB) {
+    super.functionName(); // 调用父合约实现
+}
+```
+
+#### 使用场景
+
+**当子合约继承多个父合约，且父合约有同名函数时必须使用：**
+
+```solidity
+contract A {
+    function foo() virtual {}
+}
+
+contract B {
+    function foo() virtual {}
+}
+
+contract C is A, B {
+    // 必须明确指定重写了哪些父合约的函数
+    function foo() override(A, B) {}
+}
+```
+
+#### 关键点
+
+1. **何时需要**：多个父合约有同名virtual函数
+2. **语法格式**：`override(父合约1, 父合约2, ...)`
+3. **super调用**：调用继承链中最近的实现
+4. **编译要求**：不写会编译错误
+
+#### 实际例子
+
+```solidity
+// ERC20和ERC20Votes都有_mint函数
+function _mint(address to, uint256 amount) 
+    internal 
+    override(ERC20, ERC20Votes) 
+{
+    super._mint(to, amount); // 实际调用ERC20Votes的_mint
+}
+```
+
+**作用**：解决钻石问题，明确告诉编译器重写意图。
+
+
+
+
+
+
+
+### Solidity Override子合约调用父合约的权限表格
 
 #### 函数调用权限
 
@@ -1151,7 +1208,7 @@ Pruned Node Storage:
 | `external`   | ❌ 不能直接调用 | 只能通过 `this.function()`    | `this.parentFunction()`                        |
 | `private`    | ❌ 不能         | 无法调用                      | -                                              |
 
-### 变量访问权限
+#### 变量访问权限
 
 | 可见性修饰符 | 子合约能否访问 | 访问方式                    | 示例        |
 | ------------ | -------------- | --------------------------- | ----------- |
@@ -9473,6 +9530,14 @@ One consideration that must be made is: **How do we identify stakeholders, or me
 2. One methodology is the "Skin in the Game" method whereby voting records are recording and negative outcomes result in tokens/voting power being lost.
 3. A third approach is something called "Proof of Personhood Participation" and while potentially ideal, isn't something with a sound implementation yet.
 
+the =='**minimum participation**'== threshold (often called ==**quorum**==) in a decentralized voting process typically specify：
+
+The minimum percentage or fraction of the total possible voting power (e.g., total token supply) that must engage in a vote for the result to be considered valid.
+
+**Difference exists between participation based on token ownership versus participation based on a predefined member list:**
+
+Token-based governance typically links influence to the quantity of tokens held, whereas member-list governance relies on approval from specific, pre-authorized addresses.
+
 ### **Voting Implementation**
 
 **On-chain Voting:**
@@ -9495,7 +9560,125 @@ Lastly, another "tool" I want to mention is [**Safe**](https://safe.global/) (pr
 
 
 
-
-
 # Security
 
+## Smart Contract Audit
+
+### What is a Smart Contract Audit?
+
+A smart contract audit is a timeboxed, security based code review of a smart contract system.
+
+An auditor's goal is to find as many security vulnerabilities as possible and educate the protocol on best practices moving forward in development. Auditors leverage a variety of tools and expertise to find these vulnerabilities.
+
+***Why is a security audit so important?\***
+
+Well, the statistics I mentioned in the introduction speak for themselves. With billions of dollars being stolen from unaudited code, the industry can't afford *not* to improve their security.
+
+The immutability of the blockchain renders patching and updating frequently impossible, impractical or expensive. So having confidence in the security of your code is key.
+
+> ❗ **IMPORTANT**
+> The blockchain is a permissionless, adversarial environment, being prepared for malicious users is *integral* to success.
+
+### What auditor do?
+
+An audit can actually accomplish much more than just checking for bugs. An audit can:
+
+- Improve your developer team's understanding of code
+- Improve developer speed and efficiency
+- Teach the latest tooling
+
+Often a single audit isn't even enough and protocols embark on a security journey including a number of steps like
+
+- formal verification
+- competitive audits
+- Bug Bounty Programs
+- Private Audits
+- Mitigation Reviews
+
+...and more.
+
+There are lots of companies that offer Smart Contract Auditing services, such as:
+
+[**Trail of Bits**](https://www.trailofbits.com/)
+
+[**Consensys Diligence**](https://consensys.io/diligence/)
+
+[**OpenZeppelin**](https://www.openzeppelin.com/security-audits)
+
+[**Cyfrin**](https://www.cyfrin.io/)
+
+### what does a typical audit look like?
+
+So, what does a typical audit look like? Let's break it down into some steps.
+
+1. **Price and Timeline**
+   A protocol has to reach out, either before or after their code is finished, but the more notice they can provide an auditor, the better. The protocol and auditor will discuss a number of details including:
+
+   - Code Complexity
+   - Scope
+     - These are the exact files/commits that will be reviewed
+   - Duration
+     - This is largely dependent on how much code is in scope and how complex it is.
+   - Timeline
+
+   I rough approximation of pricing and timelines is available in the [**CodeHawks Documentation**](https://docs.codehawks.com/protocol-teams-sponsors/audit-pricing-and-timelines). Note that these are rough guides, prices and timelines can range wildly and should be negotiated with the protocol in advance.
+
+2. **Commit Hash, Down Payment, Start Date**
+
+   Once an auditor receives a commit hash, a start date and price can be finalized.
+
+   > ❗ **NOTE**
+   > A commit hash is the unique ID of the codebase being audited at a particular version in time.
+
+   Some auditors will ask for a down payment in order to schedule the audit.
+
+3. **Audit Begins**
+
+   Auditors at this stage will use all their tricks and tools to find as many vulnerabilities in the code base as possible.
+
+4. **Initial Report**
+
+   Once a review has been completed and auditor should provide an initial report detailing the vulnerabilities uncovered during the audit. These vulnerabilities are typically broken down into severity classifications:
+
+   - Highs
+   - Mediums
+   - Lows
+   - Informational/Non-Critical
+   - Gas Efficiencies
+
+   High/Medium/Low represents the impact and likelihood of each vulnerability.
+
+   Informational, Gas, and Non-Critical are findings to improve the efficiency of your code, code structure. Best practice and improvement suggestions are not vulnerabilities, but ways in which the code can be improved.
+
+5. **Mitigation Begins**
+
+   At this phase the protocol team will often have an agreed upon period of time to mitigate the vulnerabilities identified in the initial report. Often much shorter than the audit itself, protocols will often be implementing the recommendations of the auditor within the received report.
+
+6. **Final Report**
+
+   Sometimes referred to as a mitigation review, the auditing team will compile a final report based on *only* the fixes employed by the protocol team in the mitigation phase. This assures mitigations are implemented appropriately and that no *new* bugs have found their way in.
+
+7. **Post Audit**
+
+   I highly encourage you to take the recommendations of your auditor(s) seriously, and if you make changes to your repo, that's now *un-audited code*. Once line being changed can be enough to wreck everything.
+
+### Keys To a Successful Audit
+
+There are a few things *you* as a developer can do to prepare for an audit to ensure things are successful and smooth.
+
+1. Have clear Documentation
+2. Robust test suite, ideally including fuzz tests
+3. Code should be commented and readable
+4. Modern best practices followed
+5. Established communication channel between developer and auditors
+6. Do an initial video walkthrough of the code
+
+I'll stress point 5 for a moment. The developers of a protocol are always going to have more context of a code base than an auditor will, having clear and efficient communication is important for allowing clear understanding of expected functionality and the ability to verify desired behaviour.
+
+This clear understanding of what *should* happen is paramount. 80% of vulnerabilities found aren't broken code, but *business logic*.
+
+### What an audit isn't
+
+An audit ***is not*** a guarantee that your code is bug free.
+
+Security is a continuous process that is always evolving with new vulnerabilities popping up each day. When/if an exploit hits your protocol, make sure you and your auditor have that line of communication to discuss the situation quickly.
