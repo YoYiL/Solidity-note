@@ -5,7 +5,8 @@
 >
 > 📋 **目录导航 / Table of Contents**: 点击右上角的目录图标 (📋) 查看完整目录  
 > Click the table of contents icon (📋) in the upper right corner to view the complete directory
-
+>
+> Author: YoYiL
 
 
 - [Raffle](#raffle)
@@ -54,10 +55,16 @@
   - [vm.deal\&vm.stratBroadcast](#vmdealvmstratbroadcast)
   - [etherscan verify](#etherscan-verify)
   - [contract/interface/abstrct contract/library/abstrct function](#contractinterfaceabstrct-contractlibraryabstrct-function)
-  - [C3 线性化合约继承以及重写（Override）函数调用顺序](#c3-线性化合约继承以及重写override函数调用顺序)
-    - [Solidity 子合约调用父合约的权限表格](#solidity-子合约调用父合约的权限表格)
+  - [Override things /继承](#override-things-继承)
+    - [C3 线性化合约继承以及重写（Override）函数调用顺序](#c3-线性化合约继承以及重写override函数调用顺序)
+    - [Solidity Override多重继承重写语法总结](#solidity-override多重继承重写语法总结)
+      - [核心语法](#核心语法)
+      - [使用场景](#使用场景)
+      - [关键点](#关键点)
+      - [实际例子](#实际例子)
+    - [Solidity Override子合约调用父合约的权限表格](#solidity-override子合约调用父合约的权限表格)
       - [函数调用权限](#函数调用权限)
-    - [变量访问权限](#变量访问权限)
+      - [变量访问权限](#变量访问权限)
   - [🔧 Solidity 错误捕获方式总结](#-solidity-错误捕获方式总结)
     - [📋 核心示例](#-核心示例)
     - [1. **try-catch**（推荐用于外部调用）](#1-try-catch推荐用于外部调用)
@@ -683,6 +690,32 @@
     - [**Voting Implementation**](#voting-implementation)
     - [Tools](#tools)
 - [Security](#security)
+  - [Smart Contract Audit](#smart-contract-audit)
+    - [What is a Smart Contract Audit?](#what-is-a-smart-contract-audit)
+    - [What auditor do?](#what-auditor-do)
+    - [what does a typical audit look like?](#what-does-a-typical-audit-look-like)
+    - [Keys To a Successful Audit](#keys-to-a-successful-audit)
+    - [What an audit isn't](#what-an-audit-isnt)
+  - [Top Security Tools](#top-security-tools)
+    - [Useful GitHub repos](#useful-github-repos)
+    - [The Audit Process](#the-audit-process)
+    - [Tools](#tools-1)
+  - [The Tincho Auditing Method](#the-tincho-auditing-method)
+    - [First Step](#first-step)
+    - [Tools and Frameworks](#tools-and-frameworks)
+    - [Audit, Review, Audit, Repeat](#audit-review-audit-repeat)
+    - [Communication](#communication)
+    - [Wrapping it Up](#wrapping-it-up)
+    - [The Audit Report and Follow Up](#the-audit-report-and-follow-up)
+    - [Aftermath of a Missed Vulnerability](#aftermath-of-a-missed-vulnerability)
+  - [Layers of Testing and Formal Verification](#layers-of-testing-and-formal-verification)
+    - [Layer 1: Unit Tests](#layer-1-unit-tests)
+    - [Layer 2: Fuzz Tests](#layer-2-fuzz-tests)
+    - [Layer 3: Static Analysis](#layer-3-static-analysis)
+    - [Layer 4: Formal Verification](#layer-4-formal-verification)
+    - [Limitations of Formal Verification](#limitations-of-formal-verification)
+  - [Isolated Dev Environments](#isolated-dev-environments)
+  - [Setting up a Dev Container](#setting-up-a-dev-container)
 
 
 
@@ -9682,3 +9715,220 @@ This clear understanding of what *should* happen is paramount. 80% of vulnerabil
 An audit ***is not*** a guarantee that your code is bug free.
 
 Security is a continuous process that is always evolving with new vulnerabilities popping up each day. When/if an exploit hits your protocol, make sure you and your auditor have that line of communication to discuss the situation quickly.
+
+
+
+## Top Security Tools
+
+### Useful GitHub repos
+
+A couple useful GitHub repos I'll point out straight away include:
+
+- [**solcurity**](https://github.com/transmissions11/solcurity)
+- [**simple-security-toolkit**](https://github.com/nascentxyz/simple-security-toolkit)
+
+These are great avenues to ensure your protocol is ready for an audit. The latter even includes an [**audit-readiness-checklist**](https://github.com/nascentxyz/simple-security-toolkit/blob/main/audit-readiness-checklist.md) to help you prepare.
+
+### The Audit Process
+
+There's no silver bullet and each individual audit may be slightly different from the last, but here's a general outline of the process a protocol will undergo when under audit.
+
+- Manual Review
+  - Go through the Code & Docs
+  - Understand what the protocol should do
+- Using Tools
+
+Manual Review is arguably *the most important* aspect of an audit. Reading the documentation and gaining context of the protocol and how it should behave. Taking the time to properly gain context can save a tonne of confusion later. Remember, most bugs are *business logic* related, meaning it isn't actually an error in the code that causes a problem, but some inaccurate implementation of what *should* happen.
+
+### Tools
+
+Let's talk about some of the tools security professionals and developers have in their toolbox.
+
+1. **Test Suites:** This is the first line of defense and why we placed such an emphasis on them throughout the course. All of the most popular development frameworks include test suites, use them, use them often, catch those bugs.
+
+2. **Static Analysis:** Static analysis is the process of checking code for issues without executing anything. Popular entries here include [**Aderyn**](https://github.com/Cyfrin/aderyn), [**Slither**](https://github.com/crytic/slither) and [**Mithril**](https://github.com/Consensys/mythril)
+
+3. **Fuzz Testing:** a specific test suite methodology involving providing random data as inputs during testing.
+
+   Two variations exist including stateless and stateful fuzz testing. Stateless fuzz tests abandon the result of a previous test before running a new test, with a new contract state. Stateful, conversely will remember the ending state of one run and use this as the starting start for the next fuzz run.
+
+4. **Differential Testing:** We don't cover this in depth, but the idea is to write code in multiple ways and compare the results to each other to ensure validity.
+
+5. **Formal Verification:** Formal Verification is a generic term for applying formal methods to verify the correctness of a system.
+
+   Applying formal methods pertains to anything based on mathematical proofs, these are mathematical expressions that solve for the soundsness and validity of a system, a proof of correctness, or whether or not a bug *must* exist. ie Symbolic Execution.
+
+   Examples of Formal Verification tools include [**Manticore**](https://github.com/trailofbits/manticore), [**Halmos**](https://github.com/a16z/halmos), [**Certora**](https://www.certora.com/prover) and even the `Solidity Compiler`.
+
+   There's a great article hosted by hackmd that compares many of these tools and how they work, I encourage you to [**check it out**](https://hackmd.io/@SaferMaker/EVM-Sym-Exec).
+
+6. **AI Tools:** These can be hit or miss, but are absolutely evolving quickly. Any developer can find value in leveraging tools like Copilot, or state of the art models such as GPT4o, in their process.
+
+   These tools, I would say, aren't yet reliable enough to be depended upon, but they can go a long way towards helping to quickly understand the context of codebases or summarizing/clarifying documentation. Don't rely on them, but keep AI tooling on your radar.
+
+
+
+## The Tincho Auditing Method
+
+To illustrate the Tincho auditing method, we're going to refer to a video where Tincho performs a live auditing of the Ethereum Name Service (ENS).
+
+> "I don't have a super formal auditing process. I will just show you briefly some things that I do..." - Tincho
+
+### First Step
+
+First thing's first - download the code, and **read the documentation**. You need to familiarize yourself with the content and context of the codebase, learn the jargon you can expect to see in the code and become comfortable with what the protocol is expected to do.
+
+**READ THE DOCUMENTATION**
+
+### Tools and Frameworks
+
+Tincho describes a number of tools he uses while performing security reviews, bring the tools you're most familiar and best with.
+
+- **VS Codeium**: a text editor with a privacy focus. It's based on VS Code but removes a lot of the user tracking telemetry
+- **Foundry**: As a framework for reviewing codebases Foundry is incredibly fast and allows for quick testing with it's robust test suite
+- **CLOC**: A simple command-line utility that helps count lines of code which can give a sense of the complexity of different parts of the codebase.
+- **Solidity Metric**: Another tool developed by Consensys that provides useful metrics about your Solidity codebase.
+
+By leveraging `CLOC` and `Solidity Metrics`, a security researcher can organize the codebase by complexity and systemically go through the contracts - marking them each complete as appropriate. This pragmatic approach ensures no stone is left unturned.
+
+It's recommended to start with the smaller and more manageable contracts and build upon them as you go.
+
+There's a point in an audit where your frame of mind should switch to an adversarial one. You should be thinking *"How can I break this..."*
+
+![tincho1](SOLIDITY-FUCK-NOTE.assets/tincho1.png)
+
+Given even simple functions like above, we should be asking ourselves
+
+- **"Will this work for every type of token?"**
+- **"Have they implemented access control modifiers properly?"**
+
+> *USDT is a 'weird ERC20' in that it doesn't return a boolean on transferFrom calls*
+
+### Audit, Review, Audit, Repeat
+
+Keeping a record of your work is crucial in this process.
+
+> Tincho recommends taking notes directly in the code *and* maintaining a separate file for raw notes/ideas.
+
+Remember, there is always a risk of diving too deep into just one part of the code and losing the big picture. So, remember to pop back up and keep an eye on the over-all review of the code base.
+
+Not everything you'll be doing is a manual review. Applying your knowledge of writing tests to verify suspicions is incredibly valuable. Tincho applies a `fuzz test` to his assessment of functions within the ENS codebase.
+
+### Communication
+
+Tincho describes keeping an open line of communication with the client/protocol as `fundamental`. The protocol is going to possess far more contextual understanding of what constitutes intended behavior than you will. Use them as collaborators. **`Trust but validate.`**
+
+> "I would advise to keep the clients at hand. Ask questions, but also be detached enough." - Tincho
+
+### Wrapping it Up
+
+Sometimes it can feel like there's no end to the approaches you can make to a codebase, no end to the lines of code you can check and verify.
+
+Tincho advocates for time-bounding yourself. Set limits and be as thorough as possible within them.
+
+> "The thing is...I always get the feeling that you can be looking at a system forever." - Tincho
+
+### The Audit Report and Follow Up
+
+The last stage of this whole process is to present an audit report to the client. It should be clear and concise in the detailing of discovered vulnerabilities and provide recommendations on mitigation.
+
+It's our responsibility as security researchers to review the implementation of any mitigations the client employs and to assure that *new bugs* aren't introduced.
+
+### Aftermath of a Missed Vulnerability
+
+There will always be the fear of missing out on some vulnerabilities and instead of worrying about things that slip through the net, aim to bring value beyond just identifying vulnerabilities. Be that collaborative security partner/educator the protocol needs to employ best practices and be prepared holistically.
+
+As an auditor it's important to remember that you do not shoulder the whole blame when exploits happen. You share this responsibility with the client.
+
+> This doesn't give you free reign to suck at your job. People will notice.
+
+A last takeaway from Tincho:
+
+> "Knowing that you’re doing your best in that, knowing that you’re putting your best effort every day, growing your skills, learning grows an intuition and experience in you."
+
+## Layers of Testing and Formal Verification
+
+### Layer 1: Unit Tests
+
+These are the *bare minimum* of testing in Web3 security. Unit test will propose a specific situation to our function and validate for us that this specific situation works as intended.
+
+### Layer 2: Fuzz Tests
+
+Fuzz tests are configured to have random inputs supplied to a function in an effort to identify and edgecase which breaks a protocol's invariant.
+
+An invariant is a property of a protocol which much always hold true. Fuzz testing suites attempt to break these invariants with random data.
+
+### Layer 3: Static Analysis
+
+Unit testing and fuzz testing as examples of ***dynamic tests\***, this is when code is actually executed to determine if there's a problem.
+
+Alternatively to this, we have static analysis as a tool available to us. In static analysis testing, a tool such as [**Slither**](https://github.com/crytic/slither) or [**Aderyn**](https://github.com/Cyfrin/aderyn), will review the code and identify vulnerabilities based on things like layout, ordering and syntax.
+
+### Layer 4: Formal Verification
+
+At a high-level, formal verification is the act of proving or disproving a property of a system. It does this by generating a mathematical model of the system and using mathematical proofs to identify if a property can be broken.
+
+There are many ways to perform formal verification including:
+
+- Symbolic Execution
+- Abstract Interpretation
+- Model Checking
+
+> ❗ **NOTE**
+> Formal verification tools use a special language to process the mathematical models of code called SMT_LIB.
+
+Some formal verification tools available include things like Manitcore, Halmos and Certora, but even the Solidity Compiler can do many of these steps behind the scenes:
+
+1. Explore Paths
+2. Convert Paths to a set of Boolean expressions
+3. Determine if paths are reachable
+
+You can read more about the Solidity Compiler SMTChecker [**here**](https://docs.soliditylang.org/en/v0.8.26/smtchecker.html).
+
+### Limitations of Formal Verification
+
+Now, Formal Verification isn't a silver bullet, it does have its limitations. One of the most common of which is known as the **path explosion problem**. In essence, when a solver is presented with code that is non-deterministic or contains infinite looping, the number of possible paths approaches infinity. When this happens, a solver is unable to resolve a valid proof due to the time and computation necessary to solve.
+
+It's important to employ a robust and diverse set of testing tools to assure the greatest security coverage of a protocol.
+
+The Trail of Bits team offers an amazing resource on building secure contracts on secure-contracts.com that is worth a read for everyone getting serious about smart contract security.
+
+> ❗ **IMPORTANT**
+> Even all this isn't a guarantee that your code is bug free.
+
+Hopefully this has shed some light on the layers of smart contract testing and the importance of a thorough test suite and using the tools available to us.
+
+## Isolated Dev Environments
+
+According to Chain Analysis, in 2024 the most popular type of attack was a private key leak. In this lesson we want to introduce to how to mitigate the risks of running malicious code on our host machine. This is important for any level of developer or security researcher.
+
+We will take a look at ways to protect our host machine against different attack vectors which all have one thing in common, running unvetted code on our host machine and giving it access to everything.
+
+The tool we are going to use to isolate the unvetted code is Docker containers or Dev containers, specifically Dev containers built directly into VS Code. The Red Guild has written an awesome blog on it which is linked in the description.
+
+## Setting up a Dev Container
+
+1. Clone the repo
+
+2. Make sure docker is running
+
+3. In VS Code open the command pallet and select: 
+
+   ```
+   reopen in container
+   ```
+
+4. We can view that the container is running in the docker desktop app
+
+Dev containers allow us to see a folder called `.devcontainer` which has the following:
+
+- `devcontainer.json`
+- `dockerfile`
+
+The dockerfile tells docker what tools to install and how to spin up a docker container.
+
+Here are some quick tips:
+
+- Its always dangerous to run code you are not 100% sure of
+- Running scripts in isolated environments like Docker containers can help protect against unknown malicious scripts
+- There is no 100% sure way to be 100% safe
