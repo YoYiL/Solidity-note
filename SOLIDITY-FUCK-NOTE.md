@@ -346,7 +346,36 @@
     - [`--no-commit` 参数（已弃用）](#--no-commit-参数已弃用)
     - [`--no-git` 参数](#--no-git-参数)
     - [主要区别](#主要区别)
-  - [Forking cheatcode](#forking-cheatcode)
+  - [Foundry fork test](#foundry-fork-test)
+    - [Forking cheatcode](#forking-cheatcode)
+    - [vm.createSelectFork() 详解](#vmcreateselectfork-详解)
+      - [函数签名和参数](#函数签名和参数)
+      - [参数详解](#参数详解)
+      - [完整的Fork测试Cheatcode集合](#完整的fork测试cheatcode集合)
+        - [1. 基础Fork操作](#1-基础fork操作)
+        - [2. Fork管理Cheatcode](#2-fork管理cheatcode)
+        - [3. 持久化状态管理](#3-持久化状态管理)
+      - [实际应用示例](#实际应用示例-1)
+        - [多链测试场景](#多链测试场景)
+        - [时间旅行测试](#时间旅行测试)
+      - [配置和最佳实践](#配置和最佳实践)
+        - [foundry.toml配置](#foundrytoml配置)
+        - [性能优化建议](#性能优化建议)
+    - [vm.createFork() vs vm.createSelectFork() 参数差异详解](#vmcreatefork-vs-vmcreateselectfork-参数差异详解)
+      - [函数签名对比](#函数签名对比)
+        - [vm.createSelectFork() 的多种重载形式](#vmcreateselectfork-的多种重载形式)
+        - [vm.createFork() 的重载形式](#vmcreatefork-的重载形式)
+      - [参数差异的原因分析](#参数差异的原因分析)
+        - [1. 命名参数 vs 位置参数](#1-命名参数-vs-位置参数)
+        - [2. 别名 vs 完整URL](#2-别名-vs-完整url)
+      - [统一写法示例](#统一写法示例)
+        - [方案1: 全部使用命名参数](#方案1-全部使用命名参数)
+        - [方案2: 全部使用位置参数](#方案2-全部使用位置参数)
+        - [方案3: 配置别名统一管理](#方案3-配置别名统一管理)
+      - [最佳实践建议](#最佳实践建议)
+        - [1. 保持一致性](#1-保持一致性)
+        - [2. 使用配置文件管理RPC端点](#2-使用配置文件管理rpc端点)
+        - [3. 创建辅助函数封装常用操作](#3-创建辅助函数封装常用操作)
   - [CCIPLocalSimulator](#cciplocalsimulator)
     - [configuration](#configuration)
       - [Returns](#returns)
@@ -716,8 +745,6 @@
     - [Limitations of Formal Verification](#limitations-of-formal-verification)
   - [Isolated Dev Environments](#isolated-dev-environments)
   - [Setting up a Dev Container](#setting-up-a-dev-container)
-
-
 
 
 
@@ -1616,6 +1643,10 @@ function callTransferFunctionDirectlyTwo(address someAddress, uint256 amount) pu
 }
 ```
 
+![block fee](SOLIDITY-FUCK-NOTE.assets/encoding2.png)
+
+![block fee](SOLIDITY-FUCK-NOTE.assets/encoding3.png)
+
 ### abi.encode, abi.encodePacked, bytes('string')
 
 | 特性         | abi.encode        | abi.encodePacked | bytes('string') |
@@ -1626,6 +1657,12 @@ function callTransferFunctionDirectlyTwo(address someAddress, uint256 amount) pu
 | **可解码性** | ✅ 可用 abi.decode | ❌ 不可逆解码     | ❌ 不可逆解码    |
 | **哈希计算** | 不推荐            | ✅ 常用           | ✅ 可用          |
 | **Gas 消耗** | 较高              | 较低             | 最低            |
+
+- **abi.encode** - returns the binary of the provided argument
+- **abi.encodePacked** - returns the binary of the provided argument, but with stipulation/compression
+  - types shorter than 32 bytes are concatenated directly, without padding or sign extension
+  - dynamic types are encoded in-place and without the length.
+  - array elements are padded, but still encoded in-place
 
 ### abi.encodeCall，abi.encodeWithSelector，abi.encodeWithSignature
 
@@ -4259,7 +4296,7 @@ console2.log("Transfer 1 ether to Vault:", success); // 输出: false
 #### **1. `call` 方法 - 不会自动 revert**且不需要payable
 
 ```
-复制// ✅ call 方法：失败时返回 false，但不会 revert
+// ✅ call 方法：失败时返回 false，但不会 revert
 (bool success,) = payable(target).call{value: amount}("");
 if (!success) {
     // 需要手动检查和处理失败
@@ -4270,14 +4307,14 @@ if (!success) {
 #### **2. `transfer` 方法 - 会自动 revert**
 
 ```
-复制// ❌ transfer 方法：失败时会自动 revert
+// ❌ transfer 方法：失败时会自动 revert
 payable(target).transfer(amount); // 如果失败，整个交易回滚
 ```
 
 #### **3. `send` 方法 - 不会自动 revert**
 
 ```
-复制// ✅ send 方法：失败时返回 false，但不会 revert
+// ✅ send 方法：失败时返回 false，但不会 revert
 bool success = payable(target).send(amount);
 if (!success) {
     revert("Transfer failed");
@@ -4857,7 +4894,11 @@ Circle's Cross-Chain Transfer Protocol represents a significant advancement in e
 
 Forge 默认使用 Git 子模块管理依赖 ，这两个参数提供了不同程度的替代方案来处理特定情况下的需求。
 
-## Forking cheatcode
+
+
+## Foundry fork test
+
+### Forking cheatcode
 
 | Cheatcode        | 主要作用                     | 关键点             |
 | ---------------- | ---------------------------- | ------------------ |
@@ -4871,6 +4912,400 @@ Forge 默认使用 Git 子模块管理依赖 ，这两个参数提供了不同�
 | isPersistent     | 查询共享状态标志             | 断言配置           |
 | allowCheatcodes  | 授权其它合约使用 cheatcodes  | 模块化测试         |
 | transact         | 针对特定 fork 执行一次性交易 | 并行 / 对比调用    |
+
+| Cheatcode        | 完整代码                                                     | 输入参数                                                     | 输出参数                      |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------- |
+| createFork       | `vm.createFork(string memory urlOrAlias)` `vm.createFork(string memory urlOrAlias, uint256 blockNumber)` | `urlOrAlias`: RPC URL或别名 `blockNumber`: 可选的区块高度    | `uint256`: fork标识符         |
+| selectFork       | `vm.selectFork(uint256 forkId)`                              | `forkId`: fork标识符                                         | 无返回值                      |
+| createSelectFork | `vm.createSelectFork(string memory urlOrAlias)` `vm.createSelectFork(string memory urlOrAlias, uint256 blockNumber)` | `urlOrAlias`: RPC URL或别名 `blockNumber`: 可选的区块高度    | `uint256`: fork标识符         |
+| activeFork       | `vm.activeFork()`                                            | 无参数                                                       | `uint256`: 当前活动fork标识符 |
+| rollFork         | `vm.rollFork(uint256 blockNumber)` `vm.rollFork(uint256 forkId, uint256 blockNumber)` `vm.rollFork(bytes32 txHash)` | `forkId`: 可选的fork标识符 `blockNumber`: 目标区块高度 `txHash`: 交易哈希 | 无返回值                      |
+| makePersistent   | `vm.makePersistent(address account)` `vm.makePersistent(address[] memory accounts)` | `account`: 单个地址 `accounts`: 地址数组                     | 无返回值                      |
+| revokePersistent | `vm.revokePersistent(address account)` `vm.revokePersistent(address[] memory accounts)` | `account`: 单个地址 `accounts`: 地址数组                     | 无返回值                      |
+| isPersistent     | `vm.isPersistent(address account)`                           | `account`: 要查询的地址                                      | `bool`: 是否为持久地址        |
+| allowCheatcodes  | `vm.allowCheatcodes(address account)`                        | `account`: 授权使用cheatcodes的地址                          | 无返回值                      |
+| transact         | `vm.transact(uint256 forkId, bytes32 txHash)` `vm.transact(bytes32 txHash)` | `forkId`: 可选的fork标识符 `txHash`: 交易哈希                | 无返回值                      |
+
+**关键说明：**
+
+1. **Fork创建与管理**：`createFork`可以指定特定区块高度创建fork，返回的标识符用于后续操作 
+2. **Fork切换**：`selectFork`用于激活指定的fork，影响后续所有操作的执行环境 
+3. **区块推进**：`rollFork`支持通过区块号或交易哈希来推进fork到指定状态 
+4. **状态持久化**：`makePersistent`使地址状态在fork间共享，默认只有测试合约和调用者是持久的 
+5. **当前fork查询**：`activeFork`返回当前活动fork的标识符，如果没有活动fork会回滚 
+
+这些cheatcodes为Foundry测试提供了强大的fork管理能力，支持多环境并行测试和状态管理 
+
+
+
+### vm.createSelectFork() 详解
+
+#### 函数签名和参数
+
+`vm.createSelectFork()` 创建并选择一个新的分叉，返回分叉标识符 [1]
+
+```solidity
+// 基本用法
+uint256 forkId = vm.createSelectFork(urlOrAlias);
+
+// 带区块号参数
+uint256 forkId = vm.createSelectFork({
+    blockNumber: 0, 
+    urlOrAlias: "mainnet"
+});
+```
+
+#### 参数详解
+
+**blockNumber**: 指定分叉的区块高度
+
+- `0`: 表示使用最新区块
+- 具体数字: 分叉到指定的区块高度
+- 如果不传递区块号，默认使用最新区块
+
+**urlOrAlias**: RPC端点或别名 
+
+- 可以是完整的RPC URL
+- 也可以是在 `foundry.toml` 中配置的别名（如 "mainnet"）
+
+#### 完整的Fork测试Cheatcode集合
+
+##### 1. 基础Fork操作
+
+```solidity
+contract ForkTest is Test {
+    uint256 mainnetFork;
+    uint256 arbitrumFork;
+    
+    function setUp() public {
+        // 创建并选择分叉（一步完成）
+        mainnetFork = vm.createSelectFork({
+            blockNumber: 18500000, 
+            urlOrAlias: "mainnet"
+        });
+        
+        // 创建另一个分叉但不选择
+        arbitrumFork = vm.createFork("https://arb1.arbitrum.io/rpc");
+    }
+}
+```
+
+##### 2. Fork管理Cheatcode
+
+**vm.selectFork()**: 切换到指定分叉
+
+```solidity
+vm.selectFork(arbitrumFork);
+```
+
+**vm.activeFork()**: 获取当前激活的分叉ID 
+
+```solidity
+uint256 currentFork = vm.activeFork();
+assertEq(currentFork, mainnetFork);
+```
+
+**vm.rollFork()**: 将分叉回滚到指定区块 
+
+```solidity
+// 回滚到指定区块
+vm.rollFork(18000000);
+
+// 回滚指定分叉到某个区块
+vm.rollFork(mainnetFork, 18000000);
+```
+
+##### 3. 持久化状态管理
+
+**vm.makePersistent()**: 标记账户为持久化
+
+```solidity
+address[] memory accounts = new address[](2);
+accounts[0] = address(token);
+accounts[1] = address(pool);
+vm.makePersistent(accounts);
+```
+
+**vm.isPersistent()**: 检查账户是否持久化 
+
+```solidity
+bool isPersistent = vm.isPersistent(address(token));
+```
+
+**vm.revokePersistent()**: 撤销账户的持久化状态
+```solidity
+vm.revokePersistent(address(token));
+```
+
+#### 实际应用示例
+
+##### 多链测试场景
+
+```solidity
+contract MultiChainTest is Test {
+    IERC20 mainnetUSDC;
+    IERC20 arbitrumUSDC;
+    
+    uint256 mainnetFork;
+    uint256 arbitrumFork;
+    
+    function setUp() public {
+        // 创建主网分叉
+        mainnetFork = vm.createSelectFork({
+            blockNumber: 18500000,
+            urlOrAlias: "mainnet"
+        });
+        mainnetUSDC = IERC20(0xA0b86a33E6441E4c7b3e0C4A6c7B1F0F8e8E8e8E);
+        
+        // 创建Arbitrum分叉
+        arbitrumFork = vm.createFork("https://arb1.arbitrum.io/rpc", 150000000);
+        vm.selectFork(arbitrumFork);
+        arbitrumUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8);
+        
+        // 回到主网分叉
+        vm.selectFork(mainnetFork);
+    }
+    
+    function testCrossChainBalances() public {
+        // 测试主网USDC余额
+        vm.selectFork(mainnetFork);
+        address whale = 0x28C6c06298d514Db089934071355E5743bf21d60;
+        uint256 mainnetBalance = mainnetUSDC.balanceOf(whale);
+        
+        // 切换到Arbitrum测试
+        vm.selectFork(arbitrumFork);
+        uint256 arbitrumBalance = arbitrumUSDC.balanceOf(whale);
+        
+        // 验证不同链上的余额
+        assertTrue(mainnetBalance > 0);
+        assertTrue(arbitrumBalance >= 0); // 可能为0
+    }
+}
+```
+
+##### 时间旅行测试
+
+```solidity
+function testTimeTravel() public {
+    // 分叉到特定区块
+    uint256 fork = vm.createSelectFork({
+        blockNumber: 18000000,
+        urlOrAlias: "mainnet"
+    });
+    
+    uint256 initialBlock = block.number;
+    
+    // 前进到更新的区块
+    vm.rollFork(18500000);
+    assertEq(block.number, 18500000);
+    
+    // 回滚到更早的区块
+    vm.rollFork(18200000);
+    assertEq(block.number, 18200000);
+}
+```
+
+#### 配置和最佳实践
+
+##### foundry.toml配置 
+
+```toml
+[rpc_endpoints]
+mainnet = "https://mainnet.infura.io/v3/YOUR_KEY"
+arbitrum = "https://arb1.arbitrum.io/rpc"
+polygon = "https://polygon-rpc.com"
+```
+
+##### 性能优化建议
+
+1. **重用分叉**: 避免重复创建相同的分叉
+2. **使用持久化**: 对需要跨分叉保持的状态使用 `makePersistent`
+3. **合理选择区块高度**: 选择包含所需状态的最早区块以提高性能
+
+Fork测试为Solidity开发者提供了强大的测试能力，允许在真实的区块链状态下测试合约，同时保持测试的可重复性和隔离性 。
+
+### vm.createFork() vs vm.createSelectFork() 参数差异详解
+
+您观察到的参数差异实际上反映了这两个函数的不同重载形式和使用方式。让我详细解释：
+
+#### 函数签名对比
+
+##### vm.createSelectFork() 的多种重载形式 
+
+```solidity
+// 形式1: 命名参数语法
+uint256 forkId = vm.createSelectFork({
+    blockNumber: 18500000,
+    urlOrAlias: "mainnet"
+});
+
+// 形式2: 位置参数语法
+uint256 forkId = vm.createSelectFork("mainnet");
+uint256 forkId = vm.createSelectFork("mainnet", 18500000);
+```
+
+##### vm.createFork() 的重载形式 
+
+```solidity
+// 形式1: 只有URL
+uint256 forkId = vm.createFork("https://arb1.arbitrum.io/rpc");
+
+// 形式2: URL + 区块号
+uint256 forkId = vm.createFork("https://arb1.arbitrum.io/rpc", 150000000);
+
+// 形式3: 别名
+uint256 forkId = vm.createFork("arbitrum");
+uint256 forkId = vm.createFork("arbitrum", 150000000);
+```
+
+#### 参数差异的原因分析
+
+##### 1. 命名参数 vs 位置参数
+
+**主网分叉使用命名参数语法**：
+
+```solidity
+mainnetFork = vm.createSelectFork({
+    blockNumber: 18500000,
+    urlOrAlias: "mainnet"
+});
+```
+
+这种写法的优势 [1]：
+- **可读性更强**：明确指出每个参数的含义
+- **参数顺序灵活**：可以任意调整参数顺序
+- **避免混淆**：特别是当有多个数值参数时
+
+**Arbitrum分叉使用位置参数**：
+```solidity
+arbitrumFork = vm.createFork("https://arb1.arbitrum.io/rpc", 150000000);
+```
+
+##### 2. 别名 vs 完整URL
+
+**主网使用别名** ：
+
+```solidity
+urlOrAlias: "mainnet"  // 在foundry.toml中配置的别名
+```
+
+**Arbitrum使用完整URL**：
+```solidity
+"https://arb1.arbitrum.io/rpc"  // 直接的RPC端点URL
+```
+
+#### 统一写法示例
+
+为了保持代码一致性，您可以统一使用相同的参数风格：
+
+##### 方案1: 全部使用命名参数
+
+```solidity
+contract UnifiedTest is Test {
+    uint256 mainnetFork;
+    uint256 arbitrumFork;
+    
+    function setUp() public {
+        // 主网分叉 - 命名参数
+        mainnetFork = vm.createSelectFork({
+            blockNumber: 18500000,
+            urlOrAlias: "mainnet"
+        });
+        
+        // Arbitrum分叉 - 命名参数（需要先创建再选择）
+        arbitrumFork = vm.createFork({
+            blockNumber: 150000000,
+            urlOrAlias: "https://arb1.arbitrum.io/rpc"
+        });
+    }
+}
+```
+
+##### 方案2: 全部使用位置参数 
+
+```solidity
+contract UnifiedTest is Test {
+    uint256 mainnetFork;
+    uint256 arbitrumFork;
+    
+    function setUp() public {
+        // 主网分叉 - 位置参数
+        mainnetFork = vm.createSelectFork("mainnet", 18500000);
+        
+        // Arbitrum分叉 - 位置参数
+        arbitrumFork = vm.createFork("https://arb1.arbitrum.io/rpc", 150000000);
+    }
+}
+```
+
+##### 方案3: 配置别名统一管理 
+
+**foundry.toml配置**：
+```toml
+[rpc_endpoints]
+mainnet = "https://mainnet.infura.io/v3/YOUR_KEY"
+arbitrum = "https://arb1.arbitrum.io/rpc"
+polygon = "https://polygon-rpc.com"
+```
+
+**测试代码**：
+```solidity
+function setUp() public {
+    // 都使用别名，保持一致性
+    mainnetFork = vm.createSelectFork({
+        blockNumber: 18500000,
+        urlOrAlias: "mainnet"
+    });
+    
+    arbitrumFork = vm.createFork({
+        blockNumber: 150000000,
+        urlOrAlias: "arbitrum"  // 使用配置的别名
+    });
+}
+```
+
+#### 最佳实践建议
+
+##### 1. 保持一致性 
+
+- 在同一个项目中使用统一的参数风格
+- 推荐使用命名参数提高可读性
+
+##### 2. 使用配置文件管理RPC端点
+```toml
+# foundry.toml
+[rpc_endpoints]
+mainnet = "${MAINNET_RPC_URL}"
+arbitrum = "${ARBITRUM_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
+```
+
+##### 3. 创建辅助函数封装常用操作
+```solidity
+contract BaseTest is Test {
+    function createMainnetFork(uint256 blockNumber) internal returns (uint256) {
+        return vm.createSelectFork({
+            blockNumber: blockNumber,
+            urlOrAlias: "mainnet"
+        });
+    }
+    
+    function createArbitrumFork(uint256 blockNumber) internal returns (uint256) {
+        return vm.createFork({
+            blockNumber: blockNumber,
+            urlOrAlias: "arbitrum"
+        });
+    }
+}
+```
+
+总结：参数差异主要源于Solidity的函数重载特性和不同的调用风格选择。为了代码的可维护性，建议在项目中保持统一的参数风格和RPC端点管理方式 。
+
+
+
+
+
+
 
 ## [CCIPLocalSimulator](https://docs.chain.link/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator)
 
@@ -6952,6 +7387,8 @@ The need to regularly utilize storage to reference things in implementation (spe
   - 预留 gap；
   - “非结构化存储”（Unstructured Storage）模式手工指定哈希槽；
   - assembly + 固定 bytes32 key 方式访问。
+- constant：编译期已知，所有读取点被直接替换为字节码里的字面量，不预留 slot。
+- immutable：部署后值确定，写入到最终运行时字节码的指定位置（代码区），读取时通过从代码中取值的指令序列完成，也不占用 storage slot。
 
 ```solidity
 contract BasicStorage {
@@ -7017,6 +7454,9 @@ uint256 d;   // slot2          // 仍然是 slot2 但之前语义错位
 | 动态数组 `T[]`     | 槽存长度 (length)                                                                            | 起始基址：`keccak256(slot)`，第 n 个元素：`base + n` |
 | `bytes` / `string` | 长度 < 32：槽内直接存（最低位存 len\*2+1 标志）；>=32：槽存 length，数据在 `keccak256(slot)` | 同动态数组延伸规则                                   |
 | 结构体 struct      | 在其“外层”存储布局中顺序展开                                                                 | 结构体内部各字段按顺序打包                           |
+
+- constant：编译期已知，所有读取点被直接替换为字节码里的字面量，不预留 slot。
+- immutable：部署后值确定，写入到最终运行时字节码的指定位置（代码区），读取时通过从代码中取值的指令序列完成，也不占用 storage slot。
 
 #### 3.1 mapping 示例
 
