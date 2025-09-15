@@ -806,36 +806,54 @@ VRF 和 KEEPER 是两个不同的服务，VRF 使用 subID 和 vrfcoordinator
 | **配置管理** | `forge config`                | 查看配置         | `forge config`                                      |
 | **验证合约** | `forge verify-contract`       | 验证合约         | `forge verify-contract $ADDRESS Token`              |
 
+
+
 ### Cast 指令
 
-| 分类           | 指令                  | 功能描述       | 是否需要私钥 | 示例                                                                             |
-| -------------- | --------------------- | -------------- | ------------ | -------------------------------------------------------------------------------- |
-| **合约调用**   | `cast call`           | 调用只读函数   | ❌           | `cast call $CONTRACT "balanceOf(address)" $USER`                                 |
-|                | `cast send`           | 发送交易       | ✅           | `cast send $CONTRACT "transfer(address,uint256)" $TO $AMOUNT --private-key $KEY` |
-| **区块链查询** | `cast balance`        | 查询余额       | ❌           | `cast balance $ADDRESS`                                                          |
-|                | `cast block`          | 获取区块信息   | ❌           | `cast block latest`                                                              |
-|                | `cast block-number`   | 获取区块号     | ❌           | `cast block-number`                                                              |
-|                | `cast chain-id`       | 获取链 ID      | ❌           | `cast chain-id`                                                                  |
-|                | `cast gas-price`      | 获取 gas 价格  | ❌           | `cast gas-price`                                                                 |
-| **交易相关**   | `cast tx`             | 获取交易详情   | ❌           | `cast tx $TX_HASH`                                                               |
-|                | `cast receipt`        | 获取交易收据   | ❌           | `cast receipt $TX_HASH`                                                          |
-|                | `cast logs`           | 查询事件日志   | ❌           | `cast logs --from-block 100 --to-block 200`                                      |
-| **合约信息**   | `cast code`           | 获取合约字节码 | ❌           | `cast code $CONTRACT`                                                            |
-|                | `cast storage`        | 读取存储槽     | ❌           | `cast storage $CONTRACT 0`                                                       |
-| **数据转换**   | `cast --to-hex`       | 转换为十六进制 | ❌           | `cast --to-hex 255`                                                              |
-|                | `cast --to-dec`       | 转换为十进制   | ❌           | `cast --to-dec 0xff`                                                             |
-|                | `cast --to-wei`       | 转换为 wei     | ❌           | `cast --to-wei 1 ether`                                                          |
-|                | `cast --from-wei`     | 从 wei 转换    | ❌           | `cast --from-wei 1000000000000000000`                                            |
-| **ABI 工具**   | `cast abi-encode`     | ABI 编码       | ❌           | `cast abi-encode "transfer(address,uint256)" $TO $AMOUNT`                        |
-|                | `cast abi-decode`     | ABI 解码       | ❌           | `cast abi-decode "uint256" $DATA`                                                |
-|                | `cast calldata`       | 生成调用数据   | ❌           | `cast calldata "transfer(address,uint256)" $TO $AMOUNT`                          |
-|                | `cast 4byte`          | 查询函数选择器 | ❌           | `cast 4byte "transfer(address,uint256)"`                                         |
-| **签名哈希**   | `cast keccak`         | 计算 Keccak256 | ❌           | `cast keccak "hello world"`                                                      |
-|                | `cast hash-message`   | 计算消息哈希   | ❌           | `cast hash-message "hello"`                                                      |
-| **钱包操作**   | `cast wallet new`     | 创建新钱包     | ❌           | `cast wallet new`                                                                |
-|                | `cast wallet address` | 获取地址       | ❌           | `cast wallet address --private-key $KEY`                                         |
-|                | `cast wallet sign`    | 签名消息       | ✅           | `cast wallet sign "message" --private-key $KEY`                                  |
-|                | `cast wallet verify`  | 验证签名       | ❌           | `cast wallet verify --address $ADDR "message" $SIG`                              |
+| 分类           | 指令                           | 功能描述            | 是否需要私钥 | 示例                                                         | 示例指令含义                          |
+| -------------- | ------------------------------ | ------------------- | ------------ | ------------------------------------------------------------ | ------------------------------------- |
+| **合约调用**   | `cast call`                    | 调用只读函数        | ❌            | `cast call $CONTRACT "balanceOf(address)" $USER`             | 调用合约的 balanceOf 函数查询用户余额 |
+|                | `cast send`                    | 发送交易            | ✅            | `cast send $CONTRACT "transfer(address,uint256)" $TO $AMOUNT --private-key $KEY` | 使用私钥发送转账交易到指定地址        |
+| **区块链查询** | `cast balance`                 | 查询余额            | ❌            | `cast balance $ADDRESS`                                      | 查询指定地址的以太坊余额              |
+|                | `cast block`                   | 获取区块信息        | ❌            | `cast block latest`                                          | 获取最新区块的详细信息                |
+|                | `cast block-number`            | 获取区块号          | ❌            | `cast block-number`                                          | 获取当前最新区块的区块号              |
+|                | `cast chain-id`                | 获取链 ID           | ❌            | `cast chain-id`                                              | 获取当前连接的区块链网络 ID           |
+|                | `cast gas-price`               | 获取 gas 价格       | ❌            | `cast gas-price`                                             | 获取当前网络的 gas 价格               |
+| **交易相关**   | `cast tx`                      | 获取交易详情        | ❌            | `cast tx $TX_HASH`                                           | 根据交易哈希查询交易详细信息          |
+|                | `cast receipt`                 | 获取交易收据        | ❌            | `cast receipt $TX_HASH`                                      | 根据交易哈希获取交易执行收据          |
+|                | `cast logs`                    | 查询事件日志        | ❌            | `cast logs --from-block 100 --to-block 200`                  | 查询区块 100 到 200 之间的事件日志    |
+| **合约信息**   | `cast code`                    | 获取合约字节码      | ❌            | `cast code $CONTRACT`                                        | 获取指定合约地址的部署字节码          |
+|                | `cast storage`                 | 读取存储槽          | ❌            | `cast storage $CONTRACT 0`                                   | 读取合约存储槽 0 的数据               |
+| **数据转换**   | `cast --to-hex`                | 转换为十六进制      | ❌            | `cast --to-hex 255`                                          | 将十进制数 255 转换为十六进制 0xff    |
+|                | `cast --to-dec`                | 转换为十进制        | ❌            | `cast --to-dec 0xff`                                         | 将十六进制 0xff 转换为十进制 255      |
+|                | `cast --to-wei`                | 转换为 wei          | ❌            | `cast --to-wei 1 ether`                                      | 将 1 以太币转换为 wei 单位            |
+|                | `cast --from-wei`              | 从 wei 转换         | ❌            | `cast --from-wei 1000000000000000000`                        | 将 wei 转换为以太币单位               |
+|                | `cast --to-bytes32`            | 转换为 bytes32      | ❌            | `cast --to-bytes32 "hello"`                                  | 将字符串 "hello" 转换为 32 字节格式   |
+|                | `cast --parse-bytes32-string`  | 解析 bytes32 字符串 | ❌            | `cast --parse-bytes32-string 0x68656c6c6f000000000000000000000000000000000000000000000000000000` | 将 bytes32 格式的数据解析为可读字符串 |
+|                | `cast --parse-bytes32-address` | 解析 bytes32 地址   | ❌            | `cast --parse-bytes32-address 0x000000000000000000000000a0b86a33e6e6c6a6c6e6a6c6a6c6a6c6a6c6a6` | 从 bytes32 格式中提取以太坊地址       |
+|                | `cast --to-ascii`              | 转换为 ASCII        | ❌            | `cast --to-ascii 0x68656c6c6f`                               | 将十六进制数据转换为 ASCII 字符串     |
+|                | `cast --from-utf8`             | 从 UTF8 转换        | ❌            | `cast --from-utf8 "hello world"`                             | 将 UTF8 字符串转换为十六进制          |
+|                | `cast --to-utf8`               | 转换为 UTF8         | ❌            | `cast --to-utf8 0x68656c6c6f20776f726c64`                    | 将十六进制数据转换为 UTF8 字符串      |
+|                | `cast --to-int256`             | 转换为有符号整数    | ❌            | `cast --to-int256 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff` | 将十六进制数据转换为有符号 256 位整数 |
+|                | `cast --to-uint256`            | 转换为无符号整数    | ❌            | `cast --to-uint256 -1`                                       | 将负数转换为无符号 256 位整数         |
+|                | `cast --to-fixed-bytes`        | 转换为定长字节      | ❌            | `cast --to-fixed-bytes 4 0x12345678`                         | 将数据转换为指定长度的字节数组        |
+|                | `cast --to-checksum-address`   | 转换为校验和地址    | ❌            | `cast --to-checksum-address 0xa0b86a33e6e6c6a6c6e6a6c6a6c6a6c6a6c6a6` | 将地址转换为 EIP-55 校验和格式        |
+| **存储槽解析** | `cast --parse-slot`            | 解析存储槽数据      | ❌            | `cast --parse-slot uint256 $(cast storage $CONTRACT 0)`      | 将存储槽数据按指定类型解析            |
+|                | `cast index`                   | 计算映射存储位置    | ❌            | `cast index address $USER 0`                                 | 计算映射中特定键的存储槽位置          |
+|                | `cast --concat-hex`            | 连接十六进制        | ❌            | `cast --concat-hex 0x12 0x34`                                | 将多个十六进制数据连接成一个          |
+|                | `cast --left-pad`              | 左填充到32字节      | ❌            | `cast --left-pad 0x1234`                                     | 在数据左侧填充零到 32 字节长度        |
+|                | `cast --right-pad`             | 右填充到32字节      | ❌            | `cast --right-pad 0x1234`                                    | 在数据右侧填充零到 32 字节长度        |
+| **ABI 工具**   | `cast abi-encode`              | ABI 编码            | ❌            | `cast abi-encode "transfer(address,uint256)" $TO $AMOUNT`    | 将函数调用参数按 ABI 标准编码         |
+|                | `cast abi-decode`              | ABI 解码            | ❌            | `cast abi-decode "uint256" $DATA`                            | 将 ABI 编码的数据解码为可读格式       |
+|                | `cast calldata`                | 生成调用数据        | ❌            | `cast calldata "transfer(address,uint256)" $TO $AMOUNT`      | 生成完整的合约函数调用数据            |
+|                | `cast 4byte`                   | 查询函数选择器      | ❌            | `cast 4byte "transfer(address,uint256)"`                     | 计算函数签名的 4 字节选择器           |
+|                | `cast 4byte-decode`            | 解码函数选择器      | ❌            | `cast 4byte-decode 0xa9059cbb`                               | 根据选择器查找对应的函数签名          |
+| **签名哈希**   | `cast keccak`                  | 计算 Keccak256      | ❌            | `cast keccak "hello world"`                                  | 计算字符串的 Keccak256 哈希值         |
+|                | `cast hash-message`            | 计算消息哈希        | ❌            | `cast hash-message "hello"`                                  | 计算符合以太坊标准的消息哈希          |
+| **钱包操作**   | `cast wallet new`              | 创建新钱包          | ❌            | `cast wallet new`                                            | 生成新的私钥和对应的钱包地址          |
+|                | `cast wallet address`          | 获取地址            | ❌            | `cast wallet address --private-key $KEY`                     | 根据私钥计算对应的钱包地址            |
+|                | `cast wallet sign`             | 签名消息            | ✅            | `cast wallet sign "message" --private-key $KEY`              | 使用私钥对消息进行数字签名            |
+|                | `cast wallet verify`           | 验证签名            | ❌            | `cast wallet verify --address $ADDR "message" $SIG`          | 验证消息签名是否来自指定地址          |
 
 ### 常用参数总结
 
@@ -1585,7 +1603,7 @@ TokenURI stands for Token Uniform Resource Identifier. At its core it serves as 
 
 ![image-20250724144358753](SOLIDITY-FUCK-NOTE.assets/image-20250724144358753.png)
 
-![image-20250813152121350](SOLIDITY.assets/image-20250813152121350.png)
+
 
 ## Transaction/Contract Deployment data fields
 
@@ -3801,7 +3819,7 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 #### 1. ==Handler 函数中的 msg.sender==
 
 ```
-复制function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
+function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
     // 这里的msg.sender是Foundry随机生成的用户地址
     console2.log("Collateral deposited by: ", msg.sender);
     // 每次调用都可能是不同的随机地址
@@ -3818,7 +3836,7 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 #### 2. **Invariant 函数中的 msg.sender**
 
 ```
-复制function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
+function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
     // 这里的msg.sender是Foundry测试运行器的内部地址
     console2.log("Invariant msg.sender: ", msg.sender);
     console2.log("Invariant test address: ", address(this));
@@ -3836,7 +3854,7 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 #### 3. **测试合约地址 (address(this))**
 
 ```
-复制function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
+function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
     // address(this) 是测试合约本身的地址
     console2.log("Invariant test address: ", address(this));
     // 这是InvariantsTest合约的部署地址
