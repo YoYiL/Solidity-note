@@ -1511,6 +1511,256 @@ try target.riskyFunction() {
 assert(invariantCondition);  // 失败时消耗所有剩余 Gas
 ```
 
+
+
+## Gas Things:
+
+### Remix gas
+
+![image-20250916153326179](SOLIDITY-FUCK-NOTE.assets/image-20250916153326179.png)
+
+| 项目                 | 数值       | 说明                       |
+| -------------------- | ---------- | -------------------------- |
+| **gas**              | 75,552 gas | 为此次交易设置的 gas limit |
+| **transaction cost** | 65,697 gas | 实际消耗的总 gas 费用      |
+| **execution cost**   | 44,633 gas | 合约代码执行消耗的 gas     |
+
+### Foundry Gas 调试总结表格
+
+#### 官方 Cheatcodes
+
+| Cheatcode                | 作用                    | 语法示例                               | 说明                            |
+| ------------------------ | ----------------------- | -------------------------------------- | ------------------------------- |
+| `vm.startMeasuringGas()` | 开始 gas 测量           | `vm.startMeasuringGas("label");`       | 标记 gas 测量起始点             |
+| `vm.stopMeasuringGas()`  | 停止 gas 测量并返回消耗 | `uint256 gas = vm.stopMeasuringGas();` | 返回从开始测量到现在的 gas 消耗 |
+| `vm.snapshot()`          | 创建状态快照            | `uint256 id = vm.snapshot();`          | 保存当前区块链状态              |
+| `vm.gasUsed()`           | 获取快照间 gas 差异     | `uint256 diff = vm.gasUsed(snapshot);` | 计算两个快照之间的 gas 消耗     |
+| `vm.txGasPrice()`        | 设置交易 gas 价格       | `vm.txGasPrice(1 gwei);`               | 模拟特定 gas 价格环境           |
+
+#### Solidity 内置函数
+
+| 函数            | 作用             | 语法示例                         | 说明                        |
+| --------------- | ---------------- | -------------------------------- | --------------------------- |
+| `gasleft()`     | 获取剩余 gas     | `uint256 remaining = gasleft();` | 返回当前交易剩余的 gas 数量 |
+| `{gas: amount}` | 限制函数调用 gas | `target.func{gas: 50000}();`     | 为特定函数调用设置 gas 限制 |
+
+#### 测试框架函数
+
+| 函数            | 作用         | 语法示例                                     | 说明                      |
+| --------------- | ------------ | -------------------------------------------- | ------------------------- |
+| `console.log()` | 输出调试信息 | `console.log("Gas used:", gasUsed);`         | 在测试中打印 gas 消耗信息 |
+| `assertLt()`    | 断言小于     | `assertLt(gasUsed, limit, "Too expensive");` | 确保 gas 消耗在预期范围内 |
+| `assertLe()`    | 断言小于等于 | `assertLe(gasV2, gasV1, "Not optimized");`   | 比较优化效果              |
+
+#### Forge 命令行工具
+
+| 命令               | 作用          | 语法示例                                              | 说明                        |
+| ------------------ | ------------- | ----------------------------------------------------- | --------------------------- |
+| `--gas-report`     | 生成 gas 报告 | `forge test --gas-report`                             | 显示所有函数的 gas 消耗统计 |
+| `forge snapshot`   | 创建 gas 快照 | `forge snapshot`                                      | 生成 `.gas-snapshot` 文件   |
+| `--diff`           | 对比 gas 变化 | `forge snapshot --diff`                               | 显示与上次快照的 gas 差异   |
+| `--check`          | 检查 gas 变化 | `forge snapshot --check`                              | 验证 gas 消耗是否在预期范围 |
+| `--match-contract` | 过滤特定合约  | `forge test --gas-report --match-contract MyContract` | 只显示指定合约的 gas 信息   |
+
+#### 自定义工具函数
+
+| 函数类型   | 作用              | 实现方式               | 说明                      |
+| ---------- | ----------------- | ---------------------- | ------------------------- |
+| Gas 计算   | 测量函数 gas 消耗 | `gasBefore - gasAfter` | 手动计算 gas 差值         |
+| 批量测试   | 测试多个场景      | 循环调用 + gas 测量    | 对比不同参数下的 gas 消耗 |
+| 预热调用   | 避免冷启动影响    | 先调用一次再测量       | 排除首次调用的额外开销    |
+| Gas 分析器 | 结构化 gas 报告   | 自定义 library         | 提供更详细的分析功能      |
+
+#### 使用场景分类
+
+| 场景         | 推荐工具                                           | 优势                 |
+| ------------ | -------------------------------------------------- | -------------------- |
+| **简单测量** | `gasleft()`                                        | 直接、无依赖         |
+| **精确测量** | `vm.startMeasuringGas()` + `vm.stopMeasuringGas()` | Foundry 优化、更准确 |
+| **对比分析** | `forge snapshot --diff`                            | 自动化对比           |
+| **回归测试** | `forge snapshot --check`                           | CI/CD 集成           |
+| **性能调优** | `--gas-report` + 自定义分析                        | 全面的性能视图       |
+| **限制测试** | `{gas: amount}` + try-catch                        | 测试极限情况         |
+
+### Foundry Gas 调试 Cheatcodes 完整指南
+
+#### 1. Gas 测量 Cheatcodes
+
+##### 基础 Gas 测量
+
+```
+// 开始 gas 测量
+vm.startMeasuringGas(string memory label);
+
+// 停止 gas 测量并返回消耗的 gas
+uint256 gasUsed = vm.stopMeasuringGas();
+
+// 获取当前剩余 gas
+uint256 remainingGas = gasleft();
+```
+
+##### Gas 快照功能
+
+```
+// 创建 gas 快照
+uint256 snapshot = vm.snapshot();
+
+// 获取两个快照之间的 gas 差异
+uint256 gasDiff = vm.gasUsed(snapshot);
+```
+
+#### 2. 实用 Gas 测试模式
+
+##### A. 函数 Gas 消耗测试
+
+```
+contract GasTest is Test {
+    MyContract target;
+    
+    function setUp() public {
+        target = new MyContract();
+    }
+    
+    function testGasUsage() public {
+        // 方法1: 使用 gasleft()
+        uint256 gasBefore = gasleft();
+        target.someFunction();
+        uint256 gasAfter = gasleft();
+        uint256 gasUsed = gasBefore - gasAfter;
+        
+        console.log("Gas used:", gasUsed);
+        
+        // 方法2: 使用 vm.startMeasuringGas
+        vm.startMeasuringGas("someFunction");
+        target.someFunction();
+        uint256 measured = vm.stopMeasuringGas();
+        
+        console.log("Measured gas:", measured);
+    }
+}
+```
+
+##### B. Gas 优化对比测试
+
+```
+function testGasOptimization() public {
+    // 测试优化前
+    uint256 gasBefore = gasleft();
+    target.unoptimizedFunction();
+    uint256 gasUnoptimized = gasBefore - gasleft();
+    
+    // 测试优化后
+    gasBefore = gasleft();
+    target.optimizedFunction();
+    uint256 gasOptimized = gasBefore - gasleft();
+    
+    // 计算节省的 gas
+    uint256 gasSaved = gasUnoptimized - gasOptimized;
+    console.log("Gas saved:", gasSaved);
+    
+    // 断言优化效果
+    assertLt(gasOptimized, gasUnoptimized, "Optimization failed");
+}
+```
+
+#### 3. 高级 Gas 调试技巧
+
+##### A. 批量 Gas 测试
+
+```
+function testBatchGasUsage() public {
+    uint256[] memory gasResults = new uint256[](3);
+    
+    // 测试不同参数下的 gas 消耗
+    for(uint i = 0; i < 3; i++) {
+        uint256 gasBefore = gasleft();
+        target.functionWithParam(i * 100);
+        gasResults[i] = gasBefore - gasleft();
+    }
+    
+    // 分析结果
+    for(uint i = 0; i < gasResults.length; i++) {
+        console.log("Param %d gas:", i * 100, gasResults[i]);
+    }
+}
+```
+
+##### B. Gas 限制测试
+
+```
+function testGasLimit() public {
+    // 设置特定 gas 限制
+    vm.txGasPrice(1 gwei);
+    
+    // 测试在低 gas 限制下的行为
+    try target.expensiveFunction{gas: 50000}() {
+        console.log("Function succeeded with 50k gas");
+    } catch {
+        console.log("Function failed with 50k gas");
+    }
+}
+```
+
+#### 4. Gas 分析工具函数
+
+##### 自定义 Gas 分析器
+
+```
+library GasAnalyzer {
+    struct GasReport {
+        string functionName;
+        uint256 gasUsed;
+        uint256 timestamp;
+    }
+    
+    function measureGas(
+        string memory name,
+        function() external func
+    ) internal returns (uint256) {
+        uint256 gasBefore = gasleft();
+        func();
+        uint256 gasUsed = gasBefore - gasleft();
+        
+        console.log("=== Gas Report ===");
+        console.log("Function:", name);
+        console.log("Gas Used:", gasUsed);
+        console.log("==================");
+        
+        return gasUsed;
+    }
+}
+```
+
+#### 5. Forge 命令行 Gas 分析
+
+##### Gas 报告生成
+
+```
+# 生成详细的 gas 报告
+forge test --gas-report
+
+# 输出到文件
+forge test --gas-report > gas_report.txt
+
+# 只显示特定合约的 gas 信息
+forge test --gas-report --match-contract MyContract
+```
+
+##### Gas 快照对比
+
+```
+# 创建 gas 快照
+forge snapshot
+
+# 对比 gas 变化
+forge snapshot --diff
+
+# 检查 gas 变化是否在预期范围内
+forge snapshot --check
+```
+
+
+
 # NFT
 
 ## What is a NFT?
@@ -2384,6 +2634,61 @@ const selectors = {
 - ❌ **空数组访问**: `arr[0]`会报错，需先检查`arr.length > 0`
 - ❌ **类型推断**: 字面量需显式指定类型 `[uint256(1), 2]`
 - 💡 **Gas 优化**: 预分配长度比频繁 push 更省 Gas
+
+## Solidity Mapping 初始化行为总结
+
+### 基本概念
+
+```solidity
+mapping(KeyType => ValueType) public myMapping;
+```
+
+### 初始状态特性
+
+| 特性         | 描述                                           |
+| ------------ | ---------------------------------------------- |
+| **初始值**   | 所有可能的键都映射到值类型的**默认值**         |
+| **存储方式** | 概念上包含所有可能的键，但实际只存储非默认值   |
+| **查询行为** | 查询任何键都会返回一个值（默认值或已设置的值） |
+
+### 各类型默认值
+
+| 值类型             | 默认值                                       |
+| ------------------ | -------------------------------------------- |
+| `uint256` / `uint` | `0`                                          |
+| `int256` / `int`   | `0`                                          |
+| `bool`             | `false`                                      |
+| `address`          | `0x0000000000000000000000000000000000000000` |
+| `string`           | `""` (空字符串)                              |
+| `bytes`            | `0x` (空字节)                                |
+| `struct`           | 所有字段为默认值的结构体                     |
+| `array`            | 空数组                                       |
+
+### 查询行为示例
+
+```solidity
+mapping(address => uint256) balances;
+
+// 查询从未设置的地址
+uint256 value1 = balances[0x123...]; // 返回: 0
+
+// 显式设置为默认值
+balances[0x456...] = 0;
+uint256 value2 = balances[0x456...]; // 返回: 0
+
+// 无法区分上述两种情况！
+```
+
+### 重要注意事项
+
+> ⚠️ **关键点**: 
+> - mapping 中不存在"空值"或"未定义"的概念
+> - 无法直接判断一个键是否被显式设置过
+> - 所有查询都会返回一个确定的值
+
+
+
+
 
 ## vm.startBroadcast
 
@@ -3421,6 +3726,58 @@ function testTransferFlow() public {
 | `function h(mapping(address=>uint) storage m)` external             | storage 参数 + external | 不合规                 | external 不允许 storage 引用形参                       |
 | `function h(mapping(address=>uint) storage m)` internal             | storage 参数 + internal | 合规                   | 可传引用（通常来自 struct 成员）                       |
 | `function test(bytes calldata x) public`                            | public + calldata       | 可能不支持（取决版本） | 较老版本 public 不允许 calldata；新版本仍通常用 memory |
+
+### 函数体中使用storage
+
+![img](SOLIDITY-FUCK-NOTE.assets/jLx63OGZZZztHmm8.png)
+
+这里的 `UserInfo storage user` **不是创建新变量**，而是**创建一个指向现有存储数据的引用**。
+
+#### 详细解释
+
+```solidity
+UserInfo storage user = userInfo[users[i]];
+```
+
+这行代码的含义是：
+- 从映射 `userInfo` 中获取 `users[i]` 地址对应的 `UserInfo` 结构体
+- 创建一个名为 `user` 的**存储引用**，指向这个已存在的数据
+
+#### Storage 引用 vs 新变量
+
+```solidity
+// 这是存储引用 - 指向现有数据
+UserInfo storage user = userInfo[users[i]];
+user.rewards += newRewards; // 直接修改存储中的数据
+
+// 这是创建副本 - 复制数据到内存
+UserInfo memory user = userInfo[users[i]];
+user.rewards += newRewards; // 只修改内存副本，不影响存储
+```
+
+#### 实际效果
+
+```solidity
+// 假设 userInfo[alice] = UserInfo{rewards: 100, ...}
+
+UserInfo storage user = userInfo[alice];
+user.rewards += 50; // userInfo[alice].rewards 现在是 150
+
+// 等价于直接操作
+userInfo[alice].rewards += 50;
+```
+
+#### 为什么使用 storage 引用？
+
+1. **Gas 优化**：避免重复访问映射
+2. **代码简洁**：`user.rewards` 比 `userInfo[users[i]].rewards` 更清晰
+3. **直接修改**：对引用的修改直接反映到存储中
+
+#### 总结
+
+`UserInfo storage user` 是创建一个**指针/引用**，指向合约存储中已存在的数据，而不是创建新的存储槽。所有对 `user` 的修改都会直接影响原始存储数据。
+
+
 
 ## foundry 测试环境
 
