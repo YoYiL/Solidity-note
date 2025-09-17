@@ -7,6 +7,8 @@
 > Click the table of contents icon (📋) in the upper right corner to view the complete directory
 >
 > Author: YoYiL
+>
+> Reference: https://github.com/Cyfrin/Updraft
 
 # Table of Contents
 
@@ -6154,7 +6156,7 @@ function hashPair(a, b) {
 #### A. 纯 mapping 白名单方案
 
 ```
-复制mapping(address => uint256) public alloc;   // 记录可领取额度
+mapping(address => uint256) public alloc;   // 记录可领取额度
 mapping(address => bool) public claimed;    // 是否已领取
 
 function setAlloc(address[] calldata users, uint256[] calldata amounts) external onlyOwner {
@@ -6181,7 +6183,7 @@ function claim() external {
 #### B. Merkle 树方案（你的当前版本）
 
 ```
-复制bytes32 public merkleRoot;
+bytes32 public merkleRoot;
 mapping(address => bool) public claimed;
 
 function claim(uint256 amount, bytes32[] calldata proof) external {
