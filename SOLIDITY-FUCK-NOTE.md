@@ -254,7 +254,11 @@
     - [13. 常见误区澄清](#13-常见误区澄清)
     - [14. 汇总对照（紧凑复合表）](#14-汇总对照紧凑复合表)
     - [15. 记忆助句](#15-记忆助句)
-    - [16. fallback\&receive function](#16-fallbackreceive-function)
+  - [fallback\&receive function](#fallbackreceive-function)
+  - [合约地址接收以太币方式总结表](#合约地址接收以太币方式总结表)
+  - [钱包地址接收以太币方式总结表](#钱包地址接收以太币方式总结表)
+    - [1. 外部拥有账户 (EOA) 接收以太币](#1-外部拥有账户-eoa-接收以太币)
+    - [2. 合约钱包接收以太币](#2-合约钱包接收以太币)
   - [Solidity 数据位置修饰符 (Data Location)](#solidity-数据位置修饰符-data-location)
     - [1. 三种数据位置核心对比](#1-三种数据位置核心对比)
     - [二、哪些场合“必须 / 需要 / 不能 / 可省略”指定数据位置](#二哪些场合必须--需要--不能--可省略指定数据位置)
@@ -785,6 +789,7 @@
     - [Limitations of Formal Verification](#limitations-of-formal-verification)
   - [Isolated Dev Environments](#isolated-dev-environments)
   - [Setting up a Dev Container](#setting-up-a-dev-container)
+
 
 
 
@@ -3698,7 +3703,7 @@ function testTransferFlow() public {
 | 代理初始化 | external initializer |
 | 重入测试   | this.externalFn()    |
 
-### 16. fallback&receive function
+## fallback&receive function
 
 使用 `call` 向一个没有 `fallback` 和 `receive` 函数的合约地址传送 ETH 会导致交易失败并回滚。
 
@@ -3714,6 +3719,46 @@ function testTransferFlow() public {
 | 不想被调用策略       | 不写 receive（让空数据落到 fallback 再 revert） | 声明非 payable 并直接 revert                                              | 双层防护更清晰                              |
 | 版本演进             | 0.6.0 起从旧 fallback 拆出                      | 旧 fallback 角色被分拆后专注“未匹配”                                      | 新语义更精细                                |
 | 常见误区             | 认为必须写                                      | 认为默认可接 ETH                                                          | 记口诀：receive=空且存在；fallback=其它兜底 |
+
+## 合约地址接收以太币方式总结表
+
+| 方式                            | 是否需要 receive/fallback | 语法示例                                                     | 是否成功 | 说明               |
+| ------------------------------- | ------------------------- | ------------------------------------------------------------ | -------- | ------------------ |
+| **调用 payable 函数**           | ❌ 不需要                  | `contract.payableFunction{value: 1 ether}()`                 | ✅ 成功   | 最常用方式         |
+| **使用 call 调用 payable 函数** | ❌ 不需要                  | `address(contract).call{value: 1 ether}(abi.encodeCall(...))` | ✅ 成功   | 低级调用方式       |
+| **payable 构造函数**            | ❌ 不需要                  | `new Contract{value: 1 ether}()`                             | ✅ 成功   | 部署时发送         |
+| **SELFDESTRUCT 强制转账**       | ❌ 不需要                  | `selfdestruct(payable(target))`                              | ✅ 成功   | 强制发送，无法拒绝 |
+| **作为矿工奖励接收**            | ❌ 不需要                  | 设置合约地址为 coinbase                                      | ✅ 成功   | 区块奖励           |
+| **预先计算地址发送**            | ❌ 不需要                  | 在部署前向 CREATE2 地址发送                                  | ✅ 成功   | 部署前发送         |
+| **直接转账 transfer**           | ✅ 需要                    | `payable(contract).transfer(1 ether)`                        | ❌ 失败   | 会 revert          |
+| **直接转账 send**               | ✅ 需要                    | `payable(contract).send(1 ether)`                            | ❌ 失败   | 返回 false         |
+| **空数据 call**                 | ✅ 需要                    | `address(contract).call{value: 1 ether}("")`                 | ❌ 失败   | 会 revert          |
+
+## 钱包地址接收以太币方式总结表
+
+### 1. 外部拥有账户 (EOA) 接收以太币
+
+| 方式                      | 是否需要特殊函数 | 语法示例                                   | 是否成功 | Gas 消耗 | 说明                 |
+| ------------------------- | ---------------- | ------------------------------------------ | -------- | -------- | -------------------- |
+| **直接转账 transfer**     | ❌ 不需要         | `payable(wallet).transfer(1 ether)`        | ✅ 成功   | 21,000   | 最常用，安全         |
+| **直接转账 send**         | ❌ 不需要         | `payable(wallet).send(1 ether)`            | ✅ 成功   | 21,000   | 返回布尔值           |
+| **低级 call**             | ❌ 不需要         | `wallet.call{value: 1 ether}("")`          | ✅ 成功   | 21,000+  | 最灵活               |
+| **调用任意函数**          | ❌ 不需要         | `wallet.call{value: 1 ether}("0x1234...")` | ✅ 成功   | 21,000+  | 即使函数不存在也成功 |
+| **SELFDESTRUCT 强制转账** | ❌ 不需要         | `selfdestruct(payable(wallet))`            | ✅ 成功   | -        | 强制发送，无法拒绝   |
+| **矿工奖励**              | ❌ 不需要         | 设置钱包为 coinbase                        | ✅ 成功   | -        | 挖矿奖励             |
+| **预先计算地址发送**      | ❌ 不需要         | 向 CREATE2 地址发送                        | ✅ 成功   | 21,000   | 部署前发送           |
+
+### 2. 合约钱包接收以太币
+
+| 方式                      | 是否需要 receive/fallback | 语法示例                                    | 是否成功       | 说明                  |
+| ------------------------- | ------------------------- | ------------------------------------------- | -------------- | --------------------- |
+| **直接转账 transfer**     | ✅ 需要                    | `payable(contractWallet).transfer(1 ether)` | ✅/❌ 取决于实现 | 需要 receive/fallback |
+| **直接转账 send**         | ✅ 需要                    | `payable(contractWallet).send(1 ether)`     | ✅/❌ 取决于实现 | 需要 receive/fallback |
+| **低级 call**             | ✅ 需要                    | `contractWallet.call{value: 1 ether}("")`   | ✅/❌ 取决于实现 | 需要 receive/fallback |
+| **调用 payable 函数**     | ❌ 不需要                  | `contractWallet.deposit{value: 1 ether}()`  | ✅ 成功         | 最常用方式            |
+| **SELFDESTRUCT 强制转账** | ❌ 不需要                  | `selfdestruct(payable(contractWallet))`     | ✅ 成功         | 强制发送，无法拒绝    |
+
+
 
 ## Solidity 数据位置修饰符 (Data Location)
 
