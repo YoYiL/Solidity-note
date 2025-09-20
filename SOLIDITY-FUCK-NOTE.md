@@ -486,7 +486,7 @@
     - [EIP-191: The Signed Data Standard](#eip-191-the-signed-data-standard)
     - [EIP-712: Typed Structured Data Hashing and Signing](#eip-712-typed-structured-data-hashing-and-signing)
     - [Leveraging OpenZeppelin for Robust EIP-712 Implementation](#leveraging-openzeppelin-for-robust-eip-712-implementation)
-  - [Unveiling ECDSA: Understanding Digital Signatures and v, r, s Values](#unveiling-ecdsa-understanding-digital-signatures-and-v-r-s-values)
+  - [Unveiling ECDSA(Elliptic Curve Digital Signature Algorithm): Understanding Digital Signatures and v, r, s Values](#unveiling-ecdsaelliptic-curve-digital-signature-algorithm-understanding-digital-signatures-and-v-r-s-values)
     - [Decoding ECDSA: Elliptic Curve Digital Signature Algorithm](#decoding-ecdsa-elliptic-curve-digital-signature-algorithm)
     - [The Role of Signatures in Blockchain Authentication](#the-role-of-signatures-in-blockchain-authentication)
     - [Essentials of Public-Key Cryptography (PKC)](#essentials-of-public-key-cryptography-pkc)
@@ -789,6 +789,7 @@
     - [Limitations of Formal Verification](#limitations-of-formal-verification)
   - [Isolated Dev Environments](#isolated-dev-environments)
   - [Setting up a Dev Container](#setting-up-a-dev-container)
+
 
 
 
@@ -6566,7 +6567,7 @@ Manually implementing EIP-712 hashing and signature verification can be complex 
 
 EIP-191 established a foundational standard for formatting signed data in Ethereum, ensuring signed messages are distinct from transactions. Building upon this, EIP-712 revolutionized how structured data is handled for signing, introducing human-readable formats in wallets and, critically, strong replay protection mechanisms through the `domainSeparator` and `hashStruct` concepts.
 
-## Unveiling ECDSA: Understanding Digital Signatures and v, r, s Values
+## Unveiling ECDSA(Elliptic Curve Digital Signature Algorithm): Understanding Digital Signatures and v, r, s Values
 
 Elliptic Curve Digital Signature Algorithm (ECDSA) and its characteristic v, r, s values are fundamental components in the world of blockchain and Web3 security. This lesson aims to demystify these concepts, providing a clear understanding of how ECDSA signatures work, particularly within the Ethereum ecosystem, without requiring a deep dive into complex mathematics.
 
