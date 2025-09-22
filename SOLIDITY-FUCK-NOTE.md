@@ -48,7 +48,7 @@
     - [3. 实用工具函数](#3-实用工具函数)
       - [地址生成](#地址生成)
       - [签名相关](#签名相关)
-      - [标签和追踪](#标签和追踪)
+      - [标签和追踪lable/assume](#标签和追踪lableassume)
   - [event\&logs\&emit](#eventlogsemit)
     - [📊 **不同类型节点的存储策略**](#-不同类型节点的存储策略)
       - [**1. 全节点 (Full Node)**](#1-全节点-full-node)
@@ -282,10 +282,19 @@
     - [Stateful/Invariant Fuzz](#statefulinvariant-fuzz)
       - [📊 对比总结 / Comparison Summary](#-对比总结--comparison-summary)
       - [🎯 关键区别 / Key Differences](#-关键区别--key-differences)
+    - [**Foundry官方文档摘选：**](#foundry官方文档摘选)
+      - [Invariant Targets](#invariant-targets)
+    - [LLM详解（可能有错误）](#llm详解可能有错误)
       - [一、先用一句话概括](#一先用一句话概括)
       - [二、targetContract(address(dsce)) 是什么？](#二targetcontractaddressdsce-是什么)
         - [发生了什么：调用 targetContract(address(dsce)) 的执行路径](#发生了什么调用-targetcontractaddressdsce-的执行路径)
-      - [三、一个 invariant 测试的大体工作流（Foundry 默认）](#三一个-invariant-测试的大体工作流foundry-默认)
+      - [三、一个 *invariant* 测试的完整执行流程（Foundry ≥ 0.2.0 默认行为）](#三一个-invariant-测试的完整执行流程foundry--020-默认行为)
+        - [1. 加载配置](#1-加载配置)
+      - [2. 部署合约 \& `setUp()`](#2-部署合约--setup)
+        - [3. 第 1 次 run（示例：`runs = 5`，`depth = 5`）](#3-第-1-次-run示例runs--5depth--5)
+        - [4. 继续运行第 2 … *runs* 次 run](#4-继续运行第-2--runs-次-run)
+        - [5. 失败与 Shrink（最小化反例）](#5-失败与-shrink最小化反例)
+        - [6. 计数总结](#6-计数总结)
       - [四、你的这个具体 invariant 是怎样被检查的？](#四你的这个具体-invariant-是怎样被检查的)
       - [五、哪里体现了“stateful fuzz”与“不变量”的理念？](#五哪里体现了stateful-fuzz与不变量的理念)
       - [六、当前测试的局限（帮助你更好理解原理）](#六当前测试的局限帮助你更好理解原理)
@@ -1124,7 +1133,7 @@ vm.addr(uint256 privateKey)            // 从私钥生成地址
 vm.sign(uint256 privateKey, bytes32 digest)  // 签名
 ```
 
-#### 标签和追踪
+#### 标签和追踪lable/assume
 
 ```
 vm.label(address addr, string memory label)  // 给地址添加标签
@@ -4009,9 +4018,59 @@ burnDSC 就像是还债。先还债了之后，HF 值变高，就可以更好地
 | depth          | 单个序列中最多的调用步数（纵向探索深度）                  | 触达需多步累积才显现的复杂/延迟状态与跨函数交互              | 触发条件“差几步”；需要长链（清算、累计利息、限额耗尽等） | 序列后半段幂等/无新状态；shrinking 过慢       | 简单 32–64；复杂 64–128；特殊长链 128+ | 盲目加深 → 后半程空跑浪费时间                           | 预检条件减少必然 revert；提高关键稀有操作权重；插入时间推进 warp | depth=纵向挖深                   |
 | fail_on_revert | 是否将任意步骤的 revert 立即视为 run 失败（默认 false）   | true：快速暴露意外 revert；false：允许防护性 revert 持续探索 | 期望几乎无正常 revert；强调可组合性/鲁棒性               | 设计上存在大量“应挡住”的 revert；假阳性噪音大 | 布尔：默认 false；与场景配合双配置     | 误把安全网 revert 当漏洞；true 使深层状态难达（早截断） | false 模式统计并分类 revert；为易失败操作做前置检查              | fail_on_revert=态度（宽松/苛刻） |
 
+### **Foundry官方文档摘选：**
+
+**Regular invariant testing campaigns** have two dimensions, `runs` and `depth`:
+
+- `runs`: Number of times that a sequence of function calls is generated and run.
+- `depth`: Number of function calls made in a given `run`. Invariants are asserted after each function call is made. If a function call reverts, the `depth` counter still increments.
+
+#### Invariant Targets
+
+**Target Contracts**: The set of contracts that will be called over the course of a given invariant test fuzzing campaign. This set of contracts defaults to all contracts that were deployed in the `setUp` function, but can be customized to allow for more advanced invariant testing.
+
+**Target Senders**: The invariant test fuzzer picks values for `msg.sender` at random when performing fuzz campaigns to simulate multiple actors in a system by default. If desired, the set of senders can be customized in the `setUp` function.
+
+**Target Interfaces**: The set of addresses and their project identifiers that are not deployed during `setUp` but fuzzed in a forked environment (E.g. `[(0x1, ["IERC20"]), (0x2, ("IOwnable"))]`). This enables targeting of delegate proxies and contracts deployed with `create` or `create2`.
+
+**Target Selectors**: The set of function selectors that are used by the fuzzer for invariant testing. These can be used to use a subset of functions within a given target contract.
+
+**Target Artifacts**: The desired ABI to be used for a given contract. These can be used for proxy contract configurations.
+
+**Target Artifact Selectors**: The desired subset of function selectors to be used within a given ABI to be used for a given contract. These can be used for proxy contract configurations.
+
+Priorities for the invariant fuzzer in the cases of target clashes are:
+
+```
+targetInterfaces | targetSelectors > excludeSelectors | targetArtifactSelectors > excludeContracts | excludeArtifacts > targetContracts | targetArtifacts
+```
+
+
+
+### LLM详解（可能有错误）
+
 #### 一、先用一句话概括
 
 传统单元测试：我手写一条调用序列，然后断言最终状态。 Invariant（不变量）测试：框架自动随机生成“很多条调用序列”，在每条序列执行完（或每步）后，统一检查我声明的“永远应该成立的性质（invariant\_前缀函数）”。如果出现一个能让性质失败的调用序列，测试就失败并尝试 Shrink（缩短）出最小反例。
+
+补充：
+
+Foundry 的 invariant 测试会 “在序列里的每一次函数调用之后” 立刻执行全部 `invariant_*` 函数，而不是等到整条序列结束才统一检查。
+
+`runs = 5 , depth = 5` 的情况下，理论上要做：5（runs）× 5（depth）＝ 25 次 invariant 检查。
+
+假设你的测试合约里有 k 个 `invariant_*` 函数，那么总调用次数就是 25 × k。
+
+
+
+**Foundry官方文档：**
+
+**Regular invariant testing campaigns** have two dimensions, `runs` and `depth`:
+
+- `runs`: Number of times that a sequence of function calls is generated and run.
+- `depth`: Number of function calls made in a given `run`. Invariants are asserted after each function call is made. If a function call reverts, the `depth` counter still increments.
+
+Invariants are asserted after each function call is made. 说明是每个函数调用之后都会检查一次
 
 #### 二、targetContract(address(dsce)) 是什么？
 
@@ -4043,28 +4102,75 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
      - 参数类型列表（用于之后生成 fuzz 参数）
 5. “候选池”组装完成。之后每一步生成调用序列时，就从这些记录里任选一个 selector，再按 ABI 类型生成随机参数，编码成 calldata，设置随机 msg.sender 与 msg.value（如果 payable），然后执行 call。
 
-#### 三、一个 invariant 测试的大体工作流（Foundry 默认）
+#### 三、一个 *invariant* 测试的完整执行流程（Foundry ≥ 0.2.0 默认行为）  
 
-以一次完整运行 (forge test --match-test InvariantsTest) 为例：
+下面以命令 `forge test --match-test InvariantsTest` 为例，演示 **一轮完整的 invariant 测试** 在新版 Foundry 中的内部步骤。  
 
-1. 解析配置
-   - 读取 foundry.toml 中的 invariant.runs、invariant.depth、invariant.fail_on_revert 等参数；若未配置走默认值（比如 runs=256，depth=15 等版本差异可查文档）。
-2. 部署 & setUp
-   - 执行 InvariantsTest.setUp()：部署 DSC、Engine、配置 price feed，调用 targetContract(address(dsce)) 注册目标。
-   - 框架对当前链状态做一个 snapshot（S0）。
-3. 进行第 1 次“run”
-   - revert 到 snapshot S0（第一轮本身就是 S0）。
-   - 初始化一个空的调用序列 seq。
-   - 在 depth 限制下（比如 15 步）重复： a) 随机从已注册目标中选一个函数 f（DSCEngine 的某个非 view 函数：depositCollateral、mintDsc、redeemCollateral、depositCollateralAndMintDsc、redeemCollateralForDsc、burnDsc、liquidate...） b) 为 f 的每个参数生成随机值（遵循 ABI 类型范围）。 c) 用默认 sender（这里就是 InvariantsTest 合约地址）去调用 f。如果 revert： - 若 fail_on_revert = true => 立即把这次序列当失败（Foundry 认为出现“意外”），进入 shrink。 - 若 fail_on_revert = false（默认）=> 记录一次失败调用，但继续下一步（因为很多 revert 在 DeFi 中是防御性的 & 可接受）。 d) 把成功或 revert 的尝试都算入序列步数（一般仍前进步数，除非内部策略调整）。
-   - 这条序列结束（达到 depth 或没有可再调用的函数）后，执行所有 invariant\_ 前缀函数： invariant_protocolMustHaveMoreValueThanTotalSupply() 若其中 assert 失败或函数本身 revert => 整个 run 失败 -> Shrink。 若全部通过 => run 成功。
-4. 进行第 2 次 run
-   - revert 到 snapshot S0（确保每一条序列都是从统一的初始干净状态开始，而不是延续上一 run 的终态）。
-   - 重复步骤 2。
-5. 重复直到达到 runs 次数或中途失败。
-   - 全部 runs 都没破坏不变量 => 测试通过。
-   - 任一 run 失败 => Foundry 会对那条出问题的调用序列做 Shrink（试图最小化步数和参数）以便输出最小反例，再标记测试失败。
+> ⚠️ 关键变化  
+> • **所有 `invariant_*` 函数会在序列中的每一次函数调用结束后立即执行**（而不是旧版的“序列结束后再统一检查”）。  
+> • 仍然可以通过 `afterInvariant()` 单独定义“序列结束后”才跑一次的断言。  
 
-(注：也可配置调用后每一步都检查 invariant；旧版本默认是每个“序列”结束后检查。)
+---
+
+##### 1. 加载配置  
+
+1. Forge 解析 `foundry.toml` 中与 invariant 相关的字段：  
+   ```toml
+   invariant.runs   = 256   # 随机序列条数
+   invariant.depth  = 15    # 每条序列最多调用次数
+   invariant.fail_on_revert = false
+   ```
+2. 若未显式配置，则使用版本自带的默认值（具体数值可查 [官方文档]）。
+
+---
+
+#### 2. 部署合约 & `setUp()`  
+
+1. 调用 `InvariantsTest.setUp()`  
+   • 部署被测合约（如 DSC、Engine）  
+   • 注入 mock price feed  
+   • 调用 `targetContract(address(dsce))` / `targetContracts(address[])` 注册可被随机调用的“目标函数集合”。  
+2. 框架在完成 `setUp` 后对链状态做一次 **快照 S₀**，以便后续每个 run 都能回滚到同一初始状态。
+
+---
+
+##### 3. 第 1 次 run（示例：`runs = 5`，`depth = 5`）
+
+| 步骤 | 说明                                                         |
+| ---- | ------------------------------------------------------------ |
+| a.   | `vm.revertTo(S₀)` 回到初始快照，开始新的随机序列。           |
+| b.   | 初始化空数组 `seq` 记录调用轨迹。                            |
+| c.   | 在 `depth` 次循环内： 　1. **随机**从所有已注册目标函数里挑选 `f`。 　2. 为 `f` 的每个参数生成随机值（满足 ABI 类型）。 　3. **随机选择 `msg.sender`**：如果你没有在 `setUp()` 中调用 `targetSenders(address[])`，Forge 会为每一步自动生成一个随机地址来模拟多角色环境；也可以通过 `targetSenders` 显式指定允许出现的发送者集合。 　4. 调用 `f{sender}(args)`，无论 `success` 还是 `revert` 都消耗一次深度。 　5. 立即执行全部 `invariant_*`： 　　 • 若断言失败/revert ⇒ run 失败 → Shrink。 　　 • 成功 ⇒ 继续下一深度。 　6. 若 `fail_on_revert = true` 且刚才调用 `revert` ⇒ run 直接失败 → Shrink。 |
+| d.   | 达到最大深度或内部逻辑提前停止后，可选执行 **`afterInvariant()`**。 |
+| e.   | 本 run 未触发失败 ⇒ run 成功，进入下一轮。                   |
+
+##### 4. 继续运行第 2 … *runs* 次 run  
+
+1. 每轮开始都 `revertTo(S₀)`，确保环境干净、可重复。  
+2. 重复 **步骤 3** 直至完成全部 `runs`，或在中途发现不变量被破坏。  
+
+---
+
+##### 5. 失败与 Shrink（最小化反例）  
+
+• 任何 run 中若某次 invariant 检查失败，Forge 会：  
+  1. 对当前随机序列进行 **Shrink** —— 递归削减调用步数与参数规模，直至找到能重现 bug 的最小序列。  
+  2. 打印最终的失败序列、具体参数以及 stack-trace。  
+• 测试以 **failed** 结束；若所有 run 均未触发失败，则整体测试 **passed**。  
+
+---
+
+##### 6. 计数总结  
+
+以 `runs = 5`、`depth = 5`、存在 `k` 个 `invariant_*` 函数为例：  
+• invariant 检查次数 = `5 × 5 = 25`  
+• `invariant_*` 总调用次数 = `25 × k`  
+
+若中途由于 `vm.breakInvariantTesting()` 或 timeout 提前终止，则实际次数 < 上述理论值。  
+
+---
+
+通过以上流程，你就可以在新版 Foundry 中正确理解并编写 **stateful fuzz / invariant** 测试，确保每一次状态转移后都能及时验证系统不变量。
 
 #### 四、你的这个具体 invariant 是怎样被检查的？
 
@@ -4085,7 +4191,7 @@ StdInvariant 提供了一套注册“可被随机调用”的目标函数集的�
 
 执行节奏：
 
-- 每条随机调用序列结束后，框架调用该函数一次。
+- 每条随机调用序列中，每次函数调用一次，框架调用invariant函数一次。
 - 如果任何一条生成的函数调用序列（比如 depositCollateral → mintDsc → redeemCollateral ... 随机参数）导致出现“协议内抵押价值 < DSC 总供应”，assert 触发，测试失败。
 - 失败后 Foundry 尝试缩短序列，输出最小反例（如：只需两步就造成破坏）。
 
@@ -4242,13 +4348,18 @@ Shrink（缩减、最小化反例）是“性质测试 / property-based testing�
 
 ### 📊 **核心答案：`depth` 只计算 Handler 函数调用次数**
 
+**Regular invariant testing campaigns** have two dimensions, `runs` and `depth`:
+
+- `runs`: Number of times that a sequence of function calls is generated and run.
+- `depth`: Number of function calls made in a given `run`. Invariants are asserted after each function call is made. If a function call reverts, the `depth` counter still increments.
+
 #### **✅ 正确理解：**
 
 ```
-复制depth = 32 意味着：
-- Handler 中的函数调用 32 次
-- Invariant 函数调用 1 次（不计入 depth）
-- 总执行 = 32 次 Handler 函数 + 1 次 Invariant 检查
+depth (本例)      = 32
+target 调用次数     = 32
+invariant_* 调用总数 = 32 × k
+afterInvariant()   = 0 或 1（取决于是否定义）
 ```
 
 ### Handler based methodology
