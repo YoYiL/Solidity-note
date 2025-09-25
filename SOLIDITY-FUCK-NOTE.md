@@ -49,6 +49,25 @@
       - [地址生成](#地址生成)
       - [签名相关](#签名相关)
       - [标签和追踪lable/assume](#标签和追踪lableassume)
+  - [event basic](#event-basic)
+    - [1. Event 基本概念](#1-event-基本概念)
+      - [主要特点：](#主要特点)
+    - [2. Indexed Fields（索引字段）](#2-indexed-fields索引字段)
+      - [基本语法：](#基本语法)
+      - [关键特性：](#关键特性)
+    - [3. Topics 结构](#3-topics-结构)
+    - [4. 使用示例](#4-使用示例)
+    - [5. 过滤和监听](#5-过滤和监听)
+      - [Web3.js 示例：](#web3js-示例)
+    - [6. Gas 成本对比](#6-gas-成本对比)
+    - [7. 最佳实践](#7-最佳实践)
+    - [8. 注意事项](#8-注意事项)
+    - [9. 动态类型 indexed](#9-动态类型-indexed)
+      - [1. 问题的本质](#1-问题的本质)
+      - [2. 获取原始值的方法](#2-获取原始值的方法)
+        - [方法一：同时存储在非索引参数中](#方法一同时存储在非索引参数中)
+        - [方法二：在链下维护映射表](#方法二在链下维护映射表)
+      - [方法三：不使用 indexed（如果不需要过滤）](#方法三不使用-indexed如果不需要过滤)
   - [event\&logs\&emit](#eventlogsemit)
     - [📊 **不同类型节点的存储策略**](#-不同类型节点的存储策略)
       - [**1. 全节点 (Full Node)**](#1-全节点-full-node)
@@ -56,6 +75,7 @@
       - [**3. 归档节点 (Archive Node)**](#3-归档节点-archive-node)
       - [**4. 修剪节点 (Pruned Node)**](#4-修剪节点-pruned-node)
     - [💡 **总结**](#-总结)
+    - [emit in test/测试](#emit-in-test测试)
   - [vm.deal\&vm.stratBroadcast](#vmdealvmstratbroadcast)
   - [etherscan verify](#etherscan-verify)
   - [contract/interface/abstrct contract/library/abstrct function](#contractinterfaceabstrct-contractlibraryabstrct-function)
@@ -254,6 +274,12 @@
     - [13. 常见误区澄清](#13-常见误区澄清)
     - [14. 汇总对照（紧凑复合表）](#14-汇总对照紧凑复合表)
     - [15. 记忆助句](#15-记忆助句)
+  - [修饰变量存储位置的四种关键词](#修饰变量存储位置的四种关键词)
+    - [1. **storage**](#1-storage)
+    - [2. **memory**](#2-memory)
+    - [3. **calldata**](#3-calldata)
+    - [4. **stack**](#4-stack)
+    - [使用规则总结：](#使用规则总结)
   - [fallback\&receive function](#fallbackreceive-function)
   - [合约地址接收以太币方式总结表](#合约地址接收以太币方式总结表)
   - [钱包地址接收以太币方式总结表](#钱包地址接收以太币方式总结表)
@@ -802,7 +828,6 @@
 
 
 
-
 # Raffle
 
 TEST DESIGN PATTERN
@@ -1140,6 +1165,191 @@ vm.label(address addr, string memory label)  // 给地址添加标签
 vm.assume(bool condition)                     // 模糊测试中的假设条件
 ```
 
+
+
+## event basic
+
+### 1. Event 基本概念
+
+**Event（事件）** 是 Solidity 中的一种特殊结构，用于记录智能合约执行过程中的重要信息到区块链日志中。
+
+#### 主要特点：
+
+- 事件数据存储在交易日志中，而不是合约存储中
+- 成本更低（相比存储变量）
+- 可以被外部应用监听和检索
+- 不能被智能合约内部访问
+
+### 2. Indexed Fields（索引字段）
+
+#### 基本语法：
+
+```
+event Transfer(
+    address indexed from,
+    address indexed to,
+    uint256 value
+);
+```
+
+#### 关键特性：
+
+**索引字段的作用：**
+
+- 允许通过该字段进行高效过滤和搜索
+- 被存储在日志的 topics 部分（而非 data 部分）
+- 方便前端应用和服务快速查询特定事件
+
+**限制条件：**
+
+- 每个事件最多可以有 **3 个 indexed 参数**
+- 如果使用匿名事件（anonymous），可以有 4 个 indexed 参数
+- indexed 字符串和数组会被哈希存储（只存储 32 字节的哈希值）
+
+### 3. Topics 结构
+
+事件日志包含 topics 数组：
+
+- **topics[0]**：事件签名的哈希值（匿名事件除外）
+- **topics[1-3]**：indexed 参数的值
+
+### 4. 使用示例
+
+```
+contract Token {
+    // 定义事件
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 amount
+    );
+    
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+    
+    // 触发事件
+    function transfer(address to, uint256 amount) public {
+        // ... 转账逻辑
+        emit Transfer(msg.sender, to, amount);
+    }
+}
+```
+
+### 5. 过滤和监听
+
+#### Web3.js 示例：
+
+```
+// 监听特定地址的转账事件
+contract.events.Transfer({
+    filter: {from: '0x123...'},  // 只监听特定 from 地址
+    fromBlock: 0
+}, function(error, event) {
+    console.log(event);
+});
+```
+
+### 6. Gas 成本对比
+
+- **Indexed 参数**：每个约 750 gas
+- **非 Indexed 参数**：每 32 字节约 8 gas
+- 相比 storage 操作（20,000 gas）便宜很多
+
+### 7. 最佳实践
+
+1. **选择性索引**：
+
+   - 索引需要过滤查询的字段（如地址、ID）
+   - 不索引大数据类型（如大字符串、数组）
+
+2. **命名规范**：
+
+   - 事件名使用 PascalCase
+   - 清晰描述事件的含义
+
+3. **参数设计**：
+
+   - 包含足够的上下文信息
+   - 考虑前端应用的查询需求
+
+4. **文档化**：
+
+   - 使用 NatSpec 注释说明事件用途
+
+   ```
+   /// @notice Emitted when tokens are transferred
+   /// @param from The address tokens are transferred from
+   /// @param to The address tokens are transferred to
+   /// @param amount The amount of tokens transferred
+   event Transfer(address indexed from, address indexed to, uint256 amount);
+   ```
+
+### 8. 注意事项
+
+- Indexed 参数存储在 topics 中，有大小限制（32 字节）
+- 动态类型（string、bytes、数组）被索引时只存储哈希值
+- 事件不能被合约内部读取，仅用于外部监听
+- 合理使用 indexed 以平衡 gas 成本和查询效率
+
+这些是 Solidity 中 event 和 indexed fields 的核心知识点，在开发 DApp 时合理使用事件机制可以大大提升应用的用户体验和查询效率。
+
+### 9. 动态类型 indexed
+
+#### 1. 问题的本质
+
+当 string、bytes 或数组被标记为 `indexed` 时：
+
+- **存储的是**：Keccak-256 哈希值（32 字节）
+- **检索时看到的**：也只是这个哈希值
+- **原始值**：不会自动存储在 topics 中
+
+#### 2. 获取原始值的方法
+
+##### 方法一：同时存储在非索引参数中
+
+```
+event NameChanged(
+    string indexed nameHash,  // 用于过滤（存储哈希）
+    string name               // 存储实际值（在 data 部分）
+);
+
+function setName(string memory _name) public {
+    // 同一个值既作为 indexed 又作为非 indexed
+    emit NameChanged(_name, _name);
+}
+```
+
+**优点**：可以同时进行过滤和获取原始值
+ **缺点**：增加了 gas 成本
+
+##### 方法二：在链下维护映射表
+
+```
+// 前端/后端维护哈希到原始值的映射
+const hashToString = {};
+
+// 监听事件时记录映射
+contract.events.SomeEvent({}, (error, event) => {
+    const originalValue = event.returnValues.originalString;
+    const hash = web3.utils.keccak256(originalValue);
+    hashToString[hash] = originalValue;
+});
+```
+
+#### 方法三：不使用 indexed（如果不需要过滤）
+
+```
+event DataStored(
+    address indexed user,  // 需要过滤的用 indexed
+    string data           // 不需要过滤的不用 indexed
+);
+```
+
+
+
 ## event&logs&emit
 
 ![image-20250807153319368](SOLIDITY-FUCK-NOTE.assets/image-20250807153319368.png)![image-20250807153848151](SOLIDITY-FUCK-NOTE.assets/image-20250807153848151.png)
@@ -1235,6 +1445,10 @@ Pruned Node Storage:
 - 💾 自建节点：根据需求选择节点类型
 
 虽然理论上是"永久存储"，但实际的**可访问性取决于网络中节点的存储策略**！🌐✨
+
+
+
+### emit in test/测试
 
 测试中的 emit 关键字和 scr 合约中的关键字含义不一样，src 中的 emit 是真的发送。而测试中的不是发送，而是期望接下来会发送这样的 log。
 
@@ -3712,6 +3926,73 @@ function testTransferFlow() public {
 | 可扩展点   | internal virtual     |
 | 代理初始化 | external initializer |
 | 重入测试   | this.externalFn()    |
+
+
+
+
+
+## 修饰变量存储位置的四种关键词
+
+### 1. **storage**
+- **用途**：指定变量存储在区块链的永久存储中
+- **特点**：
+  - 数据持久化，合约调用间保持不变
+  - Gas 消耗较高
+  - 主要用于状态变量
+- **示例**：
+```solidity
+uint256 storage myVar; // 状态变量默认为 storage
+```
+
+### 2. **memory**
+- **用途**：指定变量存储在内存中
+- **特点**：
+  - 临时存储，函数执行完毕后清除
+  - Gas 消耗中等
+  - 主要用于函数参数和局部变量
+- **示例**：
+```solidity
+function example() public {
+    uint256[] memory tempArray = new uint256[](10);
+}
+```
+
+### 3. **calldata**
+- **用途**：指定变量存储在调用数据区域
+- **特点**：
+  - 只读，不可修改
+  - Gas 消耗最低
+  - 主要用于外部函数的参数
+- **示例**：
+```solidity
+function processData(uint256[] calldata data) external {
+    // data 是只读的
+}
+```
+
+### 4. **stack**
+- **用途**：虽然不是显式关键词，但值类型变量默认存储在栈中
+- **特点**：
+  - 用于基本数据类型（uint、int、bool、address 等）
+  - 访问速度最快
+  - 自动管理，无需显式声明
+
+### 使用规则总结：
+
+1. **状态变量**：默认且只能是 `storage`
+2. **函数参数**：
+   - 外部函数：推荐使用 `calldata`（节省 Gas）
+   - 内部/私有函数：可使用 `memory` 或 `calldata`
+3. **局部变量**：
+   - 引用类型：必须显式指定 `memory` 或 `storage`
+   - 值类型：自动存储在栈中
+4. **返回值**：通常使用 `memory`
+
+这些存储位置关键词的正确使用对于优化 Gas 消耗和确保数据安全性非常重要。
+
+
+
+
 
 ## fallback&receive function
 
