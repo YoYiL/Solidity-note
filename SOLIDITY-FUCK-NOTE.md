@@ -77,6 +77,19 @@
     - [💡 **总结**](#-总结)
     - [emit in test/测试](#emit-in-test测试)
   - [vm.deal\&vm.stratBroadcast](#vmdealvmstratbroadcast)
+  - [Struct 结构体](#struct-结构体)
+    - [1. 结构体定义](#1-结构体定义)
+    - [2. 结构体的使用方式](#2-结构体的使用方式)
+      - [声明和初始化](#声明和初始化)
+    - [3. 存储位置](#3-存储位置)
+      - [Storage（状态变量）](#storage状态变量)
+      - [Memory（临时变量）](#memory临时变量)
+      - [Calldata（只读参数）](#calldata只读参数)
+    - [4. 结构体数组](#4-结构体数组)
+    - [5. 映射中的结构体](#5-映射中的结构体)
+    - [6. 嵌套结构体](#6-嵌套结构体)
+    - [7. 结构体作为函数参数和返回值](#7-结构体作为函数参数和返回值)
+    - [8. 结构体的比较和复制](#8-结构体的比较和复制)
   - [etherscan verify](#etherscan-verify)
   - [contract/interface/abstrct contract/library/abstrct function](#contractinterfaceabstrct-contractlibraryabstrct-function)
   - [Override things /继承](#override-things-继承)
@@ -827,7 +840,6 @@
 
 
 
-
 # Raffle
 
 TEST DESIGN PATTERN
@@ -1459,6 +1471,175 @@ Pruned Node Storage:
 ## vm.deal&vm.stratBroadcast
 
 ![image-20250710020527536](SOLIDITY-FUCK-NOTE.assets/image-20250710020527536.png)
+
+## Struct 结构体
+
+### 1. 结构体定义
+
+```
+struct StructName {
+    uint256 field1;
+    string field2;
+    bool field3;
+    address field4;
+}
+```
+
+### 2. 结构体的使用方式
+
+#### 声明和初始化
+
+```
+// 方式1：直接赋值
+StructName memory myStruct = StructName(100, "hello", true, msg.sender);
+
+// 方式2：键值对方式
+StructName memory myStruct = StructName({
+    field1: 100,
+    field2: "hello",
+    field3: true,
+    field4: msg.sender
+});
+
+// 方式3：先声明后赋值
+StructName memory myStruct;
+myStruct.field1 = 100;
+myStruct.field2 = "hello";
+```
+
+### 3. 存储位置
+
+#### Storage（状态变量）
+
+```
+contract MyContract {
+    StructName public myStorageStruct;
+    
+    function updateStruct() public {
+        myStorageStruct.field1 = 200;
+    }
+}
+```
+
+#### Memory（临时变量）
+
+```
+function processStruct() public pure {
+    StructName memory tempStruct = StructName(1, "temp", false, address(0));
+    // 函数结束后销毁
+}
+```
+
+#### Calldata（只读参数）
+
+```
+function readStruct(StructName calldata _struct) external pure returns (uint256) {
+    return _struct.field1;
+}
+```
+
+### 4. 结构体数组
+
+```
+contract StructArray {
+    StructName[] public structArray;
+    
+    function addStruct(uint256 _field1, string memory _field2) public {
+        structArray.push(StructName(_field1, _field2, true, msg.sender));
+    }
+    
+    function getStruct(uint256 index) public view returns (StructName memory) {
+        return structArray[index];
+    }
+}
+```
+
+### 5. 映射中的结构体
+
+```
+contract StructMapping {
+    mapping(address => StructName) public userStructs;
+    
+    function setUserStruct(uint256 _field1, string memory _field2) public {
+        userStructs[msg.sender] = StructName(_field1, _field2, true, msg.sender);
+    }
+}
+```
+
+### 6. 嵌套结构体
+
+```
+struct Address {
+    string street;
+    string city;
+    uint256 zipCode;
+}
+
+struct Person {
+    string name;
+    uint256 age;
+    Address homeAddress;
+}
+
+// 使用嵌套结构体
+Person memory person = Person({
+    name: "Alice",
+    age: 30,
+    homeAddress: Address("123 Main St", "New York", 10001)
+});
+```
+
+### 7. 结构体作为函数参数和返回值
+
+```
+// 作为参数
+function processStruct(StructName memory _struct) public pure returns (uint256) {
+    return _struct.field1 * 2;
+}
+
+// 作为返回值
+function createStruct() public pure returns (StructName memory) {
+    return StructName(100, "created", true, address(0));
+}
+
+// 返回多个结构体字段
+function getStructFields(StructName memory _struct) public pure 
+    returns (uint256, string memory, bool) {
+    return (_struct.field1, _struct.field2, _struct.field3);
+}
+```
+
+### 8. 结构体的比较和复制
+
+```
+// 结构体不能直接比较
+// 错误：if (struct1 == struct2) { ... }
+
+// 需要逐字段比较
+function compareStructs(StructName memory a, StructName memory b) 
+    public pure returns (bool) {
+    return (a.field1 == b.field1 && 
+            keccak256(bytes(a.field2)) == keccak256(bytes(b.field2)) &&
+            a.field3 == b.field3 &&
+            a.field4 == b.field4);
+}
+
+// 结构体复制
+function copyStruct() public {
+    StructName storage storageStruct = myStorageStruct;
+    StructName memory memoryStruct = storageStruct; // 复制到memory
+}
+```
+
+1. **Gas优化**：结构体字段顺序会影响存储成本，相同类型的字段放在一起可以节省gas
+2. **存储位置**：明确指定storage、memory或calldata
+3. **初始化**：确保所有字段都被正确初始化
+4. **版本兼容**：修改结构体时要考虑向后兼容性
+5. **事件记录**：重要的结构体变更应该通过事件记录
+
+
+
+
 
 ## etherscan verify
 
@@ -3724,6 +3905,14 @@ function testTransferFlow() public {
 | `address.transfer()`       | ✅ 需要       | 编译器类型检查         |
 | `address.send()`           | ✅ 需要       | 编译器类型检查         |
 | `address.call{value: x}()` | ❌ 不需要     | 底层调用，绕过类型检查 |
+
+![image-20250925142702538](SOLIDITY-FUCK-NOTE.assets/image-20250925142702538.png)
+
+使用低级调用 address.call{value: v}("") 发送 ETH，本身不需要把地址声明为 address payable，也不强制要求当前函数带 payable 关键字。只有当你要接收并转发来款（使用 msg.value）时，调用方函数才需要 payable；若用的是合约已有余额发送，则调用方函数不需要 payable。接收方必须有 receive() 或 payable fallback 才能成功接收，否则会回退。
+
+
+
+
 
 ## 可以修饰函数的四种关键词
 
