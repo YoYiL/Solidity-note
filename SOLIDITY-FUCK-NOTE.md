@@ -1746,7 +1746,7 @@ function _mint(address to, uint256 amount)
 
 
 
-## 🔧 Solidity 错误捕获方式总结
+## 🔧 Solidity error错误捕获方式总结
 
 | 方式             | 语法                              | 适用场景          | 特点                |
 | ---------------- | --------------------------------- | ----------------- | ------------------- |
@@ -1815,7 +1815,7 @@ try块    检查错误类型
 
 
 
-### 2. **自定义错误**（Gas优化首选）
+### 2. **自定义错误**error（Gas优化首选）
 
 ```solidity
 error InsufficientBalance(uint256 available, uint256 required);
@@ -3137,6 +3137,125 @@ uint256 value2 = balances[0x456...]; // 返回: 0
 > - 所有查询都会返回一个确定的值
 
 
+
+## Solidity中`delete`关键字用法总结
+
+### 1. 基本概念
+
+`delete`关键字用于**重置变量到其默认值**，而不是真正"删除"变量。它不会释放存储空间，只是将值重置为类型的默认值。
+
+```
+delete variable; // 将variable重置为默认值
+```
+
+### 2. 不同数据类型的delete行为
+
+#### 2.1 基本数据类型
+
+```
+contract DeleteBasicTypes {
+    uint256 public number = 100;
+    bool public flag = true;
+    address public addr = 0x1234567890123456789012345678901234567890;
+    bytes32 public data = "hello";
+    
+    function deleteBasicTypes() external {
+        delete number;  // number = 0
+        delete flag;    // flag = false
+        delete addr;    // addr = address(0)
+        delete data;    // data = 0x0000...
+    }
+}
+```
+
+#### 2.2 数组
+
+```
+contract DeleteArrays {
+    uint256[] public dynamicArray;
+    uint256[5] public fixedArray;
+    
+    function setupArrays() external {
+        dynamicArray = [1, 2, 3, 4, 5];
+        fixedArray = [10, 20, 30, 40, 50];
+    }
+    
+    function deleteArrays() external {
+        // 删除整个动态数组
+        delete dynamicArray; // 长度变为0，所有元素被清除
+        
+        // 删除固定数组
+        delete fixedArray; // 所有元素变为0，但长度仍为5
+        
+        // 删除数组中的单个元素
+        dynamicArray.push(100);
+        delete dynamicArray[0]; // 该位置变为0，但数组长度不变
+    }
+    
+    function getArrayInfo() external view returns (uint256, uint256) {
+        return (dynamicArray.length, fixedArray.length);
+    }
+}
+```
+
+#### 2.3 映射(Mapping)
+
+```
+contract DeleteMappings {
+    mapping(address => uint256) public balances;
+    mapping(uint256 => mapping(string => bool)) public nestedMapping;
+    
+    function setupMappings() external {
+        balances[msg.sender] = 1000;
+        nestedMapping[1]["active"] = true;
+    }
+    
+    function deleteMappings() external {
+        // 删除映射中的特定键值对
+        delete balances[msg.sender]; // balances[msg.sender] = 0
+        
+        // 删除嵌套映射中的值
+        delete nestedMapping[1]["active"]; // nestedMapping[1]["active"] = false
+        
+        // 注意：不能delete整个mapping
+        // delete balances; // ❌ 编译错误
+    }
+}
+```
+
+#### 2.4 结构体(Struct)
+
+```
+contract DeleteStructs {
+    struct User {
+        string name;
+        uint256 age;
+        bool active;
+        uint256[] scores;
+    }
+    
+    User public user;
+    mapping(uint256 => User) public users;
+    
+    function setupStruct() external {
+        user = User("Alice", 25, true, [90, 85, 95]);
+        users[1] = User("Bob", 30, true, [80, 75, 85]);
+    }
+    
+    function deleteStruct() external {
+        // 删除整个结构体
+        delete user; 
+        // 结果：name = "", age = 0, active = false, scores = []
+        
+        // 删除映射中的结构体
+        delete users[1];
+        
+        // 删除结构体中的特定字段
+        user.name = "Charlie";
+        delete user.name; // name = ""
+    }
+}
+```
 
 
 
