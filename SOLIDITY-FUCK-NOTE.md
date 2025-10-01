@@ -1468,6 +1468,163 @@ Pruned Node Storage:
 
 ![image-20250710020044909](SOLIDITY-FUCK-NOTE.assets/image-20250710020044909.png)
 
+## vm.expectEmit 参数设置规则详解
+
+### 参数重载版本
+
+#### 1. **完整版本（5个参数）**
+```solidity
+vm.expectEmit(checkTopic1, checkTopic2, checkTopic3, checkData, emitter);
+```
+
+#### 2. **简化版本（1个参数）**
+```solidity
+vm.expectEmit(emitter);
+// 等价于：vm.expectEmit(true, true, true, true, emitter);
+```
+
+### indexed参数数量对应规则
+
+**重要：Solidity事件最多支持3个indexed参数**
+
+#### 情况1：少于3个indexed参数
+```solidity
+// 1个indexed参数
+event Approval(address indexed owner, uint256 value);
+vm.expectEmit(true, false, false, true, address(contract));
+//           ↑     ↑      ↑      ↑
+//         owner  unused unused  value
+
+// 2个indexed参数  
+event Transfer(address indexed from, address indexed to, uint256 value);
+vm.expectEmit(true, true, false, true, address(contract));
+//           ↑     ↑     ↑      ↑
+//          from   to   unused  value
+```
+
+#### 情况2：正好3个indexed参数
+```solidity
+event OrderCreated(
+    uint256 indexed orderId,     // topic1
+    address indexed seller,      // topic2
+    address indexed buyer,       // topic3
+    uint256 price               // data
+);
+vm.expectEmit(true, true, true, true, address(contract));
+//           ↑     ↑     ↑     ↑
+//        orderId seller buyer price
+```
+
+#### 情况3：没有indexed参数
+```solidity
+event LogMessage(string message, uint256 timestamp);
+vm.expectEmit(false, false, false, true, address(contract));
+//           ↑      ↑      ↑      ↑
+//         unused unused unused  全部data参数
+```
+
+### 实际例子对照
+
+#### 例子1：0个indexed参数
+```solidity
+event Deposit(uint256 amount, address user);
+
+// 完整写法
+vm.expectEmit(false, false, false, true, address(contract));
+emit Deposit(100, alice);
+
+// 简化写法（推荐）
+vm.expectEmit(address(contract));
+emit Deposit(100, alice);
+```
+
+#### 例子2：1个indexed参数
+```solidity
+event Withdrawal(address indexed user, uint256 amount, uint256 fee);
+
+// 完整写法 - 只检查indexed参数
+vm.expectEmit(true, false, false, false, address(contract));
+emit Withdrawal(alice, 0, 0); // amount和fee可以是任意值
+
+// 完整写法 - 检查所有参数
+vm.expectEmit(true, false, false, true, address(contract));
+emit Withdrawal(alice, 100, 5);
+
+// 简化写法（推荐）
+vm.expectEmit(address(contract));
+emit Withdrawal(alice, 100, 5);
+```
+
+#### 例子3：2个indexed参数
+```solidity
+event Trade(
+    address indexed buyer,
+    address indexed seller, 
+    uint256 price,
+    uint256 quantity
+);
+
+// 只检查第一个indexed参数
+vm.expectEmit(true, false, false, false, address(contract));
+emit Trade(buyer, address(0), 0, 0);
+
+// 检查两个indexed参数，忽略data
+vm.expectEmit(true, true, false, false, address(contract));
+emit Trade(buyer, seller, 0, 0);
+
+// 检查所有参数
+vm.expectEmit(address(contract));
+emit Trade(buyer, seller, price, quantity);
+```
+
+#### 例子4：3个indexed参数（最大值）
+```solidity
+event ComplexEvent(
+    uint256 indexed id,
+    address indexed from,
+    address indexed to,
+    string data1,
+    uint256 data2
+);
+
+// 检查所有indexed，忽略data
+vm.expectEmit(true, true, true, false, address(contract));
+emit ComplexEvent(1, alice, bob, "", 0);
+
+// 检查所有参数
+vm.expectEmit(address(contract));
+emit ComplexEvent(1, alice, bob, "hello", 100);
+```
+
+### 设置规则总结
+
+| indexed参数个数 | checkTopic1  | checkTopic2  | checkTopic3  | 说明           |
+| --------------- | ------------ | ------------ | ------------ | -------------- |
+| 0个             | `false`      | `false`      | `false`      | 全部设为false  |
+| 1个             | `true/false` | `false`      | `false`      | 只有topic1有效 |
+| 2个             | `true/false` | `true/false` | `false`      | topic1,2有效   |
+| 3个             | `true/false` | `true/false` | `true/false` | 全部有效       |
+
+### 使用建议
+
+```solidity
+// ✅ 推荐：大多数情况用简化写法
+vm.expectEmit(address(contract));
+emit EventName(param1, param2, param3);
+
+// ✅ 特殊需求：根据indexed参数个数设置
+// 1个indexed: vm.expectEmit(true, false, false, true, address(contract));
+// 2个indexed: vm.expectEmit(true, true, false, true, address(contract));  
+// 3个indexed: vm.expectEmit(true, true, true, true, address(contract));
+
+// ✅ 部分检查：只检查需要的参数
+vm.expectEmit(true, false, false, false, address(contract));
+```
+
+**核心原则：unused的topic参数设为false，简化写法自动处理所有情况。**
+
+
+
 ## vm.deal&vm.stratBroadcast
 
 ![image-20250710020527536](SOLIDITY-FUCK-NOTE.assets/image-20250710020527536.png)
@@ -1725,7 +1882,7 @@ function _mint(address to, uint256 amount)
 
 
 
-### Solidity Override子合约调用父合约的权限表格
+### Solidity Override子合约调用父合约的继承权限表格
 
 #### 函数调用权限
 
@@ -2404,11 +2561,13 @@ function callTransferFunctionDirectlyTwo(address someAddress, uint256 amount) pu
 
 
 
-
+### abi.encodeWithSelector&vm.expectRevert
 
 记住通过 abi encode 来 call 函数的方式就行了。**abi.encodeWithSignature 或者 abi.encodeWithSelector**。含参数的 error 也要通过这种方式来表达。不过这里貌似直接用了 .selector, 没有手动取哈希。
 
 ![image-20250809014025951](SOLIDITY-FUCK-NOTE.assets/image-20250809014025951.png)
+
+### error.selector&vm.expectPartialRevert
 
 补充1：![image-20250820231442384](SOLIDITY-FUCK-NOTE.assets/image-20250820231442384.png)
 
@@ -2418,7 +2577,7 @@ vm.expercPartialRevert 貌似不需要传入自定义 error 的参数
 
 
 
-## 函数类型&函数名&Error 类型
+## 函数类型&函数名&Error 类型 selector
 
 函数的 selector 需要 this.函数名.selector 的方式，error 只需要 error 名.selector.
 
