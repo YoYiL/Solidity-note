@@ -3578,7 +3578,7 @@ contract B {
 ### 1. 概念层次不同
 
 ```
-复制交易层面：
+交易层面：
 EOA(交易发起者) → 提交交易到网络
 
 执行层面：
@@ -3591,7 +3591,7 @@ EOA(交易发起者) → 提交交易到网络
 在不同场景下，"用户"可能指：
 
 ```
-复制// 账户抽象场景
+// 账户抽象场景
 EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 
 // 这里：
@@ -3605,14 +3605,13 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 #### 交易发起者恒等式
 
 ```
-复制
 交易发起者 ≡ tx.origin ≡ 签名交易的EOA ≡ 支付Gas的账户
 ```
 
 #### 代码验证
 
 ```
-复制contract VerifyTxOrigin {
+contract VerifyTxOrigin {
     event TransactionInfo(
         address txOrigin,
         address msgSender,
@@ -3635,7 +3634,6 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 #### 1. 普通调用
 
 ```
-复制
 用户EOA → 合约
 ```
 
@@ -3645,7 +3643,6 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 #### 2. 合约间调用
 
 ```
-复制
 用户EOA → 合约A → 合约B
 ```
 
@@ -3655,7 +3652,6 @@ EOA(Bundler) → EntryPoint → SmartWallet → DeFi
 #### 3. 账户抽象
 
 ```
-复制
 Bundler EOA → EntryPoint → SmartWallet
 ```
 
@@ -3665,7 +3661,6 @@ Bundler EOA → EntryPoint → SmartWallet
 #### 4. 元交易
 
 ```
-复制
 Relayer EOA → RelayContract → Target
 ```
 
@@ -3675,7 +3670,7 @@ Relayer EOA → RelayContract → Target
 ### 关键区别：发起者 vs 受益者
 
 ```
-复制contract MetaTransaction {
+contract MetaTransaction {
     function executeFor(
         address beneficiary,  // 受益用户
         address target,
@@ -3833,7 +3828,11 @@ contract A {
 - **在被调用合约中**：`msg.sender` 是直接调用者（转账的合约）
 - **资金来源**：执行转账的合约的余额
 
-### 3. **特殊情况：vm.prank() 的影响**![image-20250820192640699](SOLIDITY-FUCK-NOTE.assets/image-20250820192640699.png)
+### 3. **特殊情况：vm.prank() 的影响**
+
+
+
+![image-20250820192640699](SOLIDITY-FUCK-NOTE.assets/image-20250820192640699.png)
 
 ![image-20250820192656218](SOLIDITY-FUCK-NOTE.assets/image-20250820192656218.png)
 
@@ -4143,7 +4142,7 @@ contract Caller {
 ### 4. **重要区别：使用 msg.value vs 合约余额**
 
 ```
-复制contract DifferentExample {
+contract DifferentExample {
     // 情况1：转发收到的 ETH（不使用合约余额）
     function forward(address payable to) external payable {
         to.transfer(msg.value); // 支付方是调用 forward 的地址
@@ -4160,7 +4159,7 @@ contract Caller {
 ### 5. **具体示例：追踪资金流**
 
 ```
-复制// 测试代码
+// 测试代码
 function testTransferFlow() public {
     TransferExample example = new TransferExample();
     address target = address(0x123);
